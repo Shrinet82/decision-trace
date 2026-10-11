@@ -1,0 +1,113 @@
+"""Application configuration and environment variable loading.
+
+Uses pydantic-settings to validate all environment variables, masks secrets in
+logs/representations, and exports Cognee-specific environment mappings before
+Cognee modules are loaded.
+"""
+
+import os
+from functools import lru_cache
+from pathlib import Path
+
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment and .env."""
+
+    model_config = SettingsConfigDict(
+        env_file=str(Path(__file__).resolve().parent.parent.parent / ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # FalkorDB Cloud Settings
+    FALKORDB_HOST: str = Field(..., description="FalkorDB host address")
+    FALKORDB_PORT: int = Field(default=6379, description="FalkorDB port number")
+    FALKORDB_USERNAME: str = Field(default="falkordb", description="FalkorDB username")
+    FALKORDB_PASSWORD: SecretStr = Field(..., description="FalkorDB password")
+    FALKORDB_GRAPH_NAME: str = Field(
+        default="company_brain", description="Target graph database name"
+    )
+
+    # LLM & Embedding Settings
+    LLM_API_KEY: SecretStr = Field(..., description="API key for LLM provider")
+    LLM_BASE_URL: str = Field(
+        default="https://api.groq.com/openai/v1",
+        description="Base URL for OpenAI-compatible LLM endpoint",
+    )
+    LLM_MODEL: str = Field(
+        default="groq/qwen/qwen3.8-27b",
+        description="Target model identifier with provider prefix for LiteLLM routing",
+    )
+    EMBEDDING_PROVIDER: str = Field(
+        default="fastembed", description="Embedding provider (fastembed for local embeddings)"
+    )
+    EMBEDDING_MODEL: str = Field(
+        default="BAAI/bge-small-en-v1.5",
+        description="Local embedding model identifier",
+    )
+
+    # Vector Storage Settings
+    VECTOR_DB_PROVIDER: str = Field(
+        default="lancedb",
+        description="Vector database provider (lancedb saves cloud memory)",
+    )
+    LANCEDB_PATH: str = Field(
+        default=".lancedb",
+        description="Local directory path for LanceDB vector files",
+    )
+
+    # Application & Security Settings
+    FRONTEND_ORIGIN: str = Field(
+        default="http://localhost:5173",
+        description="Allowed frontend CORS origin",
+    )
+    ADMIN_TOKEN: SecretStr = Field(
+        default=SecretStr("dev-secret-token-change-in-production"),
+        description="Token required for administrative endpoints",
+    )
+    DATASET_NAME: str = Field(
+        default="company_brain",
+        description="Unified dataset name to ensure entities land in a single graph",
+    )
+    HOST: str = Field(default="0.0.0.0", description="FastAPI host binding")
+    PORT: int = Field(default=8000, description="FastAPI port binding")
+    LOG_LEVEL: str = Field(default="INFO", description="Logging level")
+
+
+def export_cognee_env(settings: Settings) -> None:
+    """Export the environment variables required by Cognee before it is imported.
+
+    Cognee evaluates its LLMConfig, GraphConfig, and VectorConfig during module
+    import time. These settings must be exported into os.environ beforehand.
+    """
+    os.environ["LLM_PROVIDER"] = "custom"
+    os.environ["LLM_MODEL"] = settings.LLM_MODEL
+    os.environ["LLM_ENDPOINT"] = settings.LLM_BASE_URL
+    os.environ["GROQ_API_KEY"] = settings.LLM_API_KEY.get_secret_value()
+    os.environ["OPENAI_API_KEY"] = settings.LLM_API_KEY.get_secret_value()
+    os.environ["EMBEDDING_PROVIDER"] = settings.EMBEDDING_PROVIDER
+    os.environ["EMBEDDING_MODEL"] = settings.EMBEDDING_MODEL
+
+    # Graph database configuration
+    os.environ["GRAPH_DATABASE_PROVIDER"] = "falkor"
+    os.environ["GRAPH_DATABASE_URL"] = settings.FALKORDB_HOST
+    os.environ["GRAPH_DATABASE_PORT"] = str(settings.FALKORDB_PORT)
+    os.environ["GRAPH_DATABASE_USERNAME"] = settings.FALKORDB_USERNAME
+    os.environ["GRAPH_DATABASE_PASSWORD"] = settings.FALKORDB_PASSWORD.get_secret_value()
+    os.environ["GRAPH_DATABASE_NAME"] = settings.FALKORDB_GRAPH_NAME
+    os.environ["GRAPH_DATASET_DATABASE_HANDLER"] = "falkor_graph_local"
+
+    # Vector storage configuration
+    os.environ["VECTOR_DB_PROVIDER"] = settings.VECTOR_DB_PROVIDER
+    os.environ["VECTOR_DB_URL"] = settings.LANCEDB_PATH
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Return cached application settings."""
+    settings = Settings()
+    export_cognee_env(settings)
+    return settings
