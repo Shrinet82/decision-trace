@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: decision-trace-backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      - LANCEDB_PATH=/app/data_storage/.lancedb
+    volumes:
+      - decision_trace_data:/app/data_storage
+
+volumes:
+  decision_trace_data:
+    driver: local
