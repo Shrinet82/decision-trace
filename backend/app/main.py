@@ -1,0 +1,128 @@
+"""FastAPI Application Entrypoint for Decision-Trace Company Brain.
+
+Features:
+- Async lifespan managing database startup/shutdown checks
+- Request ID tracking and structured access logging middleware
+- Strict CORS configuration from environment settings
+- Global error handling
+- GET /health endpoint verifying FalkorDB connectivity
+"""
+
+import logging
+import time
+import uuid
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
+from fastapi import FastAPI, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.brain.memory import ping_falkordb
+from app.config import get_settings
+
+# Configure logging
+settings = get_settings()
+logging.basicConfig(
+    level=settings.LOG_LEVEL,
+    format="%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s",
+)
+logger = logging.getLogger("decision_trace.api")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Application lifespan context manager."""
+    logger.info("Initializing Decision-Trace backend...")
+    is_falkor_alive = await ping_falkordb()
+    if is_falkor_alive:
+        logger.info("FalkorDB Cloud connection verified successfully.")
+    else:
+        logger.warning("FalkorDB Cloud connection ping failed during startup.")
+    yield
+    logger.info("Shutting down Decision-Trace backend...")
+
+
+app = FastAPI(
+    title="Decision-Trace Company Brain API",
+    description="Knowledge graph backend connecting decisions, people, systems, and evidence via FalkorDB.",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+# CORS Middleware
+origins = [settings.FRONTEND_ORIGIN]
+if "localhost" in settings.FRONTEND_ORIGIN:
+    origins.append("http://127.0.0.1:5173")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.middleware("http")
+async def request_id_and_logging_middleware(request: Request, call_next) -> Response:
+    """Assigns unique request-id and logs execution time."""
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    start_time = time.perf_counter()
+
+    try:
+        response: Response = await call_next(request)
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        response.headers["X-Request-ID"] = request_id
+        logger.info(
+            "%s %s -> %d (%.2f ms) [req_id=%s]",
+            request.method,
+            request.url.path,
+            response.status_code,
+            duration_ms,
+            request_id,
+        )
+        return response
+    except Exception as exc:
+        duration_ms = (time.perf_counter() - start_time) * 1000
+        logger.exception(
+            "Unhandled error during %s %s (%.2f ms) [req_id=%s]: %s",
+            request.method,
+            request.url.path,
+            duration_ms,
+            request_id,
+            exc,
+        )
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"detail": "Internal server error", "request_id": request_id},
+            headers={"X-Request-ID": request_id},
+        )
+
+
+@app.get("/health", status_code=status.HTTP_200_OK)
+async def health_check():
+    """Health check endpoint validating service and FalkorDB connectivity."""
+    falkordb_ok = await ping_falkordb()
+    status_str = "healthy" if falkordb_ok else "degraded"
+    response_code = status.HTTP_200_OK if falkordb_ok else status.HTTP_503_SERVICE_UNAVAILABLE
+
+    payload = {
+        "status": status_str,
+        "service": "decision-trace-backend",
+        "falkordb": "connected" if falkordb_ok else "disconnected",
+        "dataset": settings.DATASET_NAME,
+        "timestamp": time.time(),
+    }
+    return JSONResponse(status_code=response_code, content=payload)
+
+
+@app.get("/")
+async def root():
+    """Root info endpoint."""
+    return {
+        "name": "Decision-Trace Company Brain",
+        "version": "0.1.0",
+        "docs": "/docs",
+        "health": "/health",
+    }
