@@ -1,0 +1,35 @@
+# Environments & Dependencies
+.env
+.env.local
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Database / Local Vector / SQLite files
+*.db
+*.sqlite
+*.sqlite3
+.lancedb/
+data_storage/
+.cognee/
+
+# IDE & OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
