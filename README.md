@@ -100,8 +100,71 @@ company-brain/
 
 ---
 
-## 5. Hackathon Credits & Acknowledgements
+## 5. Development & Deployment
 
-- Built for **Graph Hacks: Context for AI Agents** (WeMakeDevs x FalkorDB).
-- Powered by [FalkorDB](https://falkordb.com/) graph database engine.
-- Memory orchestration inspired by and utilizing [Cognee](https://github.com/topoteretes/cognee).
+### Prerequisites
+- Python 3.12+ (managed via `uv` or `venv`)
+- FalkorDB instance (Cloud or self-hosted)
+- Groq API Key (or OpenAI / custom LLM endpoint)
+
+### Local Development Setup
+1. **Clone repository and configure environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your credentials (FALKORDB_HOST, FALKORDB_PORT, FALKORDB_PASSWORD, GROQ_API_KEY, etc.)
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   uv venv
+   source .venv/bin/activate
+   uv pip install -e backend
+   ```
+
+3. **Run Linting & Unit Tests**:
+   ```bash
+   # Linting
+   ruff check backend
+
+   # Unit tests (mocked & isolated, no live external dependencies required)
+   PYTHONPATH=backend pytest backend/tests/test_config.py backend/tests/test_compat.py backend/tests/test_models.py backend/tests/test_health.py -v
+
+   # Integration test (against FalkorDB Cloud & Groq LLM)
+   RUN_INTEGRATION_TESTS=1 PYTHONPATH=backend pytest backend/tests/test_integration.py -v -m integration
+   ```
+
+4. **Start the FastAPI Backend**:
+   ```bash
+   PYTHONPATH=backend uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
+   Open `http://localhost:8000/health` to verify the service and FalkorDB ping.
+
+### Docker Deployment
+Run the production multi-stage backend container with persistent volume storage for LanceDB and SQLite:
+```bash
+docker compose up --build -d
+```
+Check health:
+```bash
+curl http://localhost:8000/health
+```
+
+### Keeping FalkorDB Cloud Free-Tier Active
+FalkorDB Cloud free-tier instances may sleep if idle for extended periods. A lightweight keepalive query is provided:
+```bash
+python scripts/keepalive.py
+```
+To run periodically via crontab:
+```bash
+0 */6 * * * cd /path/to/decision-trace && /path/to/.venv/bin/python scripts/keepalive.py >> /var/log/falkordb_keepalive.log 2>&1
+```
+
+---
+
+## 6. Credits & Attribution
+
+- **FalkorDB**: Matrix-based Graph Database engine powered by GraphBLAS and OpenCypher ([FalkorDB](https://falkordb.com/) | [GitHub](https://github.com/FalkorDB/FalkorDB)).
+- **Cognee**: Agentic Memory & Knowledge Graph Orchestration Engine ([Cognee](https://www.cognee.ai/) | [GitHub](https://github.com/topoteretes/cognee)). Distributed under the Apache-2.0 License.
+- **cognee-community-hybrid-adapter-falkor**: FalkorDB graph store adapter for Cognee ([PyPI](https://pypi.org/project/cognee-community-hybrid-adapter-falkor/)).
+- **FastEmbed**: Fast and light embedding runtime using `BAAI/bge-small-en-v1.5` ([FastEmbed](https://github.com/qdrant/fastembed)).
+- **LanceDB**: Serverless vector database on disk ([LanceDB](https://github.com/lancedb/lancedb)).
