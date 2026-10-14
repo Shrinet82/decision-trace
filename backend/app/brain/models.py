@@ -7,10 +7,10 @@ the field.
 """
 
 from datetime import datetime
-from typing import Any, ClassVar, Optional, Union
+from typing import Annotated, Optional
 
-from cognee.infrastructure.engine import DataPoint
-from pydantic import BaseModel, Field
+from cognee.infrastructure.engine import DataPoint, FromIdentity
+from pydantic import Field
 
 
 class Team(DataPoint):
@@ -19,7 +19,7 @@ class Team(DataPoint):
     name: str = Field(..., description="Team name, e.g. Core Infrastructure")
     department: Optional[str] = Field(default=None, description="Department name, e.g. Engineering")
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["name"]}
+    metadata: dict = {"identity_fields": ["name"], "index_fields": ["name"]}
 
 
 class System(DataPoint):
@@ -31,7 +31,7 @@ class System(DataPoint):
     )
     vendor: Optional[str] = Field(default=None, description="Vendor or provider name")
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["name", "vendor"]}
+    metadata: dict = {"identity_fields": ["name"], "index_fields": ["name", "vendor"]}
 
 
 class Project(DataPoint):
@@ -43,7 +43,7 @@ class Project(DataPoint):
         default="active", description="Project status: active, completed, planned"
     )
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["name", "description"]}
+    metadata: dict = {"identity_fields": ["name"], "index_fields": ["name", "description"]}
 
 
 class Person(DataPoint):
@@ -52,28 +52,29 @@ class Person(DataPoint):
     name: str = Field(..., description="Full person name")
     role: Optional[str] = Field(default=None, description="Job title or role, e.g. Lead Architect")
     email: Optional[str] = Field(default=None, description="Contact email")
-    member_of: Optional[Team] = Field(default=None, description="Team the person belongs to")
-    owns: list[Union[System, Project]] = Field(
-        default_factory=list, description="Systems or projects owned by this person"
+    member_of: Annotated[Optional[Team], FromIdentity()] = Field(
+        default=None, description="Team name the person belongs to"
     )
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["name", "role"]}
+    metadata: dict = {"identity_fields": ["name"], "index_fields": ["name", "role"]}
 
 
 class Ticket(DataPoint):
     """Represents a support ticket, bug report, or issue ticket."""
 
     ticket_id: str = Field(..., description="External ticket ID, e.g. TICKET-1042")
-    title: str = Field(..., description="Ticket title / summary")
+    title: str = Field(default="", description="Ticket title / summary")
     status: str = Field(default="open", description="Status: open, in-progress, resolved, closed")
     opened_at: Optional[datetime] = Field(default=None, description="Ticket opening timestamp")
     closed_at: Optional[datetime] = Field(default=None, description="Ticket resolution timestamp")
-    raised_by: Optional[Person] = Field(default=None, description="Person who opened the ticket")
-    mentions: list[System] = Field(
-        default_factory=list, description="Systems or services mentioned in the ticket"
+    raised_by: Annotated[Optional[Person], FromIdentity()] = Field(
+        default=None, description="Person name who opened the ticket"
+    )
+    mentions: Annotated[list[System], FromIdentity()] = Field(
+        default_factory=list, description="System names mentioned in the ticket"
     )
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["title", "ticket_id"]}
+    metadata: dict = {"identity_fields": ["ticket_id"], "index_fields": ["ticket_id", "title"]}
 
 
 class Meeting(DataPoint):
@@ -83,28 +84,28 @@ class Meeting(DataPoint):
         ..., description="Meeting title, e.g. Architecture Review - Graph DB Migration"
     )
     meeting_date: Optional[str] = Field(default=None, description="Meeting date or timestamp")
-    attended_by: list[Person] = Field(
-        default_factory=list, description="Participants who attended the meeting"
+    attended_by: Annotated[list[Person], FromIdentity()] = Field(
+        default_factory=list, description="Names of participants who attended the meeting"
     )
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["title"]}
+    metadata: dict = {"identity_fields": ["title"], "index_fields": ["title"]}
 
 
 class Document(DataPoint):
     """Represents a source file, markdown document, or snippet."""
 
     source_file: str = Field(..., description="Source file path or identifier")
-    snippet: str = Field(..., description="Relevant text excerpt")
+    snippet: str = Field(default="", description="Relevant text excerpt")
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["snippet", "source_file"]}
+    metadata: dict = {"identity_fields": ["source_file"], "index_fields": ["source_file", "snippet"]}
 
 
 class Decision(DataPoint):
     """Represents an architectural, business, or organizational decision."""
 
     title: str = Field(..., description="Concise decision title")
-    summary: str = Field(..., description="High-level description of what was decided")
-    rationale: str = Field(..., description="Why the decision was made, constraints, tradeoffs")
+    summary: str = Field(default="", description="High-level description of what was decided")
+    rationale: str = Field(default="", description="Why the decision was made, constraints, tradeoffs")
     decided_on: Optional[str] = Field(default=None, description="Date decision was reached")
     status: str = Field(
         default="active",
@@ -112,29 +113,39 @@ class Decision(DataPoint):
     )
     confidence: float = Field(default=1.0, description="Extraction confidence score (0.0 to 1.0)")
 
-    decided_by: Optional[Person] = Field(default=None, description="Person who made the decision")
-    about: list[Union[System, Project]] = Field(
-        default_factory=list, description="Systems or projects this decision concerns"
+    decided_by: Annotated[Optional[Person], FromIdentity()] = Field(
+        default=None, description="Name of the Person who made the decision"
     )
-    based_on: list[Union[Ticket, Meeting, Document]] = Field(
-        default_factory=list,
-        description="Evidence, tickets, or meeting notes underpinning the decision",
+    about_system: Annotated[Optional[System], FromIdentity()] = Field(
+        default=None, description="Name of the System this decision concerns"
     )
-    supersedes: list["Decision"] = Field(
-        default_factory=list, description="Prior decisions replaced by this decision"
+    about_project: Annotated[Optional[Project], FromIdentity()] = Field(
+        default=None, description="Name of the Project this decision concerns"
     )
-    contradicts: list["Decision"] = Field(
-        default_factory=list, description="Decisions with conflicting directives"
+    based_on: Annotated[Optional[Ticket], FromIdentity()] = Field(
+        default=None,
+        description="Ticket ID underpinning the decision",
     )
-    affects: list[Union[System, Project, Team]] = Field(
-        default_factory=list, description="Entities impacted by this decision"
+    based_on_meeting: Annotated[Optional[Meeting], FromIdentity()] = Field(
+        default=None,
+        description="Title of meeting underpinning the decision",
+    )
+    based_on_document: Annotated[Optional[Document], FromIdentity()] = Field(
+        default=None,
+        description="Source file underpinning the decision",
+    )
+    supersedes: Annotated[list["Decision"], FromIdentity()] = Field(
+        default_factory=list, description="Titles of prior decisions replaced or superseded by this decision"
+    )
+    contradicts: Annotated[list["Decision"], FromIdentity()] = Field(
+        default_factory=list, description="Titles of decisions in conflict or contradiction with this decision"
     )
 
-    metadata: ClassVar[dict[str, Any]] = {"index_fields": ["title", "summary", "rationale"]}
+    metadata: dict = {"identity_fields": ["title"], "index_fields": ["title", "summary", "rationale"]}
 
 
-class DecisionGraphExtraction(BaseModel):
-    """Container schema for structured LLM graph extraction."""
+class CompanyBrainGraph(DataPoint):
+    """Root graph container model for structured knowledge graph extraction."""
 
     decisions: list[Decision] = Field(default_factory=list)
     people: list[Person] = Field(default_factory=list)
@@ -144,3 +155,8 @@ class DecisionGraphExtraction(BaseModel):
     tickets: list[Ticket] = Field(default_factory=list)
     meetings: list[Meeting] = Field(default_factory=list)
     documents: list[Document] = Field(default_factory=list)
+
+
+# Backward-compatible alias
+DecisionGraphExtraction = CompanyBrainGraph
+
