@@ -18,9 +18,7 @@ def test_models_instantiation():
     team = Team(name="Platform Engineering", department="Tech")
     system = System(name="FalkorDB", system_type="graph-database", vendor="FalkorDB Inc")
     project = Project(name="Knowledge Brain", status="active")
-    person = Person(
-        name="Sarah Connor", role="Principal Architect", member_of=team
-    )
+    person = Person(name="Sarah Connor", role="Principal Architect", member_of=team)
 
     ticket = Ticket(
         ticket_id="INC-402",
@@ -81,4 +79,3 @@ def test_company_brain_graph_conversion():
     # Infrastructure fields must be stripped
     assert "id" not in schema["properties"]
     assert "version" not in schema["properties"]
-

@@ -108,3 +108,42 @@ async def test_custom_extraction_and_reset_deletion():
         graphs_after = await list_falkordb_graphs()
         assert isolated_dataset not in remaining
         assert isolated_dataset not in graphs_after
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(
+    not has_cloud_credentials,
+    reason="Integration tests require FALKORDB_HOST and LLM_API_KEY credentials.",
+)
+@pytest.mark.asyncio
+async def test_reset_safety_preserves_other_graphs():
+    """Verify reset() with delete_all_graphs=False only deletes target dataset graph."""
+    engine = await get_graph_engine()
+    driver = getattr(engine, "driver", None)
+    if not driver:
+        pytest.skip("FalkorDB driver unavailable.")
+
+    # Create dummy secondary graph
+    secondary_graph = "keep_me_safe_graph"
+    target_graph = "delete_me_target_graph"
+
+    driver.execute_command("GRAPH.QUERY", secondary_graph, "CREATE (:System {name: 'SafeSystem'})")
+    driver.execute_command("GRAPH.QUERY", target_graph, "CREATE (:System {name: 'TargetSystem'})")
+
+    try:
+        graphs_before = await list_falkordb_graphs()
+        assert secondary_graph in graphs_before
+        assert target_graph in graphs_before
+
+        # Reset target only (delete_all_graphs defaults to False)
+        remaining = await reset(dataset_name=target_graph, delete_all_graphs=False)
+        assert target_graph not in remaining
+        assert secondary_graph in remaining
+
+    finally:
+        # Clean up dummy test graphs
+        driver.execute_command("GRAPH.DELETE", secondary_graph)
+        try:
+            driver.execute_command("GRAPH.DELETE", target_graph)
+        except Exception:
+            pass
