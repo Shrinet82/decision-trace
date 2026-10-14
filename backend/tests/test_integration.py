@@ -203,7 +203,7 @@ async def test_three_input_identity_and_supersedes():
         await reconcile_decisions(dataset_name=test_ds)
 
         decisions = await query_graph("MATCH (d:Decision) RETURN d.title", dataset_name=test_ds)
-        assert len(decisions) >= 3, f"Expected at least 3 decisions, got: {decisions}"
+        assert len(decisions) == 3, f"Expected exactly 3 decisions, got: {decisions}"
 
         supersedes = await query_graph(
             "MATCH (d1:Decision)-[r:supersedes]->(d2:Decision) RETURN d1.title, d2.title",

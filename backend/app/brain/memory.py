@@ -7,6 +7,7 @@ and dataset reset operations with typed async signatures, timeouts, and retries.
 
 import asyncio
 import logging
+import os
 from typing import Any, Optional
 
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
@@ -26,6 +27,44 @@ from cognee.infrastructure.databases.graph import get_graph_engine  # noqa: E402
 import app.brain.falkor_compat  # noqa: F401, E402
 
 logger = logging.getLogger("decision_trace.memory")
+
+_GROQ_API_KEYS: list[str] = [
+    os.getenv("SECONDARY_GROQ_API_KEY", "REDACTED_SECRET"),
+    _settings.LLM_API_KEY.get_secret_value(),
+]
+_current_key_idx: int = 0
+
+
+def get_active_groq_key() -> str:
+    global _current_key_idx
+    return _GROQ_API_KEYS[_current_key_idx % len(_GROQ_API_KEYS)]
+
+
+def rotate_groq_key() -> str:
+    global _current_key_idx
+    _current_key_idx += 1
+    new_key = get_active_groq_key()
+    logger.info("Rotated Groq API key to pool index %d", _current_key_idx % len(_GROQ_API_KEYS))
+    apply_groq_key(new_key)
+    return new_key
+
+
+def apply_groq_key(key: Optional[str] = None) -> None:
+    target_key = key or get_active_groq_key()
+    try:
+        from cognee.infrastructure.llm.config import get_llm_config
+
+        cfg = get_llm_config()
+        cfg.llm_api_key = target_key
+        cfg.llm_model = _settings.LLM_MODEL
+    except Exception:
+        pass
+    os.environ["GROQ_API_KEY"] = target_key
+    os.environ["OPENAI_API_KEY"] = target_key
+
+
+# Ensure active key is applied at import time
+apply_groq_key()
 
 
 class MemoryOperationError(Exception):
@@ -202,7 +241,10 @@ def build_extraction_prompt(
         "     If there is no corresponding entity, you MUST output null (or an empty list for list fields).\n"
         '     NEVER output empty strings ("") or placeholder text.\n\n'
         "4. Entity Identity Consistency:\n"
-        "   - Reference fields must use the EXACT same identifier defined in the top-level entity lists (e.g. 'name' for Person/System, 'ticket_id' for Ticket, 'title' for Meeting and Decision).\n"
+        "   - Reference fields must use the EXACT same identifier defined in the top-level entity lists (e.g. 'name' for Person/System, 'ticket_id' for Ticket, 'title' for Meeting and Decision).\n\n"
+        "5. Deliberate Decisions Only:\n"
+        "   - Extract a Decision ONLY when an architectural choice, technology adoption, standard-setting, policy reversal, or explicit technical trade-off was made (e.g. adopting Redis, migrating to ClickHouse, choosing Kafka over RabbitMQ, standardizing on Kubernetes 1.30).\n"
+        "   - Do NOT extract routine bug investigations, parameter tweaks, troubleshooting notes, or operational checks where no architectural or technology decision was made. If the text only describes standard debugging or investigation without an architectural/technology decision, leave 'decisions' empty ([]).\n"
     )
 
     if existing_decision_titles:
@@ -282,6 +324,7 @@ async def ingest_text(
                 target_dataset,
                 getattr(target_model, "__name__", str(target_model)),
             )
+            apply_groq_key()
             await cognee.cognify(
                 datasets=[target_dataset],
                 graph_model=target_model,
@@ -321,6 +364,7 @@ async def ask(question: str, dataset_name: Optional[str] = None) -> dict[str, An
     logger.info("Querying Company Brain: '%s' (dataset: %s)", question, target_dataset)
 
     try:
+        apply_groq_key()
         search_results = await cognee.search(
             query_type=SearchType.GRAPH_COMPLETION,
             query_text=question,

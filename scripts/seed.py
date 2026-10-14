@@ -91,8 +91,8 @@ async def run_seed(dataset_name: str = "company_brain") -> dict[str, Any]:
     decision_summary = await extract_all_decisions(
         dataset_name=dataset_name,
         concurrency_limit=1,
-        include_all_tickets=False,  # Targets tickets with decision comments
-        pause_between_calls=2.5,
+        include_all_tickets=True,  # Ingests ALL 80 tickets without keyword pre-filter
+        pause_between_calls=1.5,
     )
     dec_time = time.perf_counter() - dec_start
     print(f"  Decisions extracted in {dec_time:.2f}s")
