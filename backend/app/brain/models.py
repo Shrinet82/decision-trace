@@ -7,7 +7,7 @@ the field.
 """
 
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Annotated, Literal, Optional
 
 from cognee.infrastructure.engine import DataPoint, FromIdentity
 from pydantic import Field
@@ -112,9 +112,9 @@ class Decision(DataPoint):
         default="", description="Why the decision was made, constraints, tradeoffs"
     )
     decided_on: Optional[str] = Field(default=None, description="Date decision was reached")
-    status: str = Field(
-        default="active",
-        description="Health status: active, superseded, contradicted, possibly_stale",
+    status: Literal["proposed", "accepted", "rejected", "reverted"] = Field(
+        default="accepted",
+        description="Current state of decision: proposed, accepted, rejected, or reverted",
     )
     confidence: float = Field(default=1.0, description="Extraction confidence score (0.0 to 1.0)")
 

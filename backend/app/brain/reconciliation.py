@@ -95,8 +95,46 @@ def pick_canonical_decision(
     return d2, d1
 
 
+def extract_action_keywords(title: str, system: Optional[str] = None) -> set[str]:
+    """Extract substantive purpose and action tokens from a decision title."""
+    stopwords = {
+        "adopt",
+        "use",
+        "migrate",
+        "switch",
+        "deploy",
+        "implement",
+        "to",
+        "from",
+        "for",
+        "in",
+        "of",
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "on",
+        "with",
+        "by",
+        "all",
+        "our",
+        "new",
+        "cluster",
+        "service",
+        "services",
+        "system",
+        "database",
+    }
+    cleaned = re.sub(r"[-_]+", " ", title.strip().lower())
+    if system:
+        stopwords.update(normalize_title(system).split())
+    tokens = set(cleaned.split())
+    return {t for t in tokens if t not in stopwords and len(t) > 2}
+
+
 def can_merge_decisions(
-    d1: dict[str, Any], d2: dict[str, Any], similarity: float, threshold: float
+    d1: dict[str, Any], d2: dict[str, Any], similarity: float, threshold: float = 0.88
 ) -> bool:
     """Evaluate whether two decision nodes represent the same underlying decision."""
     if similarity < threshold:
@@ -115,6 +153,14 @@ def can_merge_decisions(
     p2 = (d2.get("person") or "").strip().lower()
     if p1 and p2 and p1 != p2:
         return False
+
+    # Tiebreak rule 3: Distinct actions/purposes on the same system must not merge
+    # (e.g. 'Adopt Redis for sessions' vs 'Adopt Redis for rate limiting')
+    if not (is_stub_node(d1) or is_stub_node(d2)):
+        k1 = extract_action_keywords(d1.get("title", ""), sys1)
+        k2 = extract_action_keywords(d2.get("title", ""), sys2)
+        if k1 and k2 and not (k1 & k2):
+            return False
 
     return True
 
@@ -173,7 +219,7 @@ async def cleanup_empty_stubs(dataset_name: Optional[str] = None) -> int:
 
 
 async def reconcile_decisions(
-    dataset_name: Optional[str] = None, similarity_threshold: float = 0.80
+    dataset_name: Optional[str] = None, similarity_threshold: float = 0.88
 ) -> dict[str, Any]:
     """Find and merge near-duplicate Decision nodes, re-point edges, and preserve provenance.
 

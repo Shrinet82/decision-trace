@@ -115,3 +115,26 @@ def test_embedding_similarity():
         "Adopt ClickHouse for real-time analytics event processing",
     )
     assert sim_low < 0.60
+
+
+def test_different_decisions_on_same_system_do_not_merge():
+    """Near-similar but DIFFERENT decisions on the same system must not merge."""
+    d_session = {
+        "id": 1,
+        "title": "Adopt Redis for session storage",
+        "system": "Redis",
+        "person": "Dave Miller",
+        "summary": "Use Redis for user web sessions.",
+    }
+    d_ratelimit = {
+        "id": 2,
+        "title": "Adopt Redis for API rate limiting",
+        "system": "Redis",
+        "person": "Dave Miller",
+        "summary": "Use Redis sliding window counters for throttling.",
+    }
+    sim = compute_embedding_similarity(d_session["title"], d_ratelimit["title"])
+    # Although raw similarity is ~0.82, tiebreak and threshold must prevent merge
+    assert can_merge_decisions(d_session, d_ratelimit, similarity=sim, threshold=0.88) is False
+    assert can_merge_decisions(d_session, d_ratelimit, similarity=0.92, threshold=0.88) is False
+

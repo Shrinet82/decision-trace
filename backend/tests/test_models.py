@@ -36,7 +36,7 @@ def test_models_instantiation():
         title="Adopt FalkorDB Cloud",
         summary="Migrated company knowledge graph from Redis to FalkorDB.",
         rationale="FalkorDB provides native OpenCypher and matrix-based graph execution.",
-        status="active",
+        status="accepted",
         confidence=0.95,
         decided_by=person,
         about_system=system,
@@ -55,7 +55,7 @@ def test_models_instantiation():
     assert decision.based_on_meeting.title == "Architecture Sync on Graph DBs"
     assert len(decision.supersedes) == 1
     assert decision.supersedes[0].title == "Use Legacy Redis"
-    assert decision.status == "active"
+    assert decision.status == "accepted"
 
 
 def test_models_identity_and_index_fields():

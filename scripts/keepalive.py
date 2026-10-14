@@ -9,10 +9,11 @@ Safe to run on a scheduled cron job (e.g., every 6 hours).
 Reads credentials strictly from environment variables or local .env file.
 """
 
-from datetime import datetime, timezone
 import os
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load .env if present
@@ -20,7 +21,7 @@ env_path = Path(__file__).resolve().parent.parent / ".env"
 if env_path.exists():
     load_dotenv(env_path)
 
-from falkordb import FalkorDB  # noqa: E402
+from falkordb import FalkorDB
 
 
 def run_keepalive() -> int:
@@ -31,7 +32,7 @@ def run_keepalive() -> int:
     graph_name = os.getenv("FALKORDB_GRAPH_NAME", "company_brain")
 
     if not host or not password:
-        print(f"[{datetime.now(timezone.utc).isoformat()}] ERROR: Missing FALKORDB_HOST or FALKORDB_PASSWORD.")
+        print(f"[{datetime.now(UTC).isoformat()}] ERROR: Missing FALKORDB_HOST or FALKORDB_PASSWORD.")
         return 1
 
     try:
@@ -40,13 +41,13 @@ def run_keepalive() -> int:
         graph = db.select_graph(graph_name)
         result = graph.query("RETURN 1 as keepalive")
         if result and len(result.result_set) > 0:
-            print(f"[{datetime.now(timezone.utc).isoformat()}] SUCCESS: FalkorDB Cloud keepalive query executed successfully.")
+            print(f"[{datetime.now(UTC).isoformat()}] SUCCESS: FalkorDB Cloud keepalive query executed successfully.")
             return 0
         else:
-            print(f"[{datetime.now(timezone.utc).isoformat()}] WARNING: Unexpected empty response from keepalive query.")
+            print(f"[{datetime.now(UTC).isoformat()}] WARNING: Unexpected empty response from keepalive query.")
             return 1
-    except Exception as exc:
-        print(f"[{datetime.now(timezone.utc).isoformat()}] ERROR: FalkorDB Cloud keepalive failed: {exc}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[{datetime.now(UTC).isoformat()}] ERROR: FalkorDB Cloud keepalive failed: {exc}")
         return 1
 
 
