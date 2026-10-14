@@ -41,10 +41,6 @@ async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
     if not dataset_name:
         return default_name
 
-    existing_graphs = await list_falkordb_graphs()
-    if dataset_name in existing_graphs:
-        return dataset_name
-
     try:
         from cognee.modules.data.methods import get_datasets_by_name
         from cognee.modules.users.methods import get_default_user
@@ -58,29 +54,35 @@ async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
     except Exception:
         pass
 
+    existing_graphs = await list_falkordb_graphs()
+    if dataset_name in existing_graphs:
+        return dataset_name
+
     return default_name
 
 
 async def get_or_create_dataset_graph_name(dataset_name: Optional[str] = None) -> str:
     """Resolve or register the active FalkorDB graph name for a given dataset."""
-    if not dataset_name:
-        return _settings.DATASET_NAME
+    target = dataset_name or _settings.DATASET_NAME
 
     try:
-        from cognee.modules.data.methods import create_dataset, get_datasets_by_name
+        from cognee.infrastructure.databases.relational import create_db_and_tables
+        from cognee.modules.data.methods import get_datasets_by_name
+        from cognee.modules.data.methods.create_authorized_dataset import create_authorized_dataset
         from cognee.modules.users.methods import get_default_user
 
+        await create_db_and_tables()
         user = await get_default_user()
         if user:
-            ds_list = await get_datasets_by_name(dataset_name, user.id)
+            ds_list = await get_datasets_by_name(target, user.id)
             if ds_list:
                 return str(ds_list[0].id)
-            new_ds = await create_dataset(dataset_name, user.id)
+            new_ds = await create_authorized_dataset(target, user)
             return str(new_ds.id)
     except Exception as exc:
-        logger.debug("Failed to create or fetch dataset in cognee: %s", exc)
+        logger.warning("Failed to create or fetch dataset in cognee: %s", exc)
 
-    return dataset_name
+    return target
 
 
 async def get_existing_decision_titles(dataset_name: Optional[str] = None) -> list[str]:
@@ -191,9 +193,10 @@ def build_extraction_prompt(
         "1. Real Systems Only:\n"
         "   - In the 'systems' list and 'about_system' field, extract ONLY real databases, tools, services, or vendors (e.g. 'Postgres', 'Redis', 'ClickHouse', 'Keycloak', 'Kafka').\n"
         "   - Never include headers, prefixes, or labels such as 'System: Keycloak', 'System', or generic terms. Strip any 'System:' prefix.\n\n"
-        "2. Tickets & Meetings:\n"
-        "   - Only create a Ticket node if an explicit ticket identifier exists in the text (e.g. 'TICKET-842'). If no ticket is mentioned, leave 'tickets' empty and 'based_on' as null.\n"
-        "   - Only create a Meeting node if an explicit meeting is described in the text (e.g. 'Q3 Architecture Sync'). If no meeting is mentioned, leave 'meetings' empty and 'based_on_meeting' as null.\n\n"
+        "2. Ticket and Meeting Linking (based_on):\n"
+        "   - If extracting from a Ticket (e.g. 'Ticket ID: TICK-101'), set 'based_on' on the Decision to that exact Ticket ID (e.g. 'TICK-101'). Leave the top-level 'tickets' list empty.\n"
+        "   - If extracting from a Meeting (e.g. 'Meeting: IAM Architecture Modernization'), set 'based_on_meeting' on the Decision to that exact Meeting Title. Leave the top-level 'meetings' list empty.\n"
+        "   - If no ticket or meeting is referenced, leave 'based_on' and 'based_on_meeting' as null.\n\n"
         "3. Null vs Empty Strings for Reference Fields:\n"
         "   - For relationship reference fields ('decided_by', 'about_system', 'about_project', 'based_on', 'based_on_meeting', 'based_on_document', 'supersedes', 'contradicts'):\n"
         "     If there is no corresponding entity, you MUST output null (or an empty list for list fields).\n"

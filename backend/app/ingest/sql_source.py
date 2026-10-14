@@ -40,7 +40,12 @@ async def ingest_sql_source(
     target_dataset = dataset_name or _settings.DATASET_NAME
     # Ensure Cognee dataset/graph is registered
     graph_name = await get_or_create_dataset_graph_name(target_dataset)
-    logger.info("Ingesting SQL organizational source from %s into dataset '%s' (graph: %s)...", path, target_dataset, graph_name)
+    logger.info(
+        "Ingesting SQL organizational source from %s into dataset '%s' (graph: %s)...",
+        path,
+        target_dataset,
+        graph_name,
+    )
 
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row

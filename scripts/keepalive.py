@@ -32,7 +32,9 @@ def run_keepalive() -> int:
     graph_name = os.getenv("FALKORDB_GRAPH_NAME", "company_brain")
 
     if not host or not password:
-        print(f"[{datetime.now(UTC).isoformat()}] ERROR: Missing FALKORDB_HOST or FALKORDB_PASSWORD.")
+        print(
+            f"[{datetime.now(UTC).isoformat()}] ERROR: Missing FALKORDB_HOST or FALKORDB_PASSWORD."
+        )
         return 1
 
     try:
@@ -41,13 +43,19 @@ def run_keepalive() -> int:
         graph = db.select_graph(graph_name)
         result = graph.query("RETURN 1 as keepalive")
         if result and len(result.result_set) > 0:
-            print(f"[{datetime.now(UTC).isoformat()}] SUCCESS: FalkorDB Cloud keepalive query executed successfully.")
+            print(
+                f"[{datetime.now(UTC).isoformat()}] SUCCESS: FalkorDB Cloud keepalive query executed successfully."
+            )
             return 0
         else:
-            print(f"[{datetime.now(UTC).isoformat()}] WARNING: Unexpected empty response from keepalive query.")
+            print(
+                f"[{datetime.now(UTC).isoformat()}] WARNING: Unexpected empty response from keepalive query."
+            )
             return 1
     except Exception as exc:  # noqa: BLE001
-        print(f"[{datetime.now(UTC).isoformat()}] ERROR: FalkorDB Cloud keepalive failed: {exc}")
+        print(
+            f"[{datetime.now(UTC).isoformat()}] ERROR: FalkorDB Cloud keepalive failed: {exc}"
+        )
         return 1
 
 

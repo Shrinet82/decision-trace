@@ -52,6 +52,13 @@ class Person(DataPoint):
     name: str = Field(..., description="Full person name")
     role: Optional[str] = Field(default=None, description="Job title or role, e.g. Lead Architect")
     email: Optional[str] = Field(default=None, description="Contact email")
+    start_date: Optional[str] = Field(default=None, description="Employment start date")
+    leave_date: Optional[str] = Field(
+        default=None, description="Employment end date if departed, else null"
+    )
+    is_active: bool = Field(
+        default=True, description="True if currently employed, False if departed"
+    )
     member_of: Annotated[Optional[Team], FromIdentity()] = Field(
         default=None, description="Team name the person belongs to"
     )
@@ -65,10 +72,15 @@ class Ticket(DataPoint):
     ticket_id: str = Field(..., description="External ticket ID, e.g. TICKET-1042")
     title: str = Field(default="", description="Ticket title / summary")
     status: str = Field(default="open", description="Status: open, in-progress, resolved, closed")
+    opened: Optional[str] = Field(default=None, description="Ticket opening date")
+    closed: Optional[str] = Field(default=None, description="Ticket closing date")
     opened_at: Optional[datetime] = Field(default=None, description="Ticket opening timestamp")
     closed_at: Optional[datetime] = Field(default=None, description="Ticket resolution timestamp")
     raised_by: Annotated[Optional[Person], FromIdentity()] = Field(
         default=None, description="Person name who opened the ticket"
+    )
+    assigned_to: Annotated[Optional[Person], FromIdentity()] = Field(
+        default=None, description="Person name assigned to resolve the ticket"
     )
     mentions: Annotated[list[System], FromIdentity()] = Field(
         default_factory=list, description="System names mentioned in the ticket"
@@ -83,6 +95,7 @@ class Meeting(DataPoint):
     title: str = Field(
         ..., description="Meeting title, e.g. Architecture Review - Graph DB Migration"
     )
+    date: Optional[str] = Field(default=None, description="Meeting date, e.g. 2026-08-15")
     meeting_date: Optional[str] = Field(default=None, description="Meeting date or timestamp")
     attended_by: Annotated[list[Person], FromIdentity()] = Field(
         default_factory=list, description="Names of participants who attended the meeting"
