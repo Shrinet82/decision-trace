@@ -11,6 +11,8 @@ services:
       - .env
     environment:
       - LANCEDB_PATH=/app/data_storage/.lancedb
+      - SYSTEM_ROOT_DIRECTORY=/app/data_storage/cognee_system
+      - DATA_ROOT_DIRECTORY=/app/data_storage/cognee_data
     volumes:
       - decision_trace_data:/app/data_storage
 

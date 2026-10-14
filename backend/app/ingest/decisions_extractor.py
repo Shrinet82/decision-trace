@@ -104,8 +104,8 @@ async def extract_all_decisions(
     tickets_path: Optional[str | Path] = None,
     notes_dir: Optional[str | Path] = None,
     concurrency_limit: int = 1,
-    include_all_tickets: bool = False,
-    pause_between_calls: float = 2.0,
+    include_all_tickets: bool = True,
+    pause_between_calls: float = 1.0,
 ) -> dict[str, Any]:
     """Run LLM extraction over ticket comments and meeting note bodies.
 
@@ -114,7 +114,7 @@ async def extract_all_decisions(
         tickets_path: Path to tickets.csv.
         notes_dir: Directory containing meeting notes markdown files.
         concurrency_limit: Maximum concurrent extraction tasks (default 1 to prevent rate limits).
-        include_all_tickets: If True, processes all 80 tickets; if False, processes tickets with comments.
+        include_all_tickets: If True, processes all 80 tickets without keyword filtering.
         pause_between_calls: Seconds to sleep between calls to avoid Groq OTPM rate limits.
 
     Returns:
@@ -131,16 +131,13 @@ async def extract_all_decisions(
     # 1. Prepare items to extract
     items: list[dict[str, Any]] = []
 
-    # Tickets: load from CSV
+    # Tickets: load all tickets from CSV (no keyword pre-filtering)
     if t_path.exists():
         with open(t_path, mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 comment = (row.get("comments") or "").strip()
                 if not comment:
-                    continue
-                # If not include_all_tickets, focus on tickets with substantive comments/decisions
-                if not include_all_tickets and "Investigated root cause" in comment:
                     continue
                 text = (
                     f"Source Type: Ticket\n"
@@ -201,15 +198,38 @@ async def extract_all_decisions(
                 "[%d/%d] Ingesting %s '%s'...", index, total_items, item["type"], item["id"]
             )
 
-            try:
-                await ingest_text(
-                    item["text"],
-                    dataset_name=target_dataset,
-                    run_cognify=True,
-                    reconcile=False,  # Reconcile once at end of full batch
-                )
-            except Exception as exc:
-                logger.error("Failed extraction for item %s: %s", item["id"], exc)
+            for attempt in range(1, 4):
+                try:
+                    await ingest_text(
+                        item["text"],
+                        dataset_name=target_dataset,
+                        run_cognify=True,
+                        reconcile=False,  # Reconcile once at end of full batch
+                    )
+                    break
+                except Exception as exc:
+                    err_msg = str(exc)
+                    if "rate_limit" in err_msg.lower() or "429" in err_msg:
+                        from app.brain.memory import rotate_groq_key
+
+                        rotate_groq_key()
+                        wait_sec = 2 * attempt
+                        logger.warning(
+                            "Rate limited on item %s (attempt %d/3). Rotated key and pausing for %ds: %s",
+                            item["id"],
+                            attempt,
+                            wait_sec,
+                            exc,
+                        )
+                        await asyncio.sleep(wait_sec)
+                    else:
+                        logger.error(
+                            "Failed extraction for item %s (attempt %d/3): %s",
+                            item["id"],
+                            attempt,
+                            exc,
+                        )
+                        break
 
             elapsed = time.perf_counter() - item_start
             delta_tokens = token_tracker.last_total_tokens

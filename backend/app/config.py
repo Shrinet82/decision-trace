@@ -38,7 +38,7 @@ class Settings(BaseSettings):
         description="Base URL for OpenAI-compatible LLM endpoint",
     )
     LLM_MODEL: str = Field(
-        default="groq/qwen/qwen3.8-27b",
+        default=os.getenv("LLM_MODEL", "groq/qwen/qwen3.8-27b"),
         description="Target model identifier with provider prefix for LiteLLM routing",
     )
     EMBEDDING_PROVIDER: str = Field(
@@ -57,6 +57,15 @@ class Settings(BaseSettings):
     LANCEDB_PATH: str = Field(
         default=".lancedb",
         description="Local directory path for LanceDB vector files",
+    )
+
+    SYSTEM_ROOT_DIRECTORY: str = Field(
+        default=os.getenv("SYSTEM_ROOT_DIRECTORY", str(Path.home() / ".cognee_system")),
+        description="Path for Cognee system database and metadata",
+    )
+    DATA_ROOT_DIRECTORY: str = Field(
+        default=os.getenv("DATA_ROOT_DIRECTORY", str(Path.home() / ".cognee_data")),
+        description="Path for Cognee data storage",
     )
 
     # Application & Security Settings
@@ -83,6 +92,9 @@ def export_cognee_env(settings: Settings) -> None:
     Cognee evaluates its LLMConfig, GraphConfig, and VectorConfig during module
     import time. These settings must be exported into os.environ beforehand.
     """
+    os.environ["SYSTEM_ROOT_DIRECTORY"] = settings.SYSTEM_ROOT_DIRECTORY
+    os.environ["DATA_ROOT_DIRECTORY"] = settings.DATA_ROOT_DIRECTORY
+
     os.environ["LLM_PROVIDER"] = "custom"
     os.environ["LLM_MODEL"] = settings.LLM_MODEL
     os.environ["LLM_ENDPOINT"] = settings.LLM_BASE_URL

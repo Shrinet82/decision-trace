@@ -243,6 +243,18 @@ async def reconcile_decisions(
     if not results or len(results) < 2:
         return {"merged_count": 0, "merges": []}
 
+    # Identify decisions connected by contradicts or supersedes relationships
+    rel_rows = await query_graph(
+        "MATCH (d1:Decision)-[:contradicts|supersedes]-(d2:Decision) RETURN id(d1), id(d2)",
+        dataset_name=dataset_name,
+    )
+    forbidden_pairs: set[tuple[int, int]] = set()
+    for row in rel_rows:
+        if row and len(row) >= 2 and row[0] is not None and row[1] is not None:
+            id_a, id_b = int(row[0]), int(row[1])
+            forbidden_pairs.add((id_a, id_b))
+            forbidden_pairs.add((id_b, id_a))
+
     decisions: list[dict[str, Any]] = [
         {
             "id": row[0],
@@ -268,6 +280,9 @@ async def reconcile_decisions(
         for j in range(i + 1, len(decisions)):
             d2 = decisions[j]
             if d2["id"] in merged_ids:
+                continue
+
+            if (d1["id"], d2["id"]) in forbidden_pairs:
                 continue
 
             sim = compute_embedding_similarity(d1["title"], d2["title"])

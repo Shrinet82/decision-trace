@@ -31,15 +31,23 @@ def parse_meeting_note(content: str, filename: str) -> dict[str, Any]:
         trimmed = line.strip()
         if trimmed.startswith("Meeting:"):
             title = trimmed.split("Meeting:", 1)[1].strip()
+        elif trimmed.startswith("# "):
+            title = trimmed[2:].strip()
         elif trimmed.startswith("Date:"):
             date = trimmed.split("Date:", 1)[1].strip()
-        elif trimmed.startswith("Attended by:"):
-            raw_attendees = trimmed.split("Attended by:", 1)[1].strip()
+        elif trimmed.startswith("Attended by:") or trimmed.startswith("Attendees:"):
+            prefix = "Attended by:" if trimmed.startswith("Attended by:") else "Attendees:"
+            raw_attendees = trimmed.split(prefix, 1)[1].strip()
             attendees = [a.strip() for a in raw_attendees.split(",") if a.strip()]
         elif trimmed.startswith("Notes:"):
             is_notes = True
-            notes_lines.append(trimmed.split("Notes:", 1)[1].strip())
+            body = trimmed.split("Notes:", 1)[1].strip()
+            if body:
+                notes_lines.append(body)
         elif is_notes:
+            notes_lines.append(trimmed)
+        elif trimmed and not trimmed.startswith(("#", "Date:", "Attended by:", "Attendees:")):
+            is_notes = True
             notes_lines.append(trimmed)
 
     # Fallback to filename if title is missing
