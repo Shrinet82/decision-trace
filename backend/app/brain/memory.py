@@ -11,6 +11,7 @@ from typing import Any, Optional
 
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from app.brain.models import CompanyBrainGraph
 from app.config import get_settings
 
 # 1. Initialize settings and export required environment variables
@@ -40,7 +41,10 @@ class MemoryOperationError(Exception):
     reraise=True,
 )
 async def ingest_text(
-    text: str, dataset_name: Optional[str] = None, run_cognify: bool = True
+    text: str,
+    dataset_name: Optional[str] = None,
+    run_cognify: bool = True,
+    graph_model: Optional[Any] = None,
 ) -> dict[str, Any]:
     """Ingest raw text into the unified knowledge graph.
 
@@ -48,6 +52,7 @@ async def ingest_text(
         text: The document or text excerpt to ingest.
         dataset_name: Target dataset name (defaults to configured unified dataset).
         run_cognify: Whether to immediately run entity extraction and graph construction.
+        graph_model: Optional Pydantic DataPoint model (defaults to CompanyBrainGraph).
 
     Returns:
         dict containing ingestion status and dataset metadata.
@@ -58,8 +63,9 @@ async def ingest_text(
     try:
         await cognee.add(text, dataset_name=target_dataset)
         if run_cognify:
-            logger.info("Running cognify on dataset '%s'...", target_dataset)
-            await cognee.cognify(datasets=[target_dataset])
+            target_model = graph_model or CompanyBrainGraph
+            logger.info("Running cognify on dataset '%s' with model '%s'...", target_dataset, getattr(target_model, "__name__", str(target_model)))
+            await cognee.cognify(datasets=[target_dataset], graph_model=target_model)
             logger.info("Cognify completed successfully for '%s'.", target_dataset)
 
         return {"status": "success", "dataset": target_dataset, "cognified": run_cognify}
@@ -183,17 +189,74 @@ async def get_graph(
         return {"nodes": [], "edges": []}
 
 
-async def reset(dataset_name: Optional[str] = None) -> None:
-    """Reset the knowledge base, clearing graph nodes and local vector indexes.
+async def list_falkordb_graphs() -> list[str]:
+    """List all graph names currently existing in the FalkorDB instance.
+
+    Returns:
+        list[str]: Names of graphs stored in FalkorDB.
+    """
+    try:
+        engine = await get_graph_engine()
+        driver = getattr(engine, "driver", None)
+        if driver:
+            graphs_raw = driver.execute_command("GRAPH.LIST")
+            return [
+                g.decode() if isinstance(g, bytes) else str(g)
+                for g in (graphs_raw or [])
+            ]
+        return []
+    except Exception as exc:
+        logger.warning("Failed to list FalkorDB graphs: %s", exc)
+        return []
+
+
+async def reset(dataset_name: Optional[str] = None) -> list[str]:
+    """Reset the knowledge base, clearing graph nodes in FalkorDB and local vector indexes.
 
     Args:
         dataset_name: Specific dataset to prune, or all datasets if None.
+
+    Returns:
+        list[str]: Remaining graphs in FalkorDB after deletion.
     """
-    logger.warning("Resetting Company Brain knowledge base...")
+    logger.warning("Resetting Company Brain knowledge base (dataset: %s)...", dataset_name)
     try:
+        # 1. Prune local data and system metadata
         await prune.prune_data()
         await prune.prune_system(metadata=True)
-        logger.info("Knowledge base reset completed.")
+
+        # 2. Delete the graph(s) directly on the FalkorDB instance
+        remaining_graphs: list[str] = []
+        try:
+            engine = await get_graph_engine()
+            driver = getattr(engine, "driver", None)
+            if driver:
+                graphs_raw = driver.execute_command("GRAPH.LIST")
+                existing_graphs = [
+                    g.decode() if isinstance(g, bytes) else str(g)
+                    for g in (graphs_raw or [])
+                ]
+                for g_name in existing_graphs:
+                    if dataset_name:
+                        # Cognee names the graph either after the dataset name, config dataset, or dataset UUID
+                        if g_name in (dataset_name, _settings.DATASET_NAME):
+                            driver.execute_command("GRAPH.DELETE", g_name)
+                            logger.info("Deleted FalkorDB dataset graph: %s", g_name)
+                    else:
+                        # Full reset: delete all graphs
+                        driver.execute_command("GRAPH.DELETE", g_name)
+                        logger.info("Deleted FalkorDB graph: %s", g_name)
+
+                updated_graphs_raw = driver.execute_command("GRAPH.LIST")
+                remaining_graphs = [
+                    g.decode() if isinstance(g, bytes) else str(g)
+                    for g in (updated_graphs_raw or [])
+                ]
+        except Exception as falkor_err:
+            logger.warning("FalkorDB graph deletion error: %s", falkor_err)
+
+        logger.info("Knowledge base reset completed. Remaining FalkorDB graphs: %s", remaining_graphs)
+        return remaining_graphs
     except Exception as exc:
         logger.error("Error during prune reset: %s", exc)
         raise MemoryOperationError(f"Reset failed: {exc}") from exc
