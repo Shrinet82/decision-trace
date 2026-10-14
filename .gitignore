@@ -31,5 +31,6 @@ data_storage/
 *.swp
 *.swo
 
-# Logs
+# Logs & Scratch
 *.log
+scratch/

@@ -8,7 +8,8 @@ import os
 
 import pytest
 
-from app.brain.memory import ask, ingest_text, reset
+from app.brain.memory import ask, get_graph_engine, ingest_text, list_falkordb_graphs, reset
+from app.brain.models import CompanyBrainGraph
 from app.config import get_settings
 
 settings = get_settings()
@@ -56,5 +57,54 @@ async def test_end_to_end_knowledge_flow():
         assert "Sarah" in answer_text or "Sarah" in str(query_res.get("raw_results", ""))
 
     finally:
-        # 3. Cleanup / reset
-        await reset(dataset_name=isolated_dataset)
+        # 3. Cleanup / reset and verify FalkorDB GRAPH.LIST assertion
+        remaining = await reset(dataset_name=isolated_dataset)
+        graphs_after = await list_falkordb_graphs()
+        assert isolated_dataset not in remaining
+        assert isolated_dataset not in graphs_after
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(
+    not has_cloud_credentials,
+    reason="Integration tests require FALKORDB_HOST and LLM_API_KEY credentials.",
+)
+@pytest.mark.asyncio
+async def test_custom_extraction_and_reset_deletion():
+    """Verify custom extraction creates Decision nodes and reset deletes FalkorDB graph."""
+    isolated_dataset = "test_custom_extraction_dataset"
+
+    doc = (
+        "Ticket ID: TICKET-101\n"
+        "Title: Session store latency\n"
+        "Dave Miller decided: Migrate session storage from Postgres to Redis cluster. "
+        "System: Redis."
+    )
+
+    try:
+        # 1. Ingest with CompanyBrainGraph custom extraction
+        res = await ingest_text(
+            doc,
+            dataset_name=isolated_dataset,
+            run_cognify=True,
+            graph_model=CompanyBrainGraph,
+        )
+        assert res["status"] == "success"
+
+        # 2. Verify Decision and Person nodes exist in FalkorDB Cloud
+        engine = await get_graph_engine()
+        decisions = await engine.query("MATCH (d:Decision) RETURN d.title")
+        assert len(decisions) >= 1
+
+        decided_by = await engine.query(
+            "MATCH (d:Decision)-[:decided_by]->(p:Person) RETURN d.title, p.name"
+        )
+        assert len(decided_by) >= 1
+        assert any("Dave Miller" in str(row) for row in decided_by)
+
+    finally:
+        # 3. Reset and assert GRAPH.LIST confirms dataset graph is deleted
+        remaining = await reset(dataset_name=isolated_dataset)
+        graphs_after = await list_falkordb_graphs()
+        assert isolated_dataset not in remaining
+        assert isolated_dataset not in graphs_after
