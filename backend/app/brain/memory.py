@@ -54,12 +54,33 @@ async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
             ds_list = await get_datasets_by_name(dataset_name, user.id)
             if ds_list:
                 uuid_str = str(ds_list[0].id)
-                if uuid_str in existing_graphs:
-                    return uuid_str
+                return uuid_str
     except Exception:
         pass
 
     return default_name
+
+
+async def get_or_create_dataset_graph_name(dataset_name: Optional[str] = None) -> str:
+    """Resolve or register the active FalkorDB graph name for a given dataset."""
+    if not dataset_name:
+        return _settings.DATASET_NAME
+
+    try:
+        from cognee.modules.data.methods import create_dataset, get_datasets_by_name
+        from cognee.modules.users.methods import get_default_user
+
+        user = await get_default_user()
+        if user:
+            ds_list = await get_datasets_by_name(dataset_name, user.id)
+            if ds_list:
+                return str(ds_list[0].id)
+            new_ds = await create_dataset(dataset_name, user.id)
+            return str(new_ds.id)
+    except Exception as exc:
+        logger.debug("Failed to create or fetch dataset in cognee: %s", exc)
+
+    return dataset_name
 
 
 async def get_existing_decision_titles(dataset_name: Optional[str] = None) -> list[str]:
@@ -94,7 +115,74 @@ async def get_existing_decision_titles(dataset_name: Optional[str] = None) -> li
         return []
 
 
-def build_extraction_prompt(existing_decision_titles: Optional[list[str]] = None) -> str:
+async def get_relevant_decision_titles(
+    text: str,
+    dataset_name: Optional[str] = None,
+    top_n: int = 25,
+) -> list[str]:
+    """Retrieve top-N most similar existing decision titles using embedding similarity.
+
+    Args:
+        text: Target text being ingested.
+        dataset_name: Target dataset name.
+        top_n: Maximum number of relevant titles to return (default 25).
+
+    Returns:
+        list[str]: Ranked relevant decision titles.
+    """
+    all_titles = await get_existing_decision_titles(dataset_name)
+    if not all_titles or len(all_titles) <= top_n:
+        return all_titles
+
+    try:
+        from app.brain.reconciliation import compute_embedding_similarity
+
+        scored = [(t, compute_embedding_similarity(text, t)) for t in all_titles]
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return [t[0] for t in scored[:top_n]]
+    except Exception as exc:
+        logger.warning("Failed to rank decision titles by similarity: %s", exc)
+        return all_titles[:top_n]
+
+
+async def get_entity_roster(
+    dataset_name: Optional[str] = None,
+    max_people: int = 30,
+    max_systems: int = 30,
+) -> dict[str, list[str]]:
+    """Retrieve known people and system names to serve as an extraction resolution roster.
+
+    Args:
+        dataset_name: Target dataset name.
+        max_people: Maximum number of people names to include.
+        max_systems: Maximum number of system names to include.
+
+    Returns:
+        dict: {'people': list[str], 'systems': list[str]}
+    """
+    people: list[str] = []
+    systems: list[str] = []
+    try:
+        people_res = await query_graph(
+            "MATCH (p:Person) RETURN DISTINCT p.name ORDER BY p.name",
+            dataset_name=dataset_name,
+        )
+        people = [r[0] for r in people_res if r and r[0]][:max_people]
+
+        sys_res = await query_graph(
+            "MATCH (s:System) RETURN DISTINCT s.name ORDER BY s.name",
+            dataset_name=dataset_name,
+        )
+        systems = [r[0] for r in sys_res if r and r[0]][:max_systems]
+    except Exception as exc:
+        logger.debug("Failed to fetch entity roster: %s", exc)
+    return {"people": people, "systems": systems}
+
+
+def build_extraction_prompt(
+    existing_decision_titles: Optional[list[str]] = None,
+    roster: Optional[dict[str, list[str]]] = None,
+) -> str:
     """Build the system prompt for Company Brain knowledge graph extraction."""
     base_prompt = (
         "You are an expert system analyst extracting a structured knowledge graph for an engineering Company Brain.\n"
@@ -122,6 +210,18 @@ def build_extraction_prompt(existing_decision_titles: Optional[list[str]] = None
             f"{titles_str}\n"
             f"When a decision in the text supersedes, contradicts, or updates an existing decision, "
             f"you MUST reuse the EXACT title string from the list above in the 'supersedes' or 'contradicts' array.\n"
+        )
+
+    if roster and (roster.get("people") or roster.get("systems")):
+        people_list = ", ".join(f'"{p}"' for p in roster.get("people", []))
+        systems_list = ", ".join(f'"{s}"' for s in roster.get("systems", []))
+        base_prompt += (
+            f"\n6. Known Entity Roster (Resolution Guide):\n"
+            f"The company has the following known people and systems in its catalog:\n"
+            f"- People: [{people_list}]\n"
+            f"- Systems: [{systems_list}]\n"
+            f"When text refers to an individual (e.g. 'Dave') or a system (e.g. 'the Redis cluster'), "
+            f"resolve it to the EXACT corresponding canonical name from this roster (e.g. 'Dave Miller', 'Redis').\n"
         )
     return base_prompt
 
@@ -161,10 +261,16 @@ async def ingest_text(
         if run_cognify:
             target_model = graph_model or CompanyBrainGraph
 
-            # 2a: Supply existing decision titles to cognify prompt
+            # 2a: Supply relevant existing decision titles and roster to cognify prompt
             if custom_prompt is None:
-                existing_titles = await get_existing_decision_titles(target_dataset)
-                extraction_prompt = build_extraction_prompt(existing_titles)
+                relevant_titles = await get_relevant_decision_titles(
+                    text, dataset_name=target_dataset, top_n=25
+                )
+                roster = await get_entity_roster(target_dataset)
+                extraction_prompt = build_extraction_prompt(
+                    existing_decision_titles=relevant_titles,
+                    roster=roster,
+                )
             else:
                 extraction_prompt = custom_prompt
 
@@ -434,3 +540,25 @@ async def ping_falkordb() -> bool:
     except Exception as exc:
         logger.error("FalkorDB ping failed: %s", exc)
         return False
+
+
+async def get_falkordb_memory_usage() -> dict[str, Any]:
+    """Retrieve memory telemetry from FalkorDB instance.
+
+    Returns:
+        dict: Memory metrics (used_memory, used_memory_human, used_memory_peak_human).
+    """
+    try:
+        engine = await get_graph_engine()
+        driver = getattr(engine, "driver", None)
+        if driver:
+            info = driver.execute_command("INFO", "memory")
+            if isinstance(info, dict):
+                return {
+                    "used_memory": info.get("used_memory"),
+                    "used_memory_human": info.get("used_memory_human"),
+                    "used_memory_peak_human": info.get("used_memory_peak_human"),
+                }
+    except Exception as exc:
+        logger.warning("Failed to retrieve FalkorDB memory info: %s", exc)
+    return {}

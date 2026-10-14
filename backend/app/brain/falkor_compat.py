@@ -25,7 +25,11 @@ Decision:
   4. Requires zero edits to third-party vendor code.
 """
 
-from typing import Any, Union
+import json
+from datetime import date, datetime
+from textwrap import dedent
+from typing import Any, Optional, Union
+from uuid import UUID
 
 from cognee.infrastructure.databases.graph import use_graph_adapter
 from cognee.infrastructure.databases.graph.graph_db_interface import EdgeData, Node
@@ -35,7 +39,62 @@ from cognee_community_hybrid_adapter_falkor.falkor_adapter import FalkorDBAdapte
 
 
 class PatchedFalkorDBAdapter(FalkorDBAdapter):
-    """Subclass of FalkorDBAdapter providing Cognee 1.6 provenance parameter compatibility."""
+    """Subclass of FalkorDBAdapter providing Cognee 1.6 provenance and robust serialization."""
+
+    async def add_node(
+        self,
+        node: Union[DataPoint, str],
+        properties: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Add a single node to FalkorDB, serializing complex nested structures into valid property types."""
+        if isinstance(node, DataPoint):
+            await self.add_nodes([node])
+            return
+
+        if properties is None:
+            raise ValueError(
+                "PatchedFalkorDBAdapter.add_node: 'properties' is required when 'node' is a string id."
+            )
+
+        node_id = str(node)
+
+        # Clean properties - serialize nested lists/dicts so FalkorDB Cypher parameter parser succeeds
+        clean_properties: dict[str, Any] = {"id": node_id}
+        for key, value in properties.items():
+            if value is not None:
+                if isinstance(value, UUID):
+                    clean_properties[key] = str(value)
+                elif isinstance(value, (datetime, date)):
+                    clean_properties[key] = str(value)
+                elif isinstance(value, (dict, tuple)):
+                    clean_properties[key] = json.dumps(value, default=str)
+                elif isinstance(value, list):
+                    # Check if homogeneous scalar primitives (allowed in FalkorDB arrays)
+                    if all(isinstance(x, (str, bool, int, float)) for x in value):
+                        clean_properties[key] = value
+                    else:
+                        clean_properties[key] = json.dumps(value, default=str)
+                elif isinstance(value, (str, bool, int, float)):
+                    clean_properties[key] = value
+                else:
+                    clean_properties[key] = str(value)
+
+        node_label = properties.get("type") or "Node"
+        node_label = self.sanitize_relationship_name(str(node_label))
+
+        query = dedent(f"""
+            MERGE (node:{node_label} {{id: $node_id}})
+            SET node += $properties, node.updated_at = timestamp()
+            """).strip()
+
+        index_fields = (properties.get("metadata") or {}).get("index_fields", [])
+        for field in index_fields:
+            vector_key = f"{field}_vector"
+            if vector_key in properties and properties[vector_key] is not None:
+                query = query + f", node.{vector_key} = vecf32({properties[vector_key]})"
+
+        params = {"node_id": node_id, "properties": clean_properties}
+        await self.query(query, params)
 
     async def add_nodes(
         self,
