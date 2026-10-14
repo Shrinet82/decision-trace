@@ -18,6 +18,7 @@ frontend/.vite/
 
 # Database / Local Vector / SQLite files
 *.db
+!data/*.db
 *.sqlite
 *.sqlite3
 .lancedb/
