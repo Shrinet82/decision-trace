@@ -97,7 +97,10 @@ class Document(DataPoint):
     source_file: str = Field(..., description="Source file path or identifier")
     snippet: str = Field(default="", description="Relevant text excerpt")
 
-    metadata: dict = {"identity_fields": ["source_file"], "index_fields": ["source_file", "snippet"]}
+    metadata: dict = {
+        "identity_fields": ["source_file"],
+        "index_fields": ["source_file", "snippet"],
+    }
 
 
 class Decision(DataPoint):
@@ -105,7 +108,9 @@ class Decision(DataPoint):
 
     title: str = Field(..., description="Concise decision title")
     summary: str = Field(default="", description="High-level description of what was decided")
-    rationale: str = Field(default="", description="Why the decision was made, constraints, tradeoffs")
+    rationale: str = Field(
+        default="", description="Why the decision was made, constraints, tradeoffs"
+    )
     decided_on: Optional[str] = Field(default=None, description="Date decision was reached")
     status: str = Field(
         default="active",
@@ -114,34 +119,39 @@ class Decision(DataPoint):
     confidence: float = Field(default=1.0, description="Extraction confidence score (0.0 to 1.0)")
 
     decided_by: Annotated[Optional[Person], FromIdentity()] = Field(
-        default=None, description="Name of the Person who made the decision"
+        default=None, description="Exact name of Person who made the decision, or null if unknown"
     )
     about_system: Annotated[Optional[System], FromIdentity()] = Field(
-        default=None, description="Name of the System this decision concerns"
+        default=None,
+        description="Exact name of System (e.g. 'Postgres', 'Redis', 'ClickHouse', 'Keycloak'). Strip any 'System:' prefix. Null if none.",
     )
     about_project: Annotated[Optional[Project], FromIdentity()] = Field(
-        default=None, description="Name of the Project this decision concerns"
+        default=None, description="Name of the Project this decision concerns, or null"
     )
     based_on: Annotated[Optional[Ticket], FromIdentity()] = Field(
         default=None,
-        description="Ticket ID underpinning the decision",
+        description="Exact ticket_id (e.g. 'TICKET-842') if based on an explicit ticket, otherwise null. Never output empty string.",
     )
     based_on_meeting: Annotated[Optional[Meeting], FromIdentity()] = Field(
         default=None,
-        description="Title of meeting underpinning the decision",
+        description="Exact meeting title if based on an explicit meeting, otherwise null. Never output empty string.",
     )
     based_on_document: Annotated[Optional[Document], FromIdentity()] = Field(
         default=None,
-        description="Source file underpinning the decision",
+        description="Source file path if based on an explicit document, otherwise null.",
     )
     supersedes: Annotated[list["Decision"], FromIdentity()] = Field(
-        default_factory=list, description="Titles of prior decisions replaced or superseded by this decision"
+        default_factory=list,
+        description="Exact titles of prior decisions superseded by this decision",
     )
     contradicts: Annotated[list["Decision"], FromIdentity()] = Field(
-        default_factory=list, description="Titles of decisions in conflict or contradiction with this decision"
+        default_factory=list, description="Exact titles of decisions in conflict with this decision"
     )
 
-    metadata: dict = {"identity_fields": ["title"], "index_fields": ["title", "summary", "rationale"]}
+    metadata: dict = {
+        "identity_fields": ["title"],
+        "index_fields": ["title", "summary", "rationale"],
+    }
 
 
 class CompanyBrainGraph(DataPoint):
@@ -159,4 +169,3 @@ class CompanyBrainGraph(DataPoint):
 
 # Backward-compatible alias
 DecisionGraphExtraction = CompanyBrainGraph
-
