@@ -38,7 +38,10 @@ logger = logging.getLogger("seed")
 _settings = get_settings()
 
 
-async def run_seed(dataset_name: str = "company_brain") -> dict[str, Any]:
+async def run_seed(
+    dataset_name: str = "company_brain",
+    bypass_cache: bool = False,
+) -> dict[str, Any]:
     """Rebuild the entire graph from scratch end to end."""
     print("\n" + "=" * 65)
     print(f"COMPANY BRAIN SEED PIPELINE: DATASET '{dataset_name}'")
@@ -95,6 +98,7 @@ async def run_seed(dataset_name: str = "company_brain") -> dict[str, Any]:
         concurrency_limit=3,
         include_all_tickets=True,  # Ingests ALL 80 tickets without keyword pre-filter
         pause_between_calls=0.05,
+        bypass_cache=bypass_cache,
     )
     dec_time = time.perf_counter() - dec_start
     print(f"  Decisions extracted in {dec_time:.2f}s")

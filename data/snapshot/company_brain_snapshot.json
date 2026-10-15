@@ -1,0 +1,4384 @@
+{
+  "dataset_name": "company_brain",
+  "exported_at": "2026-10-15T10:33:46Z",
+  "falkordb_memory": {
+    "used_memory": 4354848,
+    "used_memory_human": "4.15M",
+    "used_memory_peak_human": "6.79M"
+  },
+  "nodes_count": 148,
+  "edges_count": 371,
+  "nodes": [
+    {
+      "export_id": 0,
+      "labels": [
+        "Team"
+      ],
+      "properties": {
+        "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+        "name": "Core Infrastructure",
+        "department": "Engineering"
+      }
+    },
+    {
+      "export_id": 1,
+      "labels": [
+        "Team"
+      ],
+      "properties": {
+        "id": "02efb04c-4926-52db-8c17-3fdca3b3cf74",
+        "name": "Data Platform",
+        "department": "Data & Analytics"
+      }
+    },
+    {
+      "export_id": 2,
+      "labels": [
+        "Team"
+      ],
+      "properties": {
+        "id": "13ef364e-fda3-5c11-805b-1dd2ee615608",
+        "name": "Security & IAM",
+        "department": "Information Security"
+      }
+    },
+    {
+      "export_id": 3,
+      "labels": [
+        "Team"
+      ],
+      "properties": {
+        "id": "f5bdcb94-0927-5042-b13a-721620a250ae",
+        "name": "Developer Experience",
+        "department": "Engineering"
+      }
+    },
+    {
+      "export_id": 4,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+        "name": "Alice Vance",
+        "email": "alice.vance@novascale.io",
+        "role": "Principal Platform Engineer",
+        "start_date": "2022-03-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 5,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "b372efab-4b32-5aa0-a154-edc0cd6a2100",
+        "name": "Bob Martin",
+        "email": "bob.martin@novascale.io",
+        "role": "Senior Staff SRE",
+        "start_date": "2022-06-15",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 6,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "9cd89920-ceae-5803-be17-b9ebd7cfb8b1",
+        "name": "Carlos Mendez",
+        "email": "carlos.mendez@novascale.io",
+        "role": "Staff Data Engineer",
+        "start_date": "2023-01-10",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 7,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "48524af6-c1ee-5511-af18-71f4895e1ac5",
+        "name": "Diana Prince",
+        "email": "diana.prince@novascale.io",
+        "role": "Security Architect",
+        "start_date": "2021-08-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 8,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "d144ad7b-97e7-5540-b57c-4c07e2d4f501",
+        "name": "Evan Wright",
+        "email": "evan.wright@novascale.io",
+        "role": "Senior Backend Engineer",
+        "start_date": "2023-04-12",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 9,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "0bb4c85f-396c-5a74-9978-e7c746d76489",
+        "name": "Fiona Gallagher",
+        "email": "fiona.gallagher@novascale.io",
+        "role": "Lead Analytics Engineer",
+        "start_date": "2022-11-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 10,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "73b3b1bc-1e87-5c48-a774-071dc66ff51c",
+        "name": "George Clark",
+        "email": "george.clark@novascale.io",
+        "role": "DevOps Engineer",
+        "start_date": "2023-09-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 11,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "87549a88-1438-5b06-89d3-d1d226fc9329",
+        "name": "Hannah Abbott",
+        "email": "hannah.abbott@novascale.io",
+        "role": "Frontend Tech Lead",
+        "start_date": "2022-01-20",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 12,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "7cd29e90-177e-5bcd-a6c1-9394f2b1b40a",
+        "name": "Ian Malcolm",
+        "email": "ian.malcolm@novascale.io",
+        "role": "Distributed Systems Architect",
+        "start_date": "2021-05-10",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 13,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "9f04412b-7bb9-50c6-8c7b-644c6e18e8d2",
+        "name": "Julia Roberts",
+        "email": "julia.roberts@novascale.io",
+        "role": "Identity & Access Lead",
+        "start_date": "2022-07-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 14,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "ae7f1280-ec95-5115-aebc-5b53966ad868",
+        "name": "Kevin Flynn",
+        "email": "kevin.flynn@novascale.io",
+        "role": "Observability Lead",
+        "start_date": "2023-02-15",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 15,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+        "name": "Laura Croft",
+        "email": "laura.croft@novascale.io",
+        "role": "Cloud Operations Lead",
+        "start_date": "2022-04-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 16,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "11a32105-6114-5ddb-bb4f-3630337b9662",
+        "name": "Marcus Aurelius",
+        "email": "marcus.aurelius@novascale.io",
+        "role": "Former Staff Architect",
+        "start_date": "2021-01-10",
+        "leave_date": "2025-11-30",
+        "is_active": false
+      }
+    },
+    {
+      "export_id": 17,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "4f2fc09d-f07c-530e-bbbe-dfe117e18bab",
+        "name": "Nina Simone",
+        "email": "nina.simone@novascale.io",
+        "role": "Data Pipeline Engineer",
+        "start_date": "2023-08-15",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 18,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "id": "df339236-9957-5149-aa56-596317a889f1",
+        "name": "Oliver Queen",
+        "email": "oliver.queen@novascale.io",
+        "role": "CI/CD Specialist",
+        "start_date": "2023-03-01",
+        "leave_date": "",
+        "is_active": true
+      }
+    },
+    {
+      "export_id": 19,
+      "labels": [
+        "Project"
+      ],
+      "properties": {
+        "id": "51a799d3-08d8-5fb9-9d51-f60e6146c9ab",
+        "name": "Project Horizon",
+        "description": "Session Layer Modernization and Cache Migration",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 20,
+      "labels": [
+        "Project"
+      ],
+      "properties": {
+        "id": "eaa0c703-858f-545f-bfbd-db3e4da80b82",
+        "name": "Project Nexus",
+        "description": "Real-time Event Streaming Spine across Microservices",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 21,
+      "labels": [
+        "Project"
+      ],
+      "properties": {
+        "id": "4211b698-894c-5bda-844b-f50a183b883e",
+        "name": "Project Titan",
+        "description": "Next-generation Analytics Warehouse and Aggregations",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 22,
+      "labels": [
+        "Project"
+      ],
+      "properties": {
+        "id": "7de3ca9e-8a3f-5cd4-a241-adca88b3e910",
+        "name": "Project Shield",
+        "description": "Zero Trust Auth Gateway and Enterprise SSO",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 23,
+      "labels": [
+        "Project"
+      ],
+      "properties": {
+        "id": "dcee8125-c41e-505b-9112-5b66bab841d7",
+        "name": "Project Beacon",
+        "description": "Unified Telemetry, Distributed Tracing and APM",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 24,
+      "labels": [
+        "Project"
+      ],
+      "properties": {
+        "id": "f8111040-2f90-5c32-b15d-eb302707e843",
+        "name": "Project Velocity",
+        "description": "Modern Containerized CI/CD Delivery Pipeline",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 25,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "0a778edb-e92d-511f-a498-ee5ed29ea0f3",
+        "name": "Postgres",
+        "system_type": "database",
+        "vendor": "PostgreSQL Global Development Group",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 26,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "3513e265-fe56-5a66-ba00-5f925be3ceee",
+        "name": "Redis",
+        "system_type": "cache",
+        "vendor": "Redis Ltd",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 27,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "c55cc515-a1c6-5c40-aaed-2bf9357cab7c",
+        "name": "ClickHouse",
+        "system_type": "database",
+        "vendor": "ClickHouse Inc",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 28,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "966e4c75-dd82-54d3-b9dd-1a89d3c6a06f",
+        "name": "Keycloak",
+        "system_type": "iam",
+        "vendor": "Red Hat",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 29,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "62d67fac-4128-57dd-8e5c-586f1a353323",
+        "name": "Kafka",
+        "system_type": "event-streaming",
+        "vendor": "Apache Software Foundation",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 30,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "947b2207-8108-5b28-828c-eadef48fc20d",
+        "name": "RabbitMQ",
+        "system_type": "message-broker",
+        "vendor": "VMware",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 31,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "e6fb1361-33d2-5c9a-b3ce-a581cca63ed0",
+        "name": "Elasticsearch",
+        "system_type": "search-engine",
+        "vendor": "Elastic NV",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 32,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "674d1c14-d794-5111-85ff-710e68f75ffe",
+        "name": "Kubernetes",
+        "system_type": "container-orchestration",
+        "vendor": "Cloud Native Computing Foundation",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 33,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "7c54b083-1145-52f5-8c0c-1b7377ac839e",
+        "name": "Snowflake",
+        "system_type": "data-warehouse",
+        "vendor": "Snowflake Inc",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 34,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "f555b55a-5dcc-5d37-891e-f655fdedb917",
+        "name": "Vault",
+        "system_type": "secrets-management",
+        "vendor": "HashiCorp",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 35,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "5ae14694-9400-5002-a0a7-185b4fb92de8",
+        "name": "Prometheus",
+        "system_type": "monitoring",
+        "vendor": "Cloud Native Computing Foundation",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 36,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "id": "a8f9f613-759b-58cf-b4a1-ee669b05c856",
+        "name": "Datadog",
+        "system_type": "observability",
+        "vendor": "Datadog Inc",
+        "status": "active"
+      }
+    },
+    {
+      "export_id": 37,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
+        "ticket_id": "TICK-101",
+        "title": "Severe latency on Postgres session store under peak load",
+        "status": "closed",
+        "opened": "2026-02-01",
+        "closed": "2026-02-03",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 38,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
+        "ticket_id": "TICK-102",
+        "title": "Redis session cluster operational maintenance and failover complexity",
+        "status": "closed",
+        "opened": "2026-05-10",
+        "closed": "2026-05-12",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 39,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
+        "ticket_id": "TICK-103",
+        "title": "Slow analytical queries on historical clickstream datasets",
+        "status": "closed",
+        "opened": "2026-02-15",
+        "closed": "2026-02-18",
+        "system": "Snowflake"
+      }
+    },
+    {
+      "export_id": 40,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
+        "ticket_id": "TICK-104",
+        "title": "High compute credits on daily analytics warehouse rollups",
+        "status": "closed",
+        "opened": "2026-06-01",
+        "closed": "2026-06-04",
+        "system": "ClickHouse"
+      }
+    },
+    {
+      "export_id": 41,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
+        "ticket_id": "TICK-105",
+        "title": "Need enterprise event bus for asynchronous order processing",
+        "status": "closed",
+        "opened": "2026-03-01",
+        "closed": "2026-03-04",
+        "system": "Kafka"
+      }
+    },
+    {
+      "export_id": 42,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
+        "ticket_id": "TICK-106",
+        "title": "Lightweight pubsub requirements for async background tasks",
+        "status": "closed",
+        "opened": "2026-04-05",
+        "closed": "2026-04-08",
+        "system": "RabbitMQ"
+      }
+    },
+    {
+      "export_id": 43,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "a91113f5-387c-5ee3-890a-fdafb324de11",
+        "ticket_id": "TICK-107",
+        "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
+        "status": "closed",
+        "opened": "2026-03-12",
+        "closed": "2026-03-14",
+        "system": "Vault"
+      }
+    },
+    {
+      "export_id": 44,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
+        "ticket_id": "TICK-108",
+        "title": "Inconsistent distributed trace propagation in checkout services",
+        "status": "closed",
+        "opened": "2026-03-25",
+        "closed": "2026-03-28",
+        "system": "Datadog"
+      }
+    },
+    {
+      "export_id": 45,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "59a9634b-5aba-5231-bed1-dba7943696cd",
+        "ticket_id": "TICK-109",
+        "title": "Cluster-wide metrics collection and automated alerts",
+        "status": "closed",
+        "opened": "2026-04-20",
+        "closed": "2026-04-22",
+        "system": "Prometheus"
+      }
+    },
+    {
+      "export_id": 46,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "46e33a08-5a65-5643-8bd6-9158801f30d5",
+        "ticket_id": "TICK-110",
+        "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
+        "status": "closed",
+        "opened": "2026-05-02",
+        "closed": "2026-05-05",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 47,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "f88fb560-84ff-5be2-9de2-1422f0dbae7d",
+        "ticket_id": "TICK-111",
+        "title": "OAuth2 token issuance architecture for internal gateway",
+        "status": "closed",
+        "opened": "2026-05-22",
+        "closed": "2026-05-24",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 48,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "c910f3a2-50ee-5608-8821-5b47d0d3f857",
+        "ticket_id": "TICK-112",
+        "title": "Replication lag and connection pool contention on primary database",
+        "status": "closed",
+        "opened": "2026-06-15",
+        "closed": "2026-06-18",
+        "system": "Postgres"
+      }
+    },
+    {
+      "export_id": 49,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "7575cfef-5c81-5630-95fd-edc8e6cf7068",
+        "ticket_id": "TICK-113",
+        "title": "High CPU utilization on worker pods during scheduled sync - Incident #113",
+        "status": "open",
+        "opened": "2026-002-14",
+        "closed": "2026-002-16",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 50,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "70cafb52-92d6-56bd-b029-fc0a4bc89548",
+        "ticket_id": "TICK-114",
+        "title": "SSL certificate renewal for internal load balancers - Incident #114",
+        "status": "closed",
+        "opened": "2026-003-15",
+        "closed": "2026-003-17",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 51,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "bf9799e7-8b9b-55d7-a45a-5eb1e2369ad4",
+        "ticket_id": "TICK-115",
+        "title": "Optimize slow B-tree index on user accounts table - Incident #115",
+        "status": "closed",
+        "opened": "2026-004-16",
+        "closed": "2026-004-18",
+        "system": "Postgres"
+      }
+    },
+    {
+      "export_id": 52,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "943698db-190b-568f-91a7-eccc4101f20e",
+        "ticket_id": "TICK-116",
+        "title": "Connection timeout when scraping staging metric endpoints - Incident #116",
+        "status": "closed",
+        "opened": "2026-005-17",
+        "closed": "2026-005-19",
+        "system": "Prometheus"
+      }
+    },
+    {
+      "export_id": 53,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "e4cc82f7-3c3e-5f8a-9b7e-ae0355a6b009",
+        "ticket_id": "TICK-117",
+        "title": "Missing traces on checkout service downstream call - Incident #117",
+        "status": "closed",
+        "opened": "2026-006-18",
+        "closed": "2026-006-20",
+        "system": "Datadog"
+      }
+    },
+    {
+      "export_id": 54,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fc482a32-de44-5ff7-b36a-eb81d574352c",
+        "ticket_id": "TICK-118",
+        "title": "Update CORS headers for mobile client authentication - Incident #118",
+        "status": "closed",
+        "opened": "2026-007-19",
+        "closed": "2026-007-21",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 55,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "8b99afd4-d71a-571f-917b-91fba059efd8",
+        "ticket_id": "TICK-119",
+        "title": "Rate limit threshold tuning for public signup endpoints - Incident #119",
+        "status": "closed",
+        "opened": "2026-008-20",
+        "closed": "2026-008-22",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 56,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "5d42bde7-2d79-5afc-aa84-57ddba99d69e",
+        "ticket_id": "TICK-120",
+        "title": "Consumer lag spike on payments topic during month-end - Incident #120",
+        "status": "closed",
+        "opened": "2026-001-21",
+        "closed": "2026-001-23",
+        "system": "Kafka"
+      }
+    },
+    {
+      "export_id": 57,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fdd94811-2d6b-5469-b4fd-0b0d899ad46e",
+        "ticket_id": "TICK-121",
+        "title": "Dead letter queue alert triggered on inventory notifications - Incident #121",
+        "status": "closed",
+        "opened": "2026-002-22",
+        "closed": "2026-002-24",
+        "system": "RabbitMQ"
+      }
+    },
+    {
+      "export_id": 58,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "12b6171d-1363-5087-abcd-06ff872e849e",
+        "ticket_id": "TICK-122",
+        "title": "Cluster disk watermark alert on log aggregation index - Incident #122",
+        "status": "closed",
+        "opened": "2026-003-23",
+        "closed": "2026-003-25",
+        "system": "Elasticsearch"
+      }
+    },
+    {
+      "export_id": 59,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "75ecb4cd-10b8-5356-9f6d-08ef484a166c",
+        "ticket_id": "TICK-123",
+        "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #123",
+        "status": "closed",
+        "opened": "2026-004-24",
+        "closed": "2026-004-26",
+        "system": "Snowflake"
+      }
+    },
+    {
+      "export_id": 60,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fa7ba5eb-23b1-5ef7-9e5e-a0f5608c6ee9",
+        "ticket_id": "TICK-124",
+        "title": "Rotate root token for transit secrets engine - Incident #124",
+        "status": "closed",
+        "opened": "2026-005-25",
+        "closed": "2026-005-27",
+        "system": "Vault"
+      }
+    },
+    {
+      "export_id": 61,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "e78d6b6e-6b69-5c3f-8b87-65f120e60840",
+        "ticket_id": "TICK-125",
+        "title": "Partition pruning failure on daily analytics rollup view - Incident #125",
+        "status": "closed",
+        "opened": "2026-006-01",
+        "closed": "2026-006-03",
+        "system": "ClickHouse"
+      }
+    },
+    {
+      "export_id": 62,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "7dfce9a1-dffc-52fb-b790-c80951141857",
+        "ticket_id": "TICK-126",
+        "title": "Add automated linter step to deployment pipeline - Incident #126",
+        "status": "closed",
+        "opened": "2026-007-02",
+        "closed": "2026-007-04",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 63,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "c583fca1-4269-5473-a4be-ae0415cc7c8d",
+        "ticket_id": "TICK-127",
+        "title": "Node pool autoscaling delay during morning burst - Incident #127",
+        "status": "open",
+        "opened": "2026-008-03",
+        "closed": "2026-008-05",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 64,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "f752f92c-76d1-5431-9d5c-9f33c69800e7",
+        "ticket_id": "TICK-128",
+        "title": "High CPU utilization on worker pods during scheduled sync - Incident #128",
+        "status": "open",
+        "opened": "2026-001-04",
+        "closed": "2026-001-06",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 65,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fc63d3a1-de02-5815-9e4d-c39a85ec0326",
+        "ticket_id": "TICK-129",
+        "title": "SSL certificate renewal for internal load balancers - Incident #129",
+        "status": "closed",
+        "opened": "2026-002-05",
+        "closed": "2026-002-07",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 66,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "23f8dad2-f1e5-571f-bfa8-b84d315290b1",
+        "ticket_id": "TICK-130",
+        "title": "Optimize slow B-tree index on user accounts table - Incident #130",
+        "status": "closed",
+        "opened": "2026-003-06",
+        "closed": "2026-003-08",
+        "system": "Postgres"
+      }
+    },
+    {
+      "export_id": 67,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "76be797d-615a-5735-aae0-ef852ab3cfea",
+        "ticket_id": "TICK-131",
+        "title": "Connection timeout when scraping staging metric endpoints - Incident #131",
+        "status": "closed",
+        "opened": "2026-004-07",
+        "closed": "2026-004-09",
+        "system": "Prometheus"
+      }
+    },
+    {
+      "export_id": 68,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fd3e2b9b-0a86-5ec1-b3c0-88a4e27a4f45",
+        "ticket_id": "TICK-132",
+        "title": "Missing traces on checkout service downstream call - Incident #132",
+        "status": "closed",
+        "opened": "2026-005-08",
+        "closed": "2026-005-10",
+        "system": "Datadog"
+      }
+    },
+    {
+      "export_id": 69,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "e04ca423-2b97-5031-ae91-112230805b77",
+        "ticket_id": "TICK-133",
+        "title": "Update CORS headers for mobile client authentication - Incident #133",
+        "status": "closed",
+        "opened": "2026-006-09",
+        "closed": "2026-006-11",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 70,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "0e3b0b3d-60df-57c0-9323-3f6c5b8a8b33",
+        "ticket_id": "TICK-134",
+        "title": "Rate limit threshold tuning for public signup endpoints - Incident #134",
+        "status": "closed",
+        "opened": "2026-007-10",
+        "closed": "2026-007-12",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 71,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "0b4ab95f-ccbd-5b96-84c7-786ebeed4ee9",
+        "ticket_id": "TICK-135",
+        "title": "Consumer lag spike on payments topic during month-end - Incident #135",
+        "status": "closed",
+        "opened": "2026-008-11",
+        "closed": "2026-008-13",
+        "system": "Kafka"
+      }
+    },
+    {
+      "export_id": 72,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "c144909f-d11c-508b-9bb2-831c08a489da",
+        "ticket_id": "TICK-136",
+        "title": "Dead letter queue alert triggered on inventory notifications - Incident #136",
+        "status": "closed",
+        "opened": "2026-001-12",
+        "closed": "2026-001-14",
+        "system": "RabbitMQ"
+      }
+    },
+    {
+      "export_id": 73,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "d479a875-d5da-5e10-b901-78f42462e9f2",
+        "ticket_id": "TICK-137",
+        "title": "Cluster disk watermark alert on log aggregation index - Incident #137",
+        "status": "closed",
+        "opened": "2026-002-13",
+        "closed": "2026-002-15",
+        "system": "Elasticsearch"
+      }
+    },
+    {
+      "export_id": 74,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "9fd9f355-9f70-527b-b275-57d4c6740d32",
+        "ticket_id": "TICK-138",
+        "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #138",
+        "status": "closed",
+        "opened": "2026-003-14",
+        "closed": "2026-003-16",
+        "system": "Snowflake"
+      }
+    },
+    {
+      "export_id": 75,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "4a05e946-158e-5d0a-8321-0b334b059801",
+        "ticket_id": "TICK-139",
+        "title": "Rotate root token for transit secrets engine - Incident #139",
+        "status": "closed",
+        "opened": "2026-004-15",
+        "closed": "2026-004-17",
+        "system": "Vault"
+      }
+    },
+    {
+      "export_id": 76,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "62593287-6c5b-5a7e-85ba-67dbdcc380f4",
+        "ticket_id": "TICK-140",
+        "title": "Partition pruning failure on daily analytics rollup view - Incident #140",
+        "status": "closed",
+        "opened": "2026-005-16",
+        "closed": "2026-005-18",
+        "system": "ClickHouse"
+      }
+    },
+    {
+      "export_id": 77,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "1fd802f7-bac0-5dd1-aecb-d02a2e7a2f0e",
+        "ticket_id": "TICK-141",
+        "title": "Add automated linter step to deployment pipeline - Incident #141",
+        "status": "closed",
+        "opened": "2026-006-17",
+        "closed": "2026-006-19",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 78,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "f20cd119-c70f-5a5a-9e7f-1830f06b8403",
+        "ticket_id": "TICK-142",
+        "title": "Node pool autoscaling delay during morning burst - Incident #142",
+        "status": "open",
+        "opened": "2026-007-18",
+        "closed": "2026-007-20",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 79,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "6f36a624-68b6-5845-8dcf-6f594c4ffd27",
+        "ticket_id": "TICK-143",
+        "title": "High CPU utilization on worker pods during scheduled sync - Incident #143",
+        "status": "open",
+        "opened": "2026-008-19",
+        "closed": "2026-008-21",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 80,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "111689de-bc52-5758-bca1-71ea9798939f",
+        "ticket_id": "TICK-144",
+        "title": "SSL certificate renewal for internal load balancers - Incident #144",
+        "status": "closed",
+        "opened": "2026-001-20",
+        "closed": "2026-001-22",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 81,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "be2e12c4-2f57-55ef-acdb-fe605f916d3f",
+        "ticket_id": "TICK-145",
+        "title": "Optimize slow B-tree index on user accounts table - Incident #145",
+        "status": "closed",
+        "opened": "2026-002-21",
+        "closed": "2026-002-23",
+        "system": "Postgres"
+      }
+    },
+    {
+      "export_id": 82,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "08028c72-d77e-5e0d-91f9-3875ee375fdd",
+        "ticket_id": "TICK-146",
+        "title": "Connection timeout when scraping staging metric endpoints - Incident #146",
+        "status": "closed",
+        "opened": "2026-003-22",
+        "closed": "2026-003-24",
+        "system": "Prometheus"
+      }
+    },
+    {
+      "export_id": 83,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "3af214f2-2047-545d-93f2-b4bb642323ad",
+        "ticket_id": "TICK-147",
+        "title": "Missing traces on checkout service downstream call - Incident #147",
+        "status": "closed",
+        "opened": "2026-004-23",
+        "closed": "2026-004-25",
+        "system": "Datadog"
+      }
+    },
+    {
+      "export_id": 84,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "53d03c30-8e5e-5df3-8049-be479a9b203b",
+        "ticket_id": "TICK-148",
+        "title": "Update CORS headers for mobile client authentication - Incident #148",
+        "status": "closed",
+        "opened": "2026-005-24",
+        "closed": "2026-005-26",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 85,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fb2ae079-4d74-5bcd-8ec2-10749795fced",
+        "ticket_id": "TICK-149",
+        "title": "Rate limit threshold tuning for public signup endpoints - Incident #149",
+        "status": "closed",
+        "opened": "2026-006-25",
+        "closed": "2026-006-27",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 86,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "8f7ba8e8-0cf6-589b-a011-562c37f5873f",
+        "ticket_id": "TICK-150",
+        "title": "Consumer lag spike on payments topic during month-end - Incident #150",
+        "status": "closed",
+        "opened": "2026-007-01",
+        "closed": "2026-007-03",
+        "system": "Kafka"
+      }
+    },
+    {
+      "export_id": 87,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "db6546d7-0a6c-5b36-b623-1bc8d2a14cd0",
+        "ticket_id": "TICK-151",
+        "title": "Dead letter queue alert triggered on inventory notifications - Incident #151",
+        "status": "closed",
+        "opened": "2026-008-02",
+        "closed": "2026-008-04",
+        "system": "RabbitMQ"
+      }
+    },
+    {
+      "export_id": 88,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "42c3a9c8-bab9-57a6-838c-600b9d8d192d",
+        "ticket_id": "TICK-152",
+        "title": "Cluster disk watermark alert on log aggregation index - Incident #152",
+        "status": "closed",
+        "opened": "2026-001-03",
+        "closed": "2026-001-05",
+        "system": "Elasticsearch"
+      }
+    },
+    {
+      "export_id": 89,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "0e176468-5bc7-5d08-a7c2-3f1de4a3a309",
+        "ticket_id": "TICK-153",
+        "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #153",
+        "status": "closed",
+        "opened": "2026-002-04",
+        "closed": "2026-002-06",
+        "system": "Snowflake"
+      }
+    },
+    {
+      "export_id": 90,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "2f4cf867-2802-5cf7-ac48-d1599dbc497c",
+        "ticket_id": "TICK-154",
+        "title": "Rotate root token for transit secrets engine - Incident #154",
+        "status": "closed",
+        "opened": "2026-003-05",
+        "closed": "2026-003-07",
+        "system": "Vault"
+      }
+    },
+    {
+      "export_id": 91,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "692eec86-1138-5430-90c9-40d702cf15dd",
+        "ticket_id": "TICK-155",
+        "title": "Partition pruning failure on daily analytics rollup view - Incident #155",
+        "status": "closed",
+        "opened": "2026-004-06",
+        "closed": "2026-004-08",
+        "system": "ClickHouse"
+      }
+    },
+    {
+      "export_id": 92,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "a9aba2ff-4f6e-5898-8645-3573263b86f9",
+        "ticket_id": "TICK-156",
+        "title": "Add automated linter step to deployment pipeline - Incident #156",
+        "status": "closed",
+        "opened": "2026-005-07",
+        "closed": "2026-005-09",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 93,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "e6b6c569-f182-51bc-99c7-9bfbe389e907",
+        "ticket_id": "TICK-157",
+        "title": "Node pool autoscaling delay during morning burst - Incident #157",
+        "status": "open",
+        "opened": "2026-006-08",
+        "closed": "2026-006-10",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 94,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "a14e9d3d-95ae-57e8-8313-80bcc7d4a421",
+        "ticket_id": "TICK-158",
+        "title": "High CPU utilization on worker pods during scheduled sync - Incident #158",
+        "status": "open",
+        "opened": "2026-007-09",
+        "closed": "2026-007-11",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 95,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "a17e2814-bb2d-5c77-8f8c-9b15ca281549",
+        "ticket_id": "TICK-159",
+        "title": "SSL certificate renewal for internal load balancers - Incident #159",
+        "status": "closed",
+        "opened": "2026-008-10",
+        "closed": "2026-008-12",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 96,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "a82689a2-7ed5-51a0-82d3-7fb906e4b9ff",
+        "ticket_id": "TICK-160",
+        "title": "Optimize slow B-tree index on user accounts table - Incident #160",
+        "status": "closed",
+        "opened": "2026-001-11",
+        "closed": "2026-001-13",
+        "system": "Postgres"
+      }
+    },
+    {
+      "export_id": 97,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "17acd4f2-d67f-5708-a8c8-1cb97c80841e",
+        "ticket_id": "TICK-161",
+        "title": "Connection timeout when scraping staging metric endpoints - Incident #161",
+        "status": "closed",
+        "opened": "2026-002-12",
+        "closed": "2026-002-14",
+        "system": "Prometheus"
+      }
+    },
+    {
+      "export_id": 98,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "4a92eb9c-2a89-5144-aaeb-067f87ba8407",
+        "ticket_id": "TICK-162",
+        "title": "Missing traces on checkout service downstream call - Incident #162",
+        "status": "closed",
+        "opened": "2026-003-13",
+        "closed": "2026-003-15",
+        "system": "Datadog"
+      }
+    },
+    {
+      "export_id": 99,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "7510a713-4bcc-5dae-b65e-4f51b0af5852",
+        "ticket_id": "TICK-163",
+        "title": "Update CORS headers for mobile client authentication - Incident #163",
+        "status": "closed",
+        "opened": "2026-004-14",
+        "closed": "2026-004-16",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 100,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "7b9d848d-996d-5e59-b59e-064875c8f7a9",
+        "ticket_id": "TICK-164",
+        "title": "Rate limit threshold tuning for public signup endpoints - Incident #164",
+        "status": "closed",
+        "opened": "2026-005-15",
+        "closed": "2026-005-17",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 101,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "73b92f6a-feb2-5f82-8b92-5fc7938c766a",
+        "ticket_id": "TICK-165",
+        "title": "Consumer lag spike on payments topic during month-end - Incident #165",
+        "status": "closed",
+        "opened": "2026-006-16",
+        "closed": "2026-006-18",
+        "system": "Kafka"
+      }
+    },
+    {
+      "export_id": 102,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "8f883f42-aed6-5507-a004-c75c22e7e1ab",
+        "ticket_id": "TICK-166",
+        "title": "Dead letter queue alert triggered on inventory notifications - Incident #166",
+        "status": "closed",
+        "opened": "2026-007-17",
+        "closed": "2026-007-19",
+        "system": "RabbitMQ"
+      }
+    },
+    {
+      "export_id": 103,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "73c37c6c-3375-51c3-9ec7-c995e0460807",
+        "ticket_id": "TICK-167",
+        "title": "Cluster disk watermark alert on log aggregation index - Incident #167",
+        "status": "closed",
+        "opened": "2026-008-18",
+        "closed": "2026-008-20",
+        "system": "Elasticsearch"
+      }
+    },
+    {
+      "export_id": 104,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "58970822-d7ac-52f5-ad97-4e97856a6356",
+        "ticket_id": "TICK-168",
+        "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #168",
+        "status": "closed",
+        "opened": "2026-001-19",
+        "closed": "2026-001-21",
+        "system": "Snowflake"
+      }
+    },
+    {
+      "export_id": 105,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "18ce0efe-c80e-5184-ae16-ab56154f46b8",
+        "ticket_id": "TICK-169",
+        "title": "Rotate root token for transit secrets engine - Incident #169",
+        "status": "closed",
+        "opened": "2026-002-20",
+        "closed": "2026-002-22",
+        "system": "Vault"
+      }
+    },
+    {
+      "export_id": 106,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "b8c0fe9c-4e85-5dd4-9322-cc633966eddb",
+        "ticket_id": "TICK-170",
+        "title": "Partition pruning failure on daily analytics rollup view - Incident #170",
+        "status": "closed",
+        "opened": "2026-003-21",
+        "closed": "2026-003-23",
+        "system": "ClickHouse"
+      }
+    },
+    {
+      "export_id": 107,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "40fabc3c-f035-5c4d-91a2-afd7d9a0f7f1",
+        "ticket_id": "TICK-171",
+        "title": "Add automated linter step to deployment pipeline - Incident #171",
+        "status": "closed",
+        "opened": "2026-004-22",
+        "closed": "2026-004-24",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 108,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "5cb3570b-66ce-59ee-8d97-baa1c62c3f6e",
+        "ticket_id": "TICK-172",
+        "title": "Node pool autoscaling delay during morning burst - Incident #172",
+        "status": "open",
+        "opened": "2026-005-23",
+        "closed": "2026-005-25",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 109,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "fa57fcc5-ac0c-5ede-b0eb-49a7016d888f",
+        "ticket_id": "TICK-173",
+        "title": "High CPU utilization on worker pods during scheduled sync - Incident #173",
+        "status": "open",
+        "opened": "2026-006-24",
+        "closed": "2026-006-26",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 110,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "58436cb1-6e0a-576c-b3a2-0960b240845c",
+        "ticket_id": "TICK-174",
+        "title": "SSL certificate renewal for internal load balancers - Incident #174",
+        "status": "closed",
+        "opened": "2026-007-25",
+        "closed": "2026-007-27",
+        "system": "Kubernetes"
+      }
+    },
+    {
+      "export_id": 111,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "2f0195f8-5f1b-5b37-ac3d-0639493b2065",
+        "ticket_id": "TICK-175",
+        "title": "Optimize slow B-tree index on user accounts table - Incident #175",
+        "status": "closed",
+        "opened": "2026-008-01",
+        "closed": "2026-008-03",
+        "system": "Postgres"
+      }
+    },
+    {
+      "export_id": 112,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "4e4ccf91-2b6f-5a99-8043-343ad8988481",
+        "ticket_id": "TICK-176",
+        "title": "Connection timeout when scraping staging metric endpoints - Incident #176",
+        "status": "closed",
+        "opened": "2026-001-02",
+        "closed": "2026-001-04",
+        "system": "Prometheus"
+      }
+    },
+    {
+      "export_id": 113,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "e0646028-2106-5f37-8128-675928b08a41",
+        "ticket_id": "TICK-177",
+        "title": "Missing traces on checkout service downstream call - Incident #177",
+        "status": "closed",
+        "opened": "2026-002-03",
+        "closed": "2026-002-05",
+        "system": "Datadog"
+      }
+    },
+    {
+      "export_id": 114,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "c0997a97-d272-5d70-a586-d3608386b289",
+        "ticket_id": "TICK-178",
+        "title": "Update CORS headers for mobile client authentication - Incident #178",
+        "status": "closed",
+        "opened": "2026-003-04",
+        "closed": "2026-003-06",
+        "system": "Keycloak"
+      }
+    },
+    {
+      "export_id": 115,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "4fbc69aa-5ad5-5f1e-b473-a21db0f11e9d",
+        "ticket_id": "TICK-179",
+        "title": "Rate limit threshold tuning for public signup endpoints - Incident #179",
+        "status": "closed",
+        "opened": "2026-004-05",
+        "closed": "2026-004-07",
+        "system": "Redis"
+      }
+    },
+    {
+      "export_id": 116,
+      "labels": [
+        "Ticket"
+      ],
+      "properties": {
+        "id": "f87ecd47-1bb5-5f4b-ab99-53ce7b957202",
+        "ticket_id": "TICK-180",
+        "title": "Consumer lag spike on payments topic during month-end - Incident #180",
+        "status": "closed",
+        "opened": "2026-005-06",
+        "closed": "2026-005-08",
+        "system": "Kafka"
+      }
+    },
+    {
+      "export_id": 117,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "37f6d81b-a30d-5c37-b9e2-e8cc77e81827",
+        "title": "Q1 Infrastructure Kickoff",
+        "date": "2026-01-15",
+        "meeting_date": "2026-01-15",
+        "file_name": "2026-01-15_infrastructure_kickoff.md"
+      }
+    },
+    {
+      "export_id": 118,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "a500d882-96cf-5b04-b378-3d36b7e12d1e",
+        "title": "IAM Architecture Modernization",
+        "date": "2026-02-10",
+        "meeting_date": "2026-02-10",
+        "file_name": "2026-02-10_iam_modernization.md"
+      }
+    },
+    {
+      "export_id": 119,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "f77bdc2d-b538-5bcb-8676-c2568d198a94",
+        "title": "Data Platform Quarterly Review",
+        "date": "2026-03-05",
+        "meeting_date": "2026-03-05",
+        "file_name": "2026-03-05_data_platform_review.md"
+      }
+    },
+    {
+      "export_id": 120,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
+        "title": "Observability Platform Alignment",
+        "date": "2026-04-12",
+        "meeting_date": "2026-04-12",
+        "file_name": "2026-04-12_observability_sync.md"
+      }
+    },
+    {
+      "export_id": 121,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
+        "title": "Core Messaging Architecture Sync",
+        "date": "2026-05-18",
+        "meeting_date": "2026-05-18",
+        "file_name": "2026-05-18_messaging_strategy.md"
+      }
+    },
+    {
+      "export_id": 122,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "da360c0c-0d44-53d7-bc39-a71fe16a6a18",
+        "title": "Security Architecture Review",
+        "date": "2026-06-08",
+        "meeting_date": "2026-06-08",
+        "file_name": "2026-06-08_secrets_management.md"
+      }
+    },
+    {
+      "export_id": 123,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "e411cf1e-f574-5918-a3a2-428b661254e7",
+        "title": "Search Infrastructure Review",
+        "date": "2026-07-14",
+        "meeting_date": "2026-07-14",
+        "file_name": "2026-07-14_search_infrastructure_review.md"
+      }
+    },
+    {
+      "export_id": 124,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "730eebe4-956c-501b-838d-34aca3eea565",
+        "title": "Container Platform Strategy",
+        "date": "2026-08-20",
+        "meeting_date": "2026-08-20",
+        "file_name": "2026-08-20_container_platform_upgrade.md"
+      }
+    },
+    {
+      "export_id": 125,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "5b2955e5-340c-5063-862e-d16393375be6",
+        "title": "Developer Experience Sync",
+        "date": "2026-09-10",
+        "meeting_date": "2026-09-10",
+        "file_name": "2026-09-10_dev_experience_sync.md"
+      }
+    },
+    {
+      "export_id": 126,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "a72645db-5832-544b-9f74-1d31499b4f5e",
+        "title": "Database Reliability Working Group",
+        "date": "2026-09-28",
+        "meeting_date": "2026-09-28",
+        "file_name": "2026-09-28_database_reliability.md"
+      }
+    },
+    {
+      "export_id": 127,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "21a001b0-b388-5f8c-8fd2-53f6f509520f",
+        "title": "Q4 Engineering Roadmapping",
+        "date": "2026-10-02",
+        "meeting_date": "2026-10-02",
+        "file_name": "2026-10-02_q4_planning.md"
+      }
+    },
+    {
+      "export_id": 128,
+      "labels": [
+        "Meeting"
+      ],
+      "properties": {
+        "id": "d7e0c9f8-1205-5d1a-9ce8-97679bc5bb8a",
+        "title": "Cloud Cost Optimization Taskforce",
+        "date": "2026-10-10",
+        "meeting_date": "2026-10-10",
+        "file_name": "2026-10-10_cloud_cost_optimization.md"
+      }
+    },
+    {
+      "export_id": 129,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Migrate session storage to embedded Keycloak cache",
+        "id": "dec_f564fcd15601",
+        "summary": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
+        "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache.",
+        "decided_on": "2026-05-12"
+      }
+    },
+    {
+      "export_id": 130,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Adopt Snowflake for analytics ETL queries",
+        "id": "dec_8c7075150849",
+        "summary": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
+        "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
+        "status": "proposed",
+        "confidence": 0.95,
+        "evidence_quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems.",
+        "decided_on": "2026-02-18"
+      }
+    },
+    {
+      "export_id": 131,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+        "id": "dec_fda8c9b4e631",
+        "summary": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision.",
+        "rationale": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention.",
+        "decided_on": "2026-02-03"
+      }
+    },
+    {
+      "export_id": 132,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Adopt Kafka for all event messaging across services",
+        "id": "dec_76772c5b323f",
+        "summary": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
+        "rationale": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
+        "status": "proposed",
+        "confidence": 0.95,
+        "evidence_quote": "Use Kafka for all event messaging across services.",
+        "decided_on": "2026-03-04"
+      }
+    },
+    {
+      "export_id": 133,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+        "id": "dec_d1d225a60971",
+        "summary": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
+        "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
+        "status": "proposed",
+        "confidence": 1.0,
+        "evidence_quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster.",
+        "decided_on": "2026-06-04"
+      }
+    },
+    {
+      "export_id": 134,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+        "id": "dec_e287aa298850",
+        "summary": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+        "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets.",
+        "decided_on": "2026-03-14"
+      }
+    },
+    {
+      "export_id": 135,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Adopt RabbitMQ for all event messaging across services",
+        "id": "dec_98a223fad745",
+        "summary": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision.",
+        "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision.",
+        "status": "accepted",
+        "confidence": 0.95,
+        "evidence_quote": "Bob Martin reiterated: Use RabbitMQ for all event messaging across services.",
+        "decided_on": "2026-04-08"
+      }
+    },
+    {
+      "export_id": 136,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Standardize application traces on Datadog APM across all production services",
+        "id": "dec_5b196394600e",
+        "summary": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
+        "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Standardize application traces on Datadog APM across all production services.",
+        "decided_on": "2026-03-28"
+      }
+    },
+    {
+      "export_id": 137,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+        "id": "dec_091c86e8e476",
+        "summary": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
+        "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
+        "status": "proposed",
+        "confidence": 0.95,
+        "evidence_quote": "Deploy Prometheus Operator on all Kubernetes staging clusters.",
+        "decided_on": "2026-04-22"
+      }
+    },
+    {
+      "export_id": 138,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+        "id": "dec_2c6a03017923",
+        "summary": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
+        "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
+        "status": "rejected",
+        "confidence": 0.95,
+        "evidence_quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications.",
+        "decided_on": "2026-05-05"
+      }
+    },
+    {
+      "export_id": 139,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+        "id": "dec_f8a30e251e54",
+        "summary": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
+        "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
+        "status": "proposed",
+        "confidence": 1.0,
+        "evidence_quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication.",
+        "decided_on": "2026-05-24"
+      }
+    },
+    {
+      "export_id": 140,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Upgrade all production Postgres instances to version 16",
+        "id": "dec_53d51a7d4549",
+        "summary": "The quote explicitly states a version upgrade action for a system, made by a known person.",
+        "rationale": "The quote explicitly states a version upgrade action for a system, made by a known person.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Upgrade all production Postgres instances to version 16.",
+        "decided_on": "2026-06-18"
+      }
+    },
+    {
+      "export_id": 141,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Migrate application metrics from Datadog to Prometheus Operator",
+        "id": "dec_21a4de59b886",
+        "summary": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
+        "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Migrate application metrics from Datadog to Prometheus Operator.",
+        "decided_on": "2026-04-12"
+      }
+    },
+    {
+      "export_id": 142,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Adopt Keycloak for company-wide single sign-on",
+        "id": "dec_f17ee7ad31a2",
+        "summary": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption.",
+        "rationale": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints.",
+        "decided_on": "2026-02-10"
+      }
+    },
+    {
+      "export_id": 143,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Standardize on Kubernetes 1.30 across all production regions",
+        "id": "dec_04ed8d5c10ae",
+        "summary": "The quote explicitly states a standardization decision on a specific version (1.30) for a concrete reason (unlocking gateway API controllers), applied across all production regions. This matches the definition of a decision to standardize on a specific technology version.",
+        "rationale": "The quote explicitly states a standardization decision on a specific version (1.30) for a concrete reason (unlocking gateway API controllers), applied across all production regions. This matches the definition of a decision to standardize on a specific technology version.",
+        "status": "accepted",
+        "confidence": 1.0,
+        "evidence_quote": "Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers.",
+        "decided_on": "2026-08-20"
+      }
+    },
+    {
+      "export_id": 144,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+        "id": "dec_d09476870168",
+        "summary": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
+        "rationale": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
+        "status": "rejected",
+        "confidence": 0.9,
+        "evidence_quote": "decommissioning Snowflake warehouses in favor of ClickHouse.",
+        "decided_on": "2026-10-10"
+      }
+    },
+    {
+      "export_id": 145,
+      "labels": [
+        "Person"
+      ],
+      "properties": {
+        "name": "Laura Croft, Fiona Gallagher, Bob Martin"
+      }
+    },
+    {
+      "export_id": 146,
+      "labels": [
+        "System"
+      ],
+      "properties": {
+        "name": "Snowflake, ClickHouse"
+      }
+    },
+    {
+      "export_id": 147,
+      "labels": [
+        "Decision"
+      ],
+      "properties": {
+        "title": "Rotate all database passwords into Vault dynamic secrets",
+        "id": "dec_ecd94c860f08",
+        "summary": "To eliminate static credentials",
+        "rationale": "To eliminate static credentials",
+        "status": "accepted",
+        "confidence": 0.95,
+        "evidence_quote": "Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials.",
+        "decided_on": "2026-06-08"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src_export_id": 4,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 4,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 4,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 19
+    },
+    {
+      "src_export_id": 4,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 4,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 5,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 5,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 20
+    },
+    {
+      "src_export_id": 5,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 6,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 1
+    },
+    {
+      "src_export_id": 6,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 1
+    },
+    {
+      "src_export_id": 6,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 21
+    },
+    {
+      "src_export_id": 6,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 7,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 2
+    },
+    {
+      "src_export_id": 7,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 2
+    },
+    {
+      "src_export_id": 7,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 8,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 8,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 9,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 1
+    },
+    {
+      "src_export_id": 9,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 10,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 3
+    },
+    {
+      "src_export_id": 11,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 3
+    },
+    {
+      "src_export_id": 11,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 3
+    },
+    {
+      "src_export_id": 12,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 13,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 2
+    },
+    {
+      "src_export_id": 13,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 22
+    },
+    {
+      "src_export_id": 13,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 14,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 14,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 23
+    },
+    {
+      "src_export_id": 14,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 14,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 15,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 15,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 16,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 0
+    },
+    {
+      "src_export_id": 16,
+      "type": "owns",
+      "properties": {},
+      "tgt_export_id": 31
+    },
+    {
+      "src_export_id": 17,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 1
+    },
+    {
+      "src_export_id": 18,
+      "type": "member_of",
+      "properties": {},
+      "tgt_export_id": 3
+    },
+    {
+      "src_export_id": 18,
+      "type": "leads",
+      "properties": {},
+      "tgt_export_id": 24
+    },
+    {
+      "src_export_id": 37,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 37,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 37,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 38,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 38,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 38,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 39,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 39,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 17
+    },
+    {
+      "src_export_id": 39,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 40,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 40,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 40,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 41,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 41,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 41,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 42,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 42,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 42,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 43,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 43,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 43,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 44,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 44,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 44,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 45,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 45,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 45,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 46,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 46,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 12
+    },
+    {
+      "src_export_id": 46,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 47,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 47,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 47,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 48,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 48,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 48,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 49,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 49,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 49,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 50,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 50,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 50,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 51,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 51,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 51,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 52,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 52,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 52,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 53,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 53,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 53,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 54,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 54,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 54,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 55,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 55,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 55,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 56,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 56,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 56,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 57,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 57,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 57,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 58,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 58,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 58,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 31
+    },
+    {
+      "src_export_id": 59,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 59,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 59,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 60,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 60,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 60,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 61,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 61,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 17
+    },
+    {
+      "src_export_id": 61,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 62,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 62,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 62,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 63,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 63,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 63,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 64,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 64,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 64,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 65,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 65,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 65,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 66,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 66,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 66,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 67,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 67,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 67,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 68,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 68,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 68,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 69,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 69,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 69,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 70,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 70,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 70,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 71,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 71,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 71,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 72,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 72,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 72,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 73,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 73,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 73,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 31
+    },
+    {
+      "src_export_id": 74,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 74,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 74,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 75,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 75,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 75,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 76,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 76,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 17
+    },
+    {
+      "src_export_id": 76,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 77,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 77,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 77,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 78,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 78,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 78,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 79,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 79,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 79,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 80,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 80,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 80,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 81,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 81,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 81,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 82,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 82,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 82,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 83,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 83,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 83,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 84,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 84,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 84,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 85,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 85,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 85,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 86,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 86,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 86,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 87,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 87,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 87,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 88,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 88,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 88,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 31
+    },
+    {
+      "src_export_id": 89,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 89,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 89,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 90,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 90,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 90,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 91,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 91,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 17
+    },
+    {
+      "src_export_id": 91,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 92,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 92,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 92,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 93,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 93,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 93,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 94,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 94,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 94,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 95,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 95,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 95,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 96,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 96,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 96,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 97,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 97,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 97,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 98,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 98,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 98,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 99,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 99,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 99,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 100,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 100,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 100,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 101,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 101,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 101,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 102,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 102,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 102,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 103,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 103,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 103,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 31
+    },
+    {
+      "src_export_id": 104,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 104,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 104,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 105,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 105,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 105,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 106,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 106,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 17
+    },
+    {
+      "src_export_id": 106,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 107,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 107,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 107,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 108,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 108,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 108,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 109,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 109,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 109,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 110,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 110,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 110,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 111,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 111,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 111,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 112,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 112,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 112,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 113,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 113,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 113,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 114,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 114,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 114,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 115,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 115,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 115,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 116,
+      "type": "raised_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 116,
+      "type": "assigned_to",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 116,
+      "type": "mentions",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 117,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 117,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 117,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 117,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 118,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 118,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 118,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 119,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 119,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 119,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 17
+    },
+    {
+      "src_export_id": 120,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 120,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 120,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 121,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 121,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 121,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 12
+    },
+    {
+      "src_export_id": 122,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 122,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 122,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 123,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 123,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 123,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 124,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 124,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 124,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 125,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 10
+    },
+    {
+      "src_export_id": 125,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 125,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 18
+    },
+    {
+      "src_export_id": 126,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 126,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 126,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 127,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 127,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 127,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 127,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 11
+    },
+    {
+      "src_export_id": 128,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 128,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 128,
+      "type": "attended_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 129,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 129,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 129,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 38
+    },
+    {
+      "src_export_id": 129,
+      "type": "supersedes",
+      "properties": {},
+      "tgt_export_id": 131
+    },
+    {
+      "src_export_id": 130,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 130,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 130,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 39
+    },
+    {
+      "src_export_id": 131,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 131,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 131,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 37
+    },
+    {
+      "src_export_id": 132,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 4
+    },
+    {
+      "src_export_id": 132,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 29
+    },
+    {
+      "src_export_id": 132,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 41
+    },
+    {
+      "src_export_id": 133,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 6
+    },
+    {
+      "src_export_id": 133,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 133,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 40
+    },
+    {
+      "src_export_id": 133,
+      "type": "supersedes",
+      "properties": {},
+      "tgt_export_id": 130
+    },
+    {
+      "src_export_id": 134,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 134,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 134,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 43
+    },
+    {
+      "src_export_id": 135,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 135,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 30
+    },
+    {
+      "src_export_id": 135,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 42
+    },
+    {
+      "src_export_id": 135,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 121
+    },
+    {
+      "src_export_id": 135,
+      "type": "contradicts",
+      "properties": {},
+      "tgt_export_id": 132
+    },
+    {
+      "src_export_id": 136,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 136,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 36
+    },
+    {
+      "src_export_id": 136,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 44
+    },
+    {
+      "src_export_id": 137,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 137,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 137,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 45
+    },
+    {
+      "src_export_id": 138,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 12
+    },
+    {
+      "src_export_id": 138,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 26
+    },
+    {
+      "src_export_id": 138,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 46
+    },
+    {
+      "src_export_id": 139,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 139,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 139,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 47
+    },
+    {
+      "src_export_id": 140,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 8
+    },
+    {
+      "src_export_id": 140,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 25
+    },
+    {
+      "src_export_id": 140,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 48
+    },
+    {
+      "src_export_id": 141,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 14
+    },
+    {
+      "src_export_id": 141,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 35
+    },
+    {
+      "src_export_id": 141,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 120
+    },
+    {
+      "src_export_id": 141,
+      "type": "supersedes",
+      "properties": {},
+      "tgt_export_id": 136
+    },
+    {
+      "src_export_id": 142,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 13
+    },
+    {
+      "src_export_id": 142,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 28
+    },
+    {
+      "src_export_id": 142,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 118
+    },
+    {
+      "src_export_id": 143,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 143,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 32
+    },
+    {
+      "src_export_id": 143,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 124
+    },
+    {
+      "src_export_id": 144,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 128
+    },
+    {
+      "src_export_id": 144,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 145
+    },
+    {
+      "src_export_id": 144,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 146
+    },
+    {
+      "src_export_id": 147,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 7
+    },
+    {
+      "src_export_id": 147,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 34
+    },
+    {
+      "src_export_id": 147,
+      "type": "based_on",
+      "properties": {},
+      "tgt_export_id": 122
+    }
+  ]
+}
