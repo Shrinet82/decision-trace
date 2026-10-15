@@ -29,9 +29,15 @@ import app.brain.falkor_compat  # noqa: F401, E402
 logger = logging.getLogger("decision_trace.memory")
 
 _GROQ_API_KEYS: list[str] = [
-    os.getenv("SECONDARY_GROQ_API_KEY", "REDACTED_SECRET"),
-    _settings.LLM_API_KEY.get_secret_value(),
+    k
+    for k in [
+        os.getenv("SECONDARY_GROQ_API_KEY", ""),
+        _settings.LLM_API_KEY.get_secret_value() if _settings.LLM_API_KEY else "",
+    ]
+    if k
 ]
+if not _GROQ_API_KEYS:
+    _GROQ_API_KEYS = [""]
 _current_key_idx: int = 0
 
 
@@ -325,8 +331,11 @@ def build_pass1_prompt(
         "GENERIC EXAMPLES (for reference, NOT from the dataset):\n"
         "- 'Adopt SQLite in WAL mode for local desktop cache to prevent filesystem locks during multi-process read operations.'\n"
         "- 'Standardize on TLS 1.3 across all edge load balancers and deprecate CBC-mode ciphers to meet PCI-DSS compliance.'\n\n"
-        "EXPLICIT NON-DECISIONS (Do NOT extract):\n"
-        "- Pure bug reports without a permanent policy/configuration choice (e.g. stack traces, null pointer exceptions, CSS styling defects).\n"
+        "EXPLICIT NON-DECISIONS (Do NOT extract, return candidates: []):\n"
+        "- Routine incident triage and operational bug fixes: investigating an alert or incident, applying a configuration fix/patch/workaround in staging, and resolving the ticket (e.g. 'Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved'). These are routine repairs, NOT engineering decisions.\n"
+        "- Operational threshold tuning or alert cleanups (e.g. connection timeouts, rate limit adjustments, disk watermark threshold alerts).\n"
+        "- High-level meeting goals or themes without selecting a concrete tool, version, or policy (e.g. 'Focus will be on database connection stability').\n"
+        "- Pure bug reports without a permanent policy/technology choice (e.g. stack traces, null pointer exceptions, CSS styling defects).\n"
         "- Temporary incident firefighting (e.g. restarting a crashed pod, bumping memory limits to survive a leak temporarily).\n"
         "- Routine status updates or progress sharing (e.g. sprint burndown updates, standup notes, vacation schedules, completion percentages).\n"
         "- Questions, inquiries, or open discussion without a chosen path.\n\n"
@@ -362,11 +371,15 @@ def build_pass2_prompt(roster: Optional[dict[str, list[str]]] = None) -> str:
         "Evaluate the candidate decision against its verbatim evidence quote and document context.\n\n"
         "VERIFICATION CRITERIA:\n"
         "1. was_choice_made: Did the team or individual make a definitive choice, approval, agreement, or standardization about technology, vendor, process, configuration, or policy in the quote? (e.g. 'we have decided to adopt', 'approved upgrading', 'standardized on').\n"
-        "2. is_decision_not_status_or_bug: Is this an actual decision or policy/version/architectural change rather than routine debugging, a pod restart, temporary incident triage, or routine task update? Note: Version upgrades, technology adoptions, and architectural migrations performed during maintenance or routine tickets COUNT as decisions.\n"
+        "2. is_decision_not_status_or_bug: Is this an actual decision or policy/version/architectural change rather than routine debugging, a pod restart, temporary incident triage, or routine task update? Version upgrades, technology adoptions, and architectural migrations performed during maintenance or routine tickets COUNT as decisions.\n"
+        "CRITICAL PRECISION RULES (Must reject with keep=False):\n"
+        "- Routine Incident Resolutions: Merely applying a configuration fix, patch, parameter tweak, or index in staging to close an operational ticket (e.g. 'Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved') is routine operational maintenance, NOT a decision. Set keep=False, is_decision_not_status_or_bug=False, was_choice_made=False, and rejection_reason='Routine incident triage/configuration fix'.\n"
+        "- Operational Alarm Tuning: Tuning alert thresholds, timeouts, or disk watermarks to clear a monitoring alarm is routine operations, NOT a decision. Set keep=False.\n"
+        "- Generic Meeting Goals: Stating general intent (e.g. 'Focus will be on database connection stability') without a concrete technology, version, or policy choice is NOT a decision. Set keep=False.\n"
         "3. decided_by_verified: Check if the decider is explicitly identified in the quote or document context. Resolve to their canonical full name from the roster.\n"
         "4. system_verified: Check the system affected. Strip any 'System:' prefix and match against the canonical system name.\n"
         "5. refined_title: Refine the decision title into a concise, professional title (e.g. 'Adopt Snowflake for analytics ETL queries', 'Upgrade production Postgres instances to version 16').\n"
-        "6. keep: Set to True ONLY if was_choice_made is True, is_decision_not_status_or_bug is True, and the choice is directly supported by the quote. If weak, speculative, or a routine bug/status, set keep=False.\n"
+        "6. keep: Set to True ONLY if was_choice_made is True, is_decision_not_status_or_bug is True, and the choice is directly supported by the quote. If weak, speculative, or a routine bug/status/incident resolution, set keep=False.\n"
     )
     if roster and (roster.get("people") or roster.get("systems")):
         people_list = ", ".join(f'"{p}"' for p in roster.get("people", []))
@@ -643,9 +656,10 @@ async def reset(dataset_name: Optional[str] = None, delete_all_graphs: bool = Fa
             except Exception:
                 pass
 
-        # 1. Prune local data and system metadata
-        await prune.prune_data()
-        await prune.prune_system(metadata=True)
+        # 1. Prune local data and system metadata only when full reset requested
+        if delete_all_graphs or not dataset_name:
+            await prune.prune_data()
+            await prune.prune_system(metadata=True)
 
         # 2. Delete the graph(s) directly on the FalkorDB instance
         remaining_graphs: list[str] = []
