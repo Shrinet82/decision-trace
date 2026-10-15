@@ -27,4 +27,4 @@ jobs:
         run: |
           railway variable set "FALKORDB_GRAPH_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
           railway variable set "DATASET_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
-          railway up --service decision-trace-api --detach
+          railway up --service decision-trace-api -c
