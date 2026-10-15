@@ -9,7 +9,9 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, SecretStr
+from typing import Optional
+
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -38,8 +40,16 @@ class Settings(BaseSettings):
         description="Base URL for OpenAI-compatible LLM endpoint",
     )
     LLM_MODEL: str = Field(
-        default=os.getenv("LLM_MODEL", "groq/qwen/qwen3.8-27b"),
+        default=os.getenv("LLM_MODEL", "bedrock/amazon.nova-lite-v1:0"),
         description="Target model identifier with provider prefix for LiteLLM routing",
+    )
+    BEDROCK_API_KEY: Optional[SecretStr] = Field(
+        default=SecretStr(os.getenv("BEDROCK_API_KEY", "REDACTED_SECRET")),
+        description="Amazon Bedrock API Key",
+    )
+    AWS_REGION_NAME: str = Field(
+        default=os.getenv("AWS_REGION_NAME", "us-east-1"),
+        description="AWS Region for Bedrock models",
     )
     EMBEDDING_PROVIDER: str = Field(
         default="fastembed", description="Embedding provider (fastembed for local embeddings)"
@@ -85,6 +95,14 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000, description="FastAPI port binding")
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
 
+    @model_validator(mode="after")
+    def resolve_bedrock(self) -> "Settings":
+        if "LLM_MODEL" not in self.model_fields_set and os.getenv("USE_GROQ") != "1" and self.BEDROCK_API_KEY:
+            target_model = os.getenv("BEDROCK_MODEL", "bedrock/amazon.nova-lite-v1:0")
+            if not self.LLM_MODEL.startswith("bedrock/"):
+                self.LLM_MODEL = target_model
+        return self
+
 
 def export_cognee_env(settings: Settings) -> None:
     """Export the environment variables required by Cognee before it is imported.
@@ -95,11 +113,28 @@ def export_cognee_env(settings: Settings) -> None:
     os.environ["SYSTEM_ROOT_DIRECTORY"] = settings.SYSTEM_ROOT_DIRECTORY
     os.environ["DATA_ROOT_DIRECTORY"] = settings.DATA_ROOT_DIRECTORY
 
-    os.environ["LLM_PROVIDER"] = "custom"
-    os.environ["LLM_MODEL"] = settings.LLM_MODEL
-    os.environ["LLM_ENDPOINT"] = settings.LLM_BASE_URL
-    os.environ["GROQ_API_KEY"] = settings.LLM_API_KEY.get_secret_value()
-    os.environ["OPENAI_API_KEY"] = settings.LLM_API_KEY.get_secret_value()
+    if settings.LLM_MODEL.startswith("bedrock/"):
+        os.environ["LLM_PROVIDER"] = "custom"
+        os.environ["LLM_MODEL"] = settings.LLM_MODEL
+        os.environ.pop("LLM_ENDPOINT", None)
+        active_key = (
+            settings.BEDROCK_API_KEY.get_secret_value()
+            if settings.BEDROCK_API_KEY
+            else settings.LLM_API_KEY.get_secret_value()
+        )
+        os.environ["AWS_BEARER_TOKEN_BEDROCK"] = active_key
+        os.environ["LLM_API_KEY"] = active_key
+        os.environ.pop("GROQ_API_KEY", None)
+        os.environ.pop("OPENAI_API_KEY", None)
+        os.environ["AWS_REGION_NAME"] = settings.AWS_REGION_NAME
+        os.environ["AWS_DEFAULT_REGION"] = settings.AWS_REGION_NAME
+    else:
+        os.environ["LLM_PROVIDER"] = "custom"
+        os.environ["LLM_MODEL"] = settings.LLM_MODEL
+        os.environ["LLM_ENDPOINT"] = settings.LLM_BASE_URL
+        os.environ["GROQ_API_KEY"] = settings.LLM_API_KEY.get_secret_value()
+        os.environ["OPENAI_API_KEY"] = settings.LLM_API_KEY.get_secret_value()
+
     os.environ["EMBEDDING_PROVIDER"] = settings.EMBEDDING_PROVIDER
     os.environ["EMBEDDING_MODEL"] = settings.EMBEDDING_MODEL
 
