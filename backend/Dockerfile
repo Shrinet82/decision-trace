@@ -2,7 +2,7 @@
 # Stage 1: Build virtual environment
 FROM python:3.12-slim AS builder
 
-WORKDIR /build
+WORKDIR /app
 
 # Install uv for fast, reliable dependency resolution
 COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /bin/uv
@@ -10,9 +10,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /bin/uv
 # Copy project metadata
 COPY pyproject.toml ./
 
-# Install dependencies into /build/.venv
-RUN uv venv /build/.venv && \
-    uv pip install --python /build/.venv/bin/python --no-cache -r pyproject.toml
+# Install dependencies into /app/.venv
+RUN uv venv /app/.venv && \
+    uv pip install --python /app/.venv/bin/python --no-cache -r pyproject.toml
 
 # Stage 2: Minimal runtime image
 FROM python:3.12-slim AS runner
@@ -27,7 +27,7 @@ RUN mkdir -p /app/data_storage/.cognee_system /app/data_storage/.lancedb && \
     chown -R appuser:appgroup /app
 
 # Copy virtual environment from builder
-COPY --from=builder --chown=appuser:appgroup /build/.venv /app/.venv
+COPY --from=builder --chown=appuser:appgroup /app/.venv /app/.venv
 
 # Copy application source
 COPY --chown=appuser:appgroup app/ /app/app/
@@ -45,4 +45,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python3", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
