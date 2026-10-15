@@ -6,6 +6,7 @@ clean holdout dataset, extracts decisions, and benchmarks results against data/H
 
 import asyncio
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -75,8 +76,10 @@ EXPECTED_HOLDOUT = [
 
 async def run_holdout_evaluation(dataset_name: str = "holdout_brain") -> dict[str, Any]:
     """Run extraction on holdout documents and benchmark against ground truth."""
+    active_model = os.getenv("LLM_MODEL", "bedrock/deepseek.v3.2")
     print("=" * 70)
     print(f"HOLDOUT DATASET EVALUATION: '{dataset_name}'")
+    print(f"ACTIVE LLM MODEL: {active_model}")
     print("=" * 70)
 
     # 1. Reset holdout dataset

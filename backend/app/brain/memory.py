@@ -56,7 +56,8 @@ def rotate_groq_key() -> str:
 
 
 def apply_groq_key(key: Optional[str] = None) -> None:
-    if _settings.LLM_MODEL.startswith("bedrock/"):
+    active_model = os.getenv("LLM_MODEL", _settings.LLM_MODEL)
+    if active_model.startswith("bedrock/"):
         target_key = key or (
             _settings.BEDROCK_API_KEY.get_secret_value()
             if getattr(_settings, "BEDROCK_API_KEY", None)
@@ -64,7 +65,7 @@ def apply_groq_key(key: Optional[str] = None) -> None:
         )
         os.environ["AWS_BEARER_TOKEN_BEDROCK"] = target_key
         os.environ["LLM_API_KEY"] = target_key
-        os.environ["LLM_MODEL"] = _settings.LLM_MODEL
+        os.environ["LLM_MODEL"] = active_model
         os.environ.pop("LLM_ENDPOINT", None)
         os.environ.pop("GROQ_API_KEY", None)
         os.environ.pop("OPENAI_API_KEY", None)
@@ -76,8 +77,9 @@ def apply_groq_key(key: Optional[str] = None) -> None:
             get_llm_config.cache_clear()
             cfg = get_llm_config()
             cfg.llm_api_key = target_key
-            cfg.llm_model = _settings.LLM_MODEL
+            cfg.llm_model = active_model
             cfg.llm_endpoint = None
+            cfg.llm_temperature = 0.0
             if cfg.llm_args is None:
                 cfg.llm_args = {}
             cfg.llm_args["aws_region_name"] = getattr(_settings, "AWS_REGION_NAME", "us-east-1")

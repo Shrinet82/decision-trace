@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Literal, Optional
 
 import litellm
-litellm.enable_cache()
+from litellm.caching import Cache
 from cognee.infrastructure.llm.LLMGateway import LLMGateway
 from litellm.integrations.custom_logger import CustomLogger
 from pydantic import BaseModel, Field
@@ -36,6 +36,14 @@ from app.ingest.notes_source import parse_meeting_note
 
 logger = logging.getLogger("decision_trace.ingest.decisions")
 _settings = get_settings()
+
+# Initialize fresh extraction cache keyed by model + prompt version
+model_slug = _settings.LLM_MODEL.replace("/", "_").replace(":", "_").replace(".", "_")
+prompt_version = os.getenv("PROMPT_VERSION", "v1")
+cache_dir = Path(".cache") / "extractions" / f"{model_slug}_{prompt_version}"
+cache_dir.mkdir(parents=True, exist_ok=True)
+litellm.cache = Cache(type="disk", disk_cache_dir=str(cache_dir))
+litellm.enable_cache()
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 DEFAULT_TICKETS_PATH = DEFAULT_DATA_DIR / "tickets.csv"
@@ -338,6 +346,8 @@ async def extract_all_decisions(
             )
 
     total_items = len(items)
+    print(f"Active Extraction Model: {_settings.LLM_MODEL} (temperature=0)")
+    logger.info("Active Extraction Model: %s (temperature=0)", _settings.LLM_MODEL)
     logger.info(
         "Starting Two-Pass Decision Extraction for %d items into dataset '%s' (concurrency: %d)...",
         total_items,
@@ -354,15 +364,29 @@ async def extract_all_decisions(
     item_timings: list[dict[str, Any]] = []
     pending_cross_edges: list[tuple[str, list[str], list[str]]] = []
     total_verified_decisions = 0
+    parse_failures = 0
 
     async def _execute_with_retry(fn, *args, **kwargs):
-        """Execute LLM call with key rotation and exponential backoff on rate limits."""
-        for attempt in range(1, 5):
+        """Execute LLM call with key rotation and exponential backoff on rate limits / throttling."""
+        for attempt in range(1, 6):
             try:
                 apply_groq_key()
                 return await fn(*args, **kwargs)
             except Exception as exc:
                 err_msg = str(exc)
+                is_throttled = any(
+                    x in err_msg.lower()
+                    for x in [
+                        "throttling",
+                        "throttlingexception",
+                        "too many requests",
+                        "toomanyrequestsexception",
+                        "rate_limit",
+                        "ratelimit",
+                        "429",
+                        "tokens",
+                    ]
+                )
                 if not _settings.LLM_MODEL.startswith("bedrock/") and (
                     "rate_limit" in err_msg.lower() or "429" in err_msg or "tokens" in err_msg.lower()
                 ):
@@ -372,22 +396,31 @@ async def extract_all_decisions(
                     m = re.search(r"try again in ([\d\.]+)s", err_msg)
                     wait_sec = float(m.group(1)) + 1.0 if m else min(2**attempt, 16)
                     logger.warning(
-                        "Rate limit on attempt %d/4. Rotated key, sleeping %.1fs: %s",
+                        "Rate limit on attempt %d/5. Rotated key, sleeping %.1fs: %s",
                         attempt,
                         wait_sec,
                         exc,
                     )
                     await asyncio.sleep(wait_sec)
-                elif attempt < 4:
+                elif is_throttled:
+                    wait_sec = min(2**attempt, 32)
+                    logger.warning(
+                        "Throttling on attempt %d/5 (%s). Backing off for %.1fs...",
+                        attempt,
+                        exc,
+                        wait_sec,
+                    )
+                    await asyncio.sleep(wait_sec)
+                elif attempt < 5:
                     wait_sec = min(2**attempt, 8)
                     logger.warning("Call attempt %d failed: %s. Retrying in %.1fs...", attempt, exc, wait_sec)
                     await asyncio.sleep(wait_sec)
                 else:
-                    logger.error("LLM call failed after 4 attempts: %s", exc)
+                    logger.error("LLM call failed after 5 attempts: %s", exc)
                     raise
 
     async def _process_item(index: int, item: dict[str, Any]) -> None:
-        nonlocal total_verified_decisions
+        nonlocal total_verified_decisions, parse_failures
         async with semaphore:
             token_tracker.reset_delta()
             item_start = time.perf_counter()
@@ -407,6 +440,7 @@ async def extract_all_decisions(
                 candidates = p1_output.candidates if hasattr(p1_output, "candidates") else []
             except Exception as exc:
                 logger.error("Pass 1 extraction failed for %s: %s", item["id"], exc)
+                parse_failures += 1
                 candidates = []
 
             # Pass 2: Precision Verification of Candidates
@@ -428,6 +462,10 @@ async def extract_all_decisions(
                         response_model=Pass2Verification,
                         max_tokens=300,
                     )
+                except Exception as exc:
+                    logger.error("Pass 2 verification failed for %s: %s", cand.title, exc)
+                    parse_failures += 1
+                    continue
                     if p2_output.keep:
                         # Safeguard against routine incident closures and bug fixes
                         quote_check = f"{cand.verbatim_quote} {cand.title} {item['text']}".lower()
@@ -593,9 +631,20 @@ async def extract_all_decisions(
 
     total_time = time.perf_counter() - overall_start
 
-    # Estimate token costs: Groq pricing (~$0.20 per 1M prompt/completion tokens)
-    prompt_cost = (token_tracker.prompt_tokens / 1_000_000) * 0.20
-    comp_cost = (token_tracker.completion_tokens / 1_000_000) * 0.20
+    # Dynamic token pricing based on active model
+    active_model = _settings.LLM_MODEL.lower()
+    if "deepseek" in active_model:
+        prompt_rate = 0.62  # $0.62 per 1M input tokens
+        comp_rate = 1.85    # $1.85 per 1M output tokens
+    elif "nova-lite" in active_model:
+        prompt_rate = 0.06  # $0.06 per 1M input tokens
+        comp_rate = 0.24    # $0.24 per 1M output tokens
+    else:
+        prompt_rate = 0.20
+        comp_rate = 0.20
+
+    prompt_cost = (token_tracker.prompt_tokens / 1_000_000) * prompt_rate
+    comp_cost = (token_tracker.completion_tokens / 1_000_000) * comp_rate
     total_cost_usd = prompt_cost + comp_cost
 
     summary = {
@@ -607,6 +656,7 @@ async def extract_all_decisions(
         "completion_tokens": token_tracker.completion_tokens,
         "llm_calls": token_tracker.call_count,
         "estimated_cost_usd": round(total_cost_usd, 6),
+        "parse_failures": parse_failures,
         "reconciliation": reconcile_res,
         "item_timings": item_timings,
     }

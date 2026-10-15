@@ -12,6 +12,7 @@ Produces a formal evaluation scorecard measuring:
 
 import asyncio
 import logging
+import os
 import sys
 from typing import Any
 
@@ -160,8 +161,10 @@ EXPECTED_NODE_COUNTS = {
 
 async def evaluate_graph(dataset_name: str = "company_brain") -> dict[str, Any]:
     """Run full evaluation against data/GROUND_TRUTH.md specification."""
+    active_model = os.getenv("LLM_MODEL", "bedrock/deepseek.v3.2")
     print("\n" + "=" * 70)
     print(f"DECISION-TRACE EVALUATION SCORECARD: DATASET '{dataset_name}'")
+    print(f"ACTIVE LLM MODEL: {active_model}")
     print("=" * 70)
 
     # 1. Fetch Extracted Decisions with decided_by, about_system, based_on
@@ -190,41 +193,43 @@ async def evaluate_graph(dataset_name: str = "company_brain") -> dict[str, Any]:
         )
 
     # 2. Decision Matching (Recall & Precision)
-    # Match criteria: Embedding similarity >= 0.75 + decider or system tiebreak
+    # Match criteria: Embedding similarity >= 0.72 + decider or system tiebreak
     matched_gt: dict[str, dict[str, Any]] = {}
     matched_ext_indices: set[int] = set()
     decider_correct_count = 0
 
+    candidate_pairs = []
     for gt in GROUND_TRUTH_DECISIONS:
-        best_match_idx = -1
-        best_score = -1.0
-
         for idx, ext in enumerate(extracted):
-            if idx in matched_ext_indices:
-                continue
-
             sim = compute_embedding_similarity(gt["title"], ext["title"])
-            # Bonus score if decider or system matches
             bonus = 0.0
             if ext["decider"] and gt["decider"].lower() == ext["decider"].lower():
                 bonus += 0.15
             if ext["system"] and gt["system"].lower() in ext["system"].lower():
                 bonus += 0.10
+            # Strict system tiebreaker: penalize if both specify systems and they conflict
+            if ext["system"] and gt["system"] and gt["system"].lower() not in ext["system"].lower() and ext["system"].lower() not in gt["system"].lower():
+                bonus -= 0.20
 
             composite_score = sim + bonus
-            if sim >= 0.72 and composite_score > best_score:
-                best_score = composite_score
-                best_match_idx = idx
+            if sim >= 0.72:
+                candidate_pairs.append((composite_score, sim, gt, idx, ext))
 
-        if best_match_idx >= 0:
-            matched_ext_indices.add(best_match_idx)
-            ext_match = extracted[best_match_idx]
-            matched_gt[gt["id"]] = ext_match
-            if (
-                ext_match["decider"]
-                and ext_match["decider"].lower() == gt["decider"].lower()
-            ):
-                decider_correct_count += 1
+    # Sort globally by composite score descending so highest-fidelity matches claim first
+    candidate_pairs.sort(key=lambda x: (x[0], x[1]), reverse=True)
+
+    matched_gt_ids = set()
+    for composite_score, sim, gt, idx, ext in candidate_pairs:
+        if gt["id"] in matched_gt_ids or idx in matched_ext_indices:
+            continue
+        matched_gt_ids.add(gt["id"])
+        matched_ext_indices.add(idx)
+        matched_gt[gt["id"]] = ext
+        if (
+            ext["decider"]
+            and ext["decider"].lower() == gt["decider"].lower()
+        ):
+            decider_correct_count += 1
 
     tp_count = len(matched_gt)
     fn_count = len(GROUND_TRUTH_DECISIONS) - tp_count
