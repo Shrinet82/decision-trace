@@ -51,7 +51,7 @@ class Settings(BaseSettings):
         description="Base URL for OpenAI-compatible LLM endpoint",
     )
     LLM_MODEL: str = Field(
-        default=os.getenv("LLM_MODEL", "bedrock/amazon.nova-lite-v1:0"),
+        default=os.getenv("LLM_MODEL", "bedrock/deepseek.v3.2"),
         description="Target model identifier with provider prefix for LiteLLM routing",
     )
     BEDROCK_API_KEY: Optional[SecretStr] = Field(
@@ -108,6 +108,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def resolve_bedrock(self) -> "Settings":
+        if "LLM_MODEL" in self.model_fields_set:
+            return self
         if _EXPLICIT_ENV_LLM_MODEL:
             self.LLM_MODEL = _EXPLICIT_ENV_LLM_MODEL
             return self
@@ -115,8 +117,8 @@ class Settings(BaseSettings):
         if env_model:
             self.LLM_MODEL = env_model
             return self
-        if "LLM_MODEL" not in self.model_fields_set and os.getenv("USE_GROQ") != "1" and self.BEDROCK_API_KEY:
-            target_model = os.getenv("BEDROCK_MODEL", "bedrock/amazon.nova-lite-v1:0")
+        if os.getenv("USE_GROQ") != "1" and self.BEDROCK_API_KEY:
+            target_model = os.getenv("BEDROCK_MODEL", "bedrock/deepseek.v3.2")
             if not self.LLM_MODEL.startswith("bedrock/"):
                 self.LLM_MODEL = target_model
         return self
@@ -128,7 +130,7 @@ def export_cognee_env(settings: Settings) -> None:
     Cognee evaluates its LLMConfig, GraphConfig, and VectorConfig during module
     import time. These settings must be exported into os.environ beforehand.
     """
-    if _EXPLICIT_ENV_LLM_MODEL:
+    if "LLM_MODEL" not in settings.model_fields_set and _EXPLICIT_ENV_LLM_MODEL:
         settings.LLM_MODEL = _EXPLICIT_ENV_LLM_MODEL
     os.environ["SYSTEM_ROOT_DIRECTORY"] = settings.SYSTEM_ROOT_DIRECTORY
     os.environ["DATA_ROOT_DIRECTORY"] = settings.DATA_ROOT_DIRECTORY
