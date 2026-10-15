@@ -2,11 +2,21 @@
   "answer": "The answer is not found in the Company Brain.",
   "citations": [],
   "people": [
+    "Alice Vance",
     "Diana Prince",
     "Julia Roberts"
   ],
   "graph_path": {
     "nodes": [
+      {
+        "id": "dec_f564fcd15601",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate session storage to embedded Keycloak cache",
+          "status": "accepted",
+          "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice."
+        }
+      },
       {
         "id": "dec_e287aa298850",
         "label": "Decision",
@@ -21,17 +31,8 @@
         "label": "Decision",
         "properties": {
           "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
-          "status": "proposed",
-          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice."
-        }
-      },
-      {
-        "id": "dec_f17ee7ad31a2",
-        "label": "Decision",
-        "properties": {
-          "title": "Adopt Keycloak for company-wide single sign-on",
           "status": "accepted",
-          "rationale": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption."
+          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice."
         }
       },
       {
@@ -41,6 +42,29 @@
           "title": "Rotate all database passwords into Vault dynamic secrets",
           "status": "accepted",
           "rationale": "To eliminate static credentials"
+        }
+      },
+      {
+        "id": "Alice Vance",
+        "label": "Person",
+        "properties": {
+          "name": "Alice Vance"
+        }
+      },
+      {
+        "id": "Keycloak",
+        "label": "System",
+        "properties": {
+          "name": "Keycloak"
+        }
+      },
+      {
+        "id": "Julia Roberts",
+        "label": "Person",
+        "properties": {
+          "name": "Julia Roberts",
+          "is_active": true,
+          "leave_date": null
         }
       },
       {
@@ -58,17 +82,11 @@
         }
       },
       {
-        "id": "Julia Roberts",
-        "label": "Person",
+        "id": "TICK-102",
+        "label": "Ticket",
         "properties": {
-          "name": "Julia Roberts"
-        }
-      },
-      {
-        "id": "Keycloak",
-        "label": "System",
-        "properties": {
-          "name": "Keycloak"
+          "ticket_id": "TICK-102",
+          "title": "Redis session cluster operational maintenance and failover complexity"
         }
       },
       {
@@ -88,23 +106,52 @@
         }
       },
       {
-        "id": "IAM Architecture Modernization",
-        "label": "Meeting",
-        "properties": {
-          "title": "IAM Architecture Modernization",
-          "date": "2026-02-10"
-        }
-      },
-      {
         "id": "Security Architecture Review",
         "label": "Meeting",
         "properties": {
           "title": "Security Architecture Review",
           "date": "2026-06-08"
         }
+      },
+      {
+        "id": "dec_fda8c9b4e631",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention"
+        }
       }
     ],
     "edges": [
+      {
+        "source": "dec_f564fcd15601",
+        "target": "Alice Vance",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "Keycloak",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Julia Roberts",
+        "target": "Keycloak",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "TICK-102",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "dec_fda8c9b4e631",
+        "type": "supersedes",
+        "properties": {}
+      },
       {
         "source": "dec_e287aa298850",
         "target": "Diana Prince",
@@ -142,32 +189,8 @@
         "properties": {}
       },
       {
-        "source": "Julia Roberts",
-        "target": "Keycloak",
-        "type": "owns",
-        "properties": {}
-      },
-      {
         "source": "dec_f8a30e251e54",
         "target": "TICK-111",
-        "type": "based_on",
-        "properties": {}
-      },
-      {
-        "source": "dec_f17ee7ad31a2",
-        "target": "Julia Roberts",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_f17ee7ad31a2",
-        "target": "Keycloak",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "dec_f17ee7ad31a2",
-        "target": "IAM Architecture Modernization",
         "type": "based_on",
         "properties": {}
       },

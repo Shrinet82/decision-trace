@@ -1,11 +1,6 @@
 {
-  "answer": "Laura Croft decided to deploy Prometheus Operator on all Kubernetes staging clusters (Source Ticket: TICK-109).",
+  "answer": "Based on the Company Brain context, there are two accepted decisions related to the **Prometheus** system:\n\n1.  **\"Migrate application metrics from Datadog to Prometheus Operator\"** was decided by **Kevin Flynn**. This decision was made during the *Observability Platform Alignment* meeting on 2026-04-12.\n2.  **\"Deploy Prometheus Operator on all Kubernetes staging clusters\"** was decided by **Laura Croft**. This decision is associated with ticket **TICK-109** ('Cluster-wide metrics collection and automated alerts').\n\nAdditionally, **Kevin Flynn** is the active System Owner for Prometheus.",
   "citations": [
-    {
-      "type": "ticket",
-      "id": "TICK-109",
-      "title": "Cluster-wide metrics collection and automated alerts"
-    },
     {
       "type": "meeting",
       "id": "Observability Platform Alignment",
@@ -13,17 +8,14 @@
     },
     {
       "type": "ticket",
-      "id": "TICK-111",
-      "title": "OAuth2 token issuance architecture for internal gateway"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-108",
-      "title": "Inconsistent distributed trace propagation in checkout services"
+      "id": "TICK-109",
+      "title": "Cluster-wide metrics collection and automated alerts"
     }
   ],
   "people": [
-    "Julia Roberts",
+    "Alice Vance",
+    "Fiona Gallagher",
+    "Ian Malcolm",
     "Kevin Flynn",
     "Laura Croft"
   ],
@@ -39,28 +31,30 @@
         }
       },
       {
-        "id": "dec_5b196394600e",
-        "label": "Decision",
-        "properties": {
-          "title": "Standardize application traces on Datadog APM across all production services"
-        }
-      },
-      {
         "id": "dec_091c86e8e476",
         "label": "Decision",
         "properties": {
           "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
-          "status": "proposed",
+          "status": "accepted",
           "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance."
         }
       },
       {
-        "id": "dec_f8a30e251e54",
+        "id": "dec_2c6a03017923",
         "label": "Decision",
         "properties": {
-          "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
-          "status": "proposed",
-          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice."
+          "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+          "status": "accepted",
+          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
+        }
+      },
+      {
+        "id": "dec_8c7075150849",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt Snowflake for analytics ETL queries",
+          "status": "accepted",
+          "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision."
         }
       },
       {
@@ -85,24 +79,40 @@
         }
       },
       {
-        "id": "Julia Roberts",
+        "id": "Ian Malcolm",
         "label": "Person",
         "properties": {
-          "name": "Julia Roberts"
+          "name": "Ian Malcolm"
         }
       },
       {
-        "id": "Keycloak",
+        "id": "Redis",
         "label": "System",
         "properties": {
-          "name": "Keycloak"
+          "name": "Redis"
         }
       },
       {
-        "id": "Datadog",
+        "id": "Fiona Gallagher",
+        "label": "Person",
+        "properties": {
+          "name": "Fiona Gallagher"
+        }
+      },
+      {
+        "id": "Snowflake",
         "label": "System",
         "properties": {
-          "name": "Datadog"
+          "name": "Snowflake"
+        }
+      },
+      {
+        "id": "Alice Vance",
+        "label": "Person",
+        "properties": {
+          "name": "Alice Vance",
+          "is_active": true,
+          "leave_date": null
         }
       },
       {
@@ -122,19 +132,11 @@
         }
       },
       {
-        "id": "TICK-111",
+        "id": "TICK-110",
         "label": "Ticket",
         "properties": {
-          "ticket_id": "TICK-111",
-          "title": "OAuth2 token issuance architecture for internal gateway"
-        }
-      },
-      {
-        "id": "TICK-108",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-108",
-          "title": "Inconsistent distributed trace propagation in checkout services"
+          "ticket_id": "TICK-110",
+          "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
         }
       }
     ],
@@ -164,12 +166,6 @@
         "properties": {}
       },
       {
-        "source": "dec_21a4de59b886",
-        "target": "dec_5b196394600e",
-        "type": "supersedes",
-        "properties": {}
-      },
-      {
         "source": "dec_091c86e8e476",
         "target": "Laura Croft",
         "type": "decided_by",
@@ -188,54 +184,48 @@
         "properties": {}
       },
       {
-        "source": "dec_f8a30e251e54",
-        "target": "Julia Roberts",
+        "source": "dec_2c6a03017923",
+        "target": "Ian Malcolm",
         "type": "decided_by",
         "properties": {}
       },
       {
-        "source": "dec_f8a30e251e54",
-        "target": "Keycloak",
+        "source": "dec_2c6a03017923",
+        "target": "Redis",
         "type": "about_system",
         "properties": {}
       },
       {
-        "source": "Julia Roberts",
-        "target": "Keycloak",
+        "source": "Alice Vance",
+        "target": "Redis",
         "type": "owns",
         "properties": {}
       },
       {
-        "source": "dec_f8a30e251e54",
-        "target": "TICK-111",
+        "source": "dec_2c6a03017923",
+        "target": "TICK-110",
         "type": "based_on",
         "properties": {}
       },
       {
-        "source": "dec_5b196394600e",
-        "target": "Kevin Flynn",
+        "source": "dec_8c7075150849",
+        "target": "Fiona Gallagher",
         "type": "decided_by",
         "properties": {}
       },
       {
-        "source": "dec_5b196394600e",
-        "target": "Datadog",
+        "source": "dec_8c7075150849",
+        "target": "Snowflake",
         "type": "about_system",
         "properties": {}
       },
       {
-        "source": "Kevin Flynn",
-        "target": "Datadog",
+        "source": "Fiona Gallagher",
+        "target": "Snowflake",
         "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_5b196394600e",
-        "target": "TICK-108",
-        "type": "based_on",
         "properties": {}
       }
     ],
-    "omitted_count": 0
+    "omitted_count": 3
   }
 }

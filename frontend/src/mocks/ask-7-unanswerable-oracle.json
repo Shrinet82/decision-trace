@@ -3,7 +3,7 @@
   "citations": [],
   "people": [
     "Alice Vance",
-    "Carlos Mendez",
+    "Evan Wright",
     "Julia Roberts",
     "Kevin Flynn"
   ],
@@ -19,12 +19,10 @@
         }
       },
       {
-        "id": "dec_d1d225a60971",
+        "id": "dec_5b196394600e",
         "label": "Decision",
         "properties": {
-          "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
-          "status": "proposed",
-          "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action."
+          "title": "Standardize application traces on Datadog APM across all production services"
         }
       },
       {
@@ -37,10 +35,12 @@
         }
       },
       {
-        "id": "dec_fda8c9b4e631",
+        "id": "dec_53d51a7d4549",
         "label": "Decision",
         "properties": {
-          "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention"
+          "title": "Upgrade all production Postgres instances to version 16",
+          "status": "accepted",
+          "rationale": "The quote explicitly states a version upgrade action for a system, made by a known person."
         }
       },
       {
@@ -58,20 +58,6 @@
         }
       },
       {
-        "id": "Carlos Mendez",
-        "label": "Person",
-        "properties": {
-          "name": "Carlos Mendez"
-        }
-      },
-      {
-        "id": "ClickHouse",
-        "label": "System",
-        "properties": {
-          "name": "ClickHouse"
-        }
-      },
-      {
         "id": "Alice Vance",
         "label": "Person",
         "properties": {
@@ -86,10 +72,24 @@
         }
       },
       {
-        "id": "Redis",
+        "id": "Evan Wright",
+        "label": "Person",
+        "properties": {
+          "name": "Evan Wright"
+        }
+      },
+      {
+        "id": "Postgres",
         "label": "System",
         "properties": {
-          "name": "Redis"
+          "name": "Postgres"
+        }
+      },
+      {
+        "id": "Datadog",
+        "label": "System",
+        "properties": {
+          "name": "Datadog"
         }
       },
       {
@@ -110,19 +110,19 @@
         }
       },
       {
-        "id": "TICK-104",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-104",
-          "title": "High compute credits on daily analytics warehouse rollups"
-        }
-      },
-      {
         "id": "TICK-102",
         "label": "Ticket",
         "properties": {
           "ticket_id": "TICK-102",
           "title": "Redis session cluster operational maintenance and failover complexity"
+        }
+      },
+      {
+        "id": "TICK-112",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-112",
+          "title": "Replication lag and connection pool contention on primary database"
         }
       }
     ],
@@ -152,27 +152,9 @@
         "properties": {}
       },
       {
-        "source": "dec_d1d225a60971",
-        "target": "Carlos Mendez",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_d1d225a60971",
-        "target": "ClickHouse",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Carlos Mendez",
-        "target": "ClickHouse",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_d1d225a60971",
-        "target": "TICK-104",
-        "type": "based_on",
+        "source": "dec_21a4de59b886",
+        "target": "dec_5b196394600e",
+        "type": "supersedes",
         "properties": {}
       },
       {
@@ -200,30 +182,48 @@
         "properties": {}
       },
       {
-        "source": "dec_f564fcd15601",
-        "target": "dec_fda8c9b4e631",
-        "type": "supersedes",
-        "properties": {}
-      },
-      {
-        "source": "dec_fda8c9b4e631",
-        "target": "Alice Vance",
+        "source": "dec_53d51a7d4549",
+        "target": "Evan Wright",
         "type": "decided_by",
         "properties": {}
       },
       {
-        "source": "dec_fda8c9b4e631",
-        "target": "Redis",
+        "source": "dec_53d51a7d4549",
+        "target": "Postgres",
         "type": "about_system",
         "properties": {}
       },
       {
-        "source": "Alice Vance",
-        "target": "Redis",
+        "source": "Evan Wright",
+        "target": "Postgres",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_53d51a7d4549",
+        "target": "TICK-112",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "Kevin Flynn",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "Datadog",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Kevin Flynn",
+        "target": "Datadog",
         "type": "owns",
         "properties": {}
       }
     ],
-    "omitted_count": 3
+    "omitted_count": 2
   }
 }

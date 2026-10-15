@@ -1,6 +1,27 @@
 {
-  "answer": "Based on the provided context, there is no explicit rationale documented for choosing RabbitMQ over Kafka. The context only shows that the decision 'Adopt RabbitMQ for all event messaging across services' is **accepted** (TICK-106, Core Messaging Architecture Sync), while 'Adopt Kafka for all event messaging across services' remains **proposed** (TICK-105). The two decisions are marked as contradictory, but the reasoning for the accepted choice is not stated.\n\n**Answer:** The answer is not found in the Company Brain.",
-  "citations": [],
+  "answer": "The Company Brain records show **conflicting accepted decisions** rather than a one-sided choice of Kafka over RabbitMQ. Both technologies were independently adopted for \"all event messaging across services,\" creating a direct contradiction in the decision history:\n\n1.  **Decision to Adopt Kafka:**\n    *   **Status:** Accepted\n    *   **Decided by:** Alice Vance\n    *   **Source Ticket:** TICK-105 (\"Need enterprise event bus for asynchronous order processing\")\n    *   **Rationale:** The decision was driven by the need for an enterprise event bus for asynchronous order processing.\n\n2.  **Decision to Adopt RabbitMQ:**\n    *   **Status:** Accepted\n    *   **Decided by:** Bob Martin\n    *   **Source Ticket:** TICK-106 (\"Lightweight pubsub requirements for async background tasks\")\n    *   **Source Meeting:** Core Messaging Architecture Sync (Date: 2026-05-18)\n    *   **Rationale:** The decision was driven by lightweight pubsub requirements for async background tasks.\n\nThese two decisions explicitly **contradict** each other. The records do not indicate that one decision superseded or rejected the other; instead, both are marked as \"accepted.\" Therefore, the Company Brain does not contain a single definitive reason for choosing Kafka *over* RabbitMQ, but rather documents two separate, conflicting accepted decisions for the same scope (\"all event messaging across services\").\n\nAdditionally, there is a separate accepted decision (TICK-110) to deprecate legacy RabbitMQ clusters in favor of Redis PubSub specifically for *low-volume notifications*, decided by Ian Malcolm, but this does not resolve the broader contradiction regarding general event messaging.",
+  "citations": [
+    {
+      "type": "ticket",
+      "id": "TICK-106",
+      "title": "Lightweight pubsub requirements for async background tasks"
+    },
+    {
+      "type": "meeting",
+      "id": "Core Messaging Architecture Sync",
+      "title": "Core Messaging Architecture Sync"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-105",
+      "title": "Need enterprise event bus for asynchronous order processing"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-110",
+      "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
+    }
+  ],
   "people": [
     "Alice Vance",
     "Bob Martin",
@@ -30,7 +51,7 @@
         "label": "Decision",
         "properties": {
           "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
-          "status": "rejected",
+          "status": "accepted",
           "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
         }
       },
