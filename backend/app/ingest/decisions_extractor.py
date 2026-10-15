@@ -440,7 +440,7 @@ async def extract_all_decisions(
                     text_input=item["text"],
                     system_prompt=pass1_prompt,
                     response_model=Pass1Candidates,
-                    max_tokens=400,
+                    max_tokens=1500,
                 )
                 candidates = p1_output.candidates if hasattr(p1_output, "candidates") else []
             except Exception as exc:
@@ -465,12 +465,8 @@ async def extract_all_decisions(
                         text_input=p2_input,
                         system_prompt=pass2_prompt,
                         response_model=Pass2Verification,
-                        max_tokens=300,
+                        max_tokens=800,
                     )
-                except Exception as exc:
-                    logger.error("Pass 2 verification failed for %s: %s", cand.title, exc)
-                    parse_failures += 1
-                    continue
                     if p2_output.keep:
                         # Safeguard against routine incident closures and bug fixes
                         quote_check = f"{cand.verbatim_quote} {cand.title} {item['text']}".lower()
@@ -514,6 +510,7 @@ async def extract_all_decisions(
                         )
                 except Exception as exc:
                     logger.error("Pass 2 verification error for candidate '%s': %s", cand.title, exc)
+                    parse_failures += 1
 
             elapsed = time.perf_counter() - item_start
             delta_tokens = token_tracker.last_total_tokens
