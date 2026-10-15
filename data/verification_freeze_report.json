@@ -1,0 +1,125 @@
+{
+  "deepseek_runs": [
+    {
+      "run": 1,
+      "cache": "enabled",
+      "main_precision": 88.88888888888889,
+      "main_recall": 100.0,
+      "main_decider_acc": 100.0,
+      "supersedes_precision": 100.0,
+      "supersedes_recall": 100.0,
+      "contradicts_precision": 50.0,
+      "contradicts_recall": 100.0,
+      "h1_precision": 100.0,
+      "h1_recall": 100.0,
+      "h1_decider_acc": 0.0,
+      "h2_precision": 100.0,
+      "h2_recall": 80.0,
+      "h2_decider_acc": 100.0,
+      "total_tokens": 113563,
+      "total_cost": 0.087995
+    },
+    {
+      "run": 2,
+      "cache": "bypassed",
+      "main_precision": 88.88888888888889,
+      "main_recall": 100.0,
+      "main_decider_acc": 100.0,
+      "supersedes_precision": 100.0,
+      "supersedes_recall": 100.0,
+      "contradicts_precision": 100.0,
+      "contradicts_recall": 100.0,
+      "h1_precision": 83.33333333333334,
+      "h1_recall": 83.33333333333334,
+      "h1_decider_acc": 83.3,
+      "h2_precision": 100.0,
+      "h2_recall": 100.0,
+      "h2_decider_acc": 100.0,
+      "total_tokens": 119983,
+      "total_cost": 0.095877
+    },
+    {
+      "run": 3,
+      "cache": "bypassed",
+      "main_precision": 88.88888888888889,
+      "main_recall": 100.0,
+      "main_decider_acc": 100.0,
+      "supersedes_precision": 100.0,
+      "supersedes_recall": 100.0,
+      "contradicts_precision": 100.0,
+      "contradicts_recall": 100.0,
+      "h1_precision": 100.0,
+      "h1_recall": 100.0,
+      "h1_decider_acc": 83.3,
+      "h2_precision": 100.0,
+      "h2_recall": 100.0,
+      "h2_decider_acc": 100.0,
+      "total_tokens": 113448,
+      "total_cost": 0.087895
+    }
+  ],
+  "nova_baseline": {
+    "model": "bedrock/amazon.nova-lite-v1:0",
+    "main_precision": 39.02439024390244,
+    "main_recall": 100.0,
+    "main_decider_acc": 100.0,
+    "supersedes_precision": 100.0,
+    "supersedes_recall": 100.0,
+    "contradicts_precision": 100.0,
+    "contradicts_recall": 100.0,
+    "h1_precision": 100.0,
+    "h1_recall": 100.0,
+    "h1_decider_acc": 66.7,
+    "h2_precision": 83.33333333333334,
+    "h2_recall": 100.0,
+    "h2_decider_acc": 100.0,
+    "total_tokens": 342322,
+    "total_cost": 0.238555
+  },
+  "final_graph": {
+    "nodes": {
+      "Person": 16,
+      "Team": 4,
+      "Project": 6,
+      "System": 13,
+      "Ticket": 80,
+      "Meeting": 12,
+      "Decision": 17
+    },
+    "relationships": {
+      "member_of": 15,
+      "owns": 12,
+      "leads": 10,
+      "raised_by": 80,
+      "assigned_to": 80,
+      "mentions": 80,
+      "attended_by": 38,
+      "decided_by": 17,
+      "about_system": 17,
+      "based_on": 18,
+      "supersedes": 3,
+      "contradicts": 1
+    },
+    "memory": {
+      "used_memory": 4200864,
+      "used_memory_human": "4.01M",
+      "used_memory_peak_human": "6.79M"
+    },
+    "snapshot_path": "/home/shrinet82/Opensource/FalkorDB Hackathon/data/snapshot/company_brain_snapshot.json"
+  },
+  "per_pass_metrics": {
+    "pass1": {
+      "calls": 92,
+      "prompt_tokens": 135353,
+      "completion_tokens": 20539,
+      "avg_prompt_tokens": 1471.2
+    },
+    "pass2": {
+      "calls": 18,
+      "prompt_tokens": 52715,
+      "completion_tokens": 11400,
+      "avg_prompt_tokens": 2928.6
+    }
+  },
+  "total_pipeline_time_sec": 1353.71
+}

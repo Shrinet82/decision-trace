@@ -66,7 +66,10 @@ EXPECTED_HOLDOUT2 = [
 ]
 
 
-async def run_holdout2_evaluation(dataset_name: str = "holdout2_brain") -> dict[str, Any]:
+async def run_holdout2_evaluation(
+    dataset_name: str = "holdout2_brain",
+    bypass_cache: bool = False,
+) -> dict[str, Any]:
     """Run extraction on holdout 2 documents and benchmark against ground truth."""
     active_model = os.getenv("LLM_MODEL", "bedrock/deepseek.v3.2")
     print("=" * 70)
@@ -87,6 +90,7 @@ async def run_holdout2_evaluation(dataset_name: str = "holdout2_brain") -> dict[
         concurrency_limit=3,
         include_all_tickets=True,
         pause_between_calls=0.5,
+        bypass_cache=bypass_cache,
     )
     elapsed = time.perf_counter() - start_time
 
