@@ -118,10 +118,19 @@ class MemoryOperationError(Exception):
 
 async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
     """Resolve the active FalkorDB graph name for a given dataset."""
+    # Priority 1: If FALKORDB_GRAPH_NAME is configured, honor it directly for default datasets
+    configured_graph = getattr(_settings, "FALKORDB_GRAPH_NAME", None)
+    if configured_graph and (
+        not dataset_name
+        or dataset_name == "company_brain"
+        or dataset_name == getattr(_settings, "DATASET_NAME", None)
+    ):
+        return configured_graph
+
     engine = await get_graph_engine()
     default_name = getattr(engine, "graph_name", _settings.DATASET_NAME)
     if not dataset_name:
-        return default_name
+        return configured_graph or default_name
 
     try:
         from cognee.infrastructure.databases.relational import create_db_and_tables
@@ -142,7 +151,7 @@ async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
     if dataset_name in existing_graphs:
         return dataset_name
 
-    return dataset_name if dataset_name else default_name
+    return dataset_name if dataset_name else (configured_graph or default_name)
 
 
 async def get_or_create_dataset_graph_name(dataset_name: Optional[str] = None) -> str:

@@ -103,7 +103,7 @@ class Settings(BaseSettings):
         description="Token required for administrative endpoints",
     )
     DATASET_NAME: str = Field(
-        default="company_brain",
+        default=os.getenv("FALKORDB_GRAPH_NAME", "c87aa0cf-1c09-5296-8518-a3e8b9a1e744"),
         description="Unified dataset name to ensure entities land in a single graph",
     )
     HOST: str = Field(default="0.0.0.0", description="FastAPI host binding")
