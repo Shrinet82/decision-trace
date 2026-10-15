@@ -291,23 +291,29 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
     )
 
     answer_text = ""
-    try:
-        from app.brain.memory import apply_groq_key
-        apply_groq_key()
-        record_llm_call()
-        response = await litellm.acompletion(
-            model=_settings.LLM_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": question},
-            ],
-            temperature=0.0,
-            max_tokens=400,
-        )
-        answer_text = response.choices[0].message.content.strip()
-    except Exception as exc:
-        logger.error("LLM generation failed in /ask: %s", exc)
-        answer_text = f"Based on the knowledge graph context:\n{context_text}"
+    for attempt in range(3):
+        try:
+            from app.brain.memory import apply_groq_key
+            apply_groq_key()
+            record_llm_call()
+            response = await litellm.acompletion(
+                model=_settings.LLM_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": question},
+                ],
+                temperature=0.0,
+                max_tokens=400,
+            )
+            answer_text = response.choices[0].message.content.strip()
+            break
+        except Exception as exc:
+            logger.warning("LLM attempt %d failed in /ask: %s", attempt + 1, exc)
+            if attempt < 2:
+                await asyncio.sleep(2.0)
+            else:
+                logger.error("LLM generation failed after 3 attempts in /ask: %s", exc)
+                answer_text = "The answer is not found in the Company Brain."
 
     # Programmatic verification: never allow 'decided' or 'adopted' for proposed/rejected decisions
     import re
