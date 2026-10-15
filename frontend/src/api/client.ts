@@ -2,14 +2,12 @@ import type { AskRequest, AskResponse, DecisionDetail } from './types';
 import { getMockAskResponse } from './mocks';
 
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? '/api' : 'http://localhost:8000');
 
 export const USE_MOCKS =
-  import.meta.env.VITE_USE_MOCKS === undefined
-    ? true
-    : import.meta.env.VITE_USE_MOCKS === 'true' ||
-      import.meta.env.VITE_USE_MOCKS === '1' ||
-      import.meta.env.MODE === 'test';
+  import.meta.env.VITE_USE_MOCKS !== undefined
+    ? import.meta.env.VITE_USE_MOCKS === 'true' || import.meta.env.VITE_USE_MOCKS === '1'
+    : import.meta.env.MODE === 'test';
 
 export class ApiError extends Error {
   status: number;
