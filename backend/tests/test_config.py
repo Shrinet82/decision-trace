@@ -49,3 +49,31 @@ def test_export_cognee_env(monkeypatch):
     assert os.environ["GRAPH_DATABASE_PORT"] == "62360"
     assert os.environ["GROQ_API_KEY"] == "gsk_llm_key"
     assert os.environ["VECTOR_DB_PROVIDER"] == "lancedb"
+
+
+def test_export_cognee_env_bedrock(monkeypatch):
+    """Test that export_cognee_env correctly maps Bedrock configuration and removes conflicting keys."""
+    monkeypatch.delenv("LLM_ENDPOINT", raising=False)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+
+    settings = Settings(
+        FALKORDB_HOST="cloud.falkor.test",
+        FALKORDB_PORT=62360,
+        FALKORDB_PASSWORD=SecretStr("secret123"),
+        LLM_API_KEY=SecretStr("placeholder-key"),
+        LLM_MODEL="bedrock/amazon.nova-lite-v1:0",
+        BEDROCK_API_KEY=SecretStr("test-bearer-token-12345"),
+        AWS_REGION_NAME="us-east-1",
+    )
+
+    export_cognee_env(settings)
+
+    assert os.environ["LLM_PROVIDER"] == "custom"
+    assert os.environ["LLM_MODEL"] == "bedrock/amazon.nova-lite-v1:0"
+    assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "test-bearer-token-12345"
+    assert os.environ["LLM_API_KEY"] == "test-bearer-token-12345"
+    assert os.environ["AWS_REGION_NAME"] == "us-east-1"
+    assert os.environ["AWS_DEFAULT_REGION"] == "us-east-1"
+    assert "LLM_ENDPOINT" not in os.environ
+    assert "GROQ_API_KEY" not in os.environ
+
