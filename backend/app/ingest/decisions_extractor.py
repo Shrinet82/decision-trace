@@ -118,6 +118,12 @@ class TokenUsageTracker(CustomLogger):
         self.last_prompt_tokens = 0
         self.last_completion_tokens = 0
         self.last_total_tokens = 0
+        self.pass1_prompt_tokens = 0
+        self.pass1_completion_tokens = 0
+        self.pass1_calls = 0
+        self.pass2_prompt_tokens = 0
+        self.pass2_completion_tokens = 0
+        self.pass2_calls = 0
         self._registered = False
 
     def reset_delta(self) -> None:
@@ -132,7 +138,25 @@ class TokenUsageTracker(CustomLogger):
         self.completion_tokens = 0
         self.total_tokens = 0
         self.call_count = 0
+        self.pass1_prompt_tokens = 0
+        self.pass1_completion_tokens = 0
+        self.pass1_calls = 0
+        self.pass2_prompt_tokens = 0
+        self.pass2_completion_tokens = 0
+        self.pass2_calls = 0
         self.reset_delta()
+
+    def record_pass1(self, prompt: int, comp: int) -> None:
+        """Record usage for a Pass 1 call."""
+        self.pass1_prompt_tokens += prompt
+        self.pass1_completion_tokens += comp
+        self.pass1_calls += 1
+
+    def record_pass2(self, prompt: int, comp: int) -> None:
+        """Record usage for a Pass 2 call."""
+        self.pass2_prompt_tokens += prompt
+        self.pass2_completion_tokens += comp
+        self.pass2_calls += 1
 
     def _record_usage(self, response_obj: Any) -> None:
         usage = getattr(response_obj, "usage", None)
@@ -271,6 +295,7 @@ async def extract_all_decisions(
     concurrency_limit: int = 3,
     include_all_tickets: bool = True,
     pause_between_calls: float = 0.5,
+    bypass_cache: bool = False,
 ) -> dict[str, Any]:
     """Run Two-Pass LLM decision extraction over ticket comments and meeting note bodies.
 
@@ -281,10 +306,16 @@ async def extract_all_decisions(
         concurrency_limit: Maximum concurrent extraction tasks (default 3 with backoff).
         include_all_tickets: If True, processes all tickets.
         pause_between_calls: Seconds to sleep between calls.
+        bypass_cache: If True, bypasses the LiteLLM extraction cache for cold LLM evaluation.
 
     Returns:
         dict: Summary of extracted decisions, token usage, timing, and costs.
     """
+    if bypass_cache or os.getenv("BYPASS_EXTRACTION_CACHE") == "1":
+        litellm.disable_cache()
+    else:
+        litellm.enable_cache()
+
     target_dataset = dataset_name or _settings.DATASET_NAME
     await get_or_create_dataset_graph_name(target_dataset)
     t_path = Path(tickets_path or DEFAULT_TICKETS_PATH)
@@ -303,10 +334,6 @@ async def extract_all_decisions(
             for row in reader:
                 comment = (row.get("comments") or "").strip()
                 if not comment:
-                    continue
-                # Skip routine operational incident triage comments with boilerplate closure
-                comment_lower = comment.lower()
-                if "applied configuration fix in staging" in comment_lower and "ticket resolved" in comment_lower:
                     continue
                 text = (
                     f"Source Type: Ticket\n"
@@ -370,6 +397,7 @@ async def extract_all_decisions(
     pending_cross_edges: list[tuple[str, list[str], list[str]]] = []
     total_verified_decisions = 0
     parse_failures = 0
+    doc_coverage: dict[str, Any] = {}
 
     async def _execute_with_retry(fn, *args, **kwargs):
         """Execute LLM call with key rotation and exponential backoff on rate limits / throttling."""
@@ -434,6 +462,8 @@ async def extract_all_decisions(
             )
 
             # Pass 1: Recall-Oriented Candidate Extraction
+            p1_start_prompt = token_tracker.prompt_tokens
+            p1_start_comp = token_tracker.completion_tokens
             try:
                 p1_output = await _execute_with_retry(
                     LLMGateway.acreate_structured_output,
@@ -447,9 +477,14 @@ async def extract_all_decisions(
                 logger.error("Pass 1 extraction failed for %s: %s", item["id"], exc)
                 parse_failures += 1
                 candidates = []
+            finally:
+                p1_p_delta = token_tracker.prompt_tokens - p1_start_prompt
+                p1_c_delta = token_tracker.completion_tokens - p1_start_comp
+                token_tracker.record_pass1(p1_p_delta, p1_c_delta)
 
             # Pass 2: Precision Verification of Candidates
             verified_count_for_item = 0
+            item_verdicts = []
             for cand in candidates:
                 p2_input = (
                     f"Candidate Title: {cand.title}\n"
@@ -459,6 +494,8 @@ async def extract_all_decisions(
                     f"Evidence Quote: {cand.verbatim_quote}\n"
                     f"Source Context:\n{item['text']}"
                 )
+                p2_start_prompt = token_tracker.prompt_tokens
+                p2_start_comp = token_tracker.completion_tokens
                 try:
                     p2_output = await _execute_with_retry(
                         LLMGateway.acreate_structured_output,
@@ -467,19 +504,15 @@ async def extract_all_decisions(
                         response_model=Pass2Verification,
                         max_tokens=800,
                     )
+                    item_verdicts.append(
+                        {
+                            "candidate_title": cand.title,
+                            "keep": p2_output.keep,
+                            "refined_title": p2_output.refined_title if p2_output.keep else None,
+                            "rejection_reason": p2_output.rejection_reason if not p2_output.keep else None,
+                        }
+                    )
                     if p2_output.keep:
-                        # Safeguard against routine incident closures and bug fixes
-                        quote_check = f"{cand.verbatim_quote} {cand.title} {item['text']}".lower()
-                        if (
-                            "applied configuration fix in staging" in quote_check
-                            and "ticket resolved" in quote_check
-                        ):
-                            logger.info(
-                                "Rejecting candidate '%s': routine incident resolution pattern",
-                                cand.title,
-                            )
-                            continue
-
                         # Save verified decision to FalkorDB
                         saved_title = await _save_verified_decision(
                             cand, p2_output, item, target_dataset
@@ -511,6 +544,18 @@ async def extract_all_decisions(
                 except Exception as exc:
                     logger.error("Pass 2 verification error for candidate '%s': %s", cand.title, exc)
                     parse_failures += 1
+                finally:
+                    p2_p_delta = token_tracker.prompt_tokens - p2_start_prompt
+                    p2_c_delta = token_tracker.completion_tokens - p2_start_comp
+                    token_tracker.record_pass2(p2_p_delta, p2_c_delta)
+
+            doc_coverage[item["id"]] = {
+                "id": item["id"],
+                "type": item["type"],
+                "sent_to_llm": True,
+                "pass1_candidates": [c.title for c in candidates],
+                "pass2_verdicts": item_verdicts,
+            }
 
             elapsed = time.perf_counter() - item_start
             delta_tokens = token_tracker.last_total_tokens
@@ -661,6 +706,21 @@ async def extract_all_decisions(
         "parse_failures": parse_failures,
         "reconciliation": reconcile_res,
         "item_timings": item_timings,
+        "per_pass_metrics": {
+            "pass1": {
+                "calls": token_tracker.pass1_calls,
+                "prompt_tokens": token_tracker.pass1_prompt_tokens,
+                "completion_tokens": token_tracker.pass1_completion_tokens,
+                "avg_prompt_tokens": round(token_tracker.pass1_prompt_tokens / token_tracker.pass1_calls, 1) if token_tracker.pass1_calls else 0.0,
+            },
+            "pass2": {
+                "calls": token_tracker.pass2_calls,
+                "prompt_tokens": token_tracker.pass2_prompt_tokens,
+                "completion_tokens": token_tracker.pass2_completion_tokens,
+                "avg_prompt_tokens": round(token_tracker.pass2_prompt_tokens / token_tracker.pass2_calls, 1) if token_tracker.pass2_calls else 0.0,
+            },
+        },
+        "doc_coverage": doc_coverage,
     }
     logger.info(
         "Two-Pass Decision Extraction finished in %.2fs | Verified: %d | Total tokens: %d | Est cost: $%.5f",
