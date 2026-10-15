@@ -12,11 +12,12 @@ from typing import Any, Optional
 
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from app.brain.models import CompanyBrainGraph
 from app.config import export_cognee_env, get_settings
 
 # 1. Initialize settings and export required environment variables
 _settings = get_settings()
+
+from app.brain.models import CompanyBrainGraph
 
 # 2. Register FalkorDB compatibility adapter BEFORE importing cognee
 # 3. Import cognee and its engine modules

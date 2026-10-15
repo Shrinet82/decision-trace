@@ -17,13 +17,15 @@ import sys
 import time
 from typing import Any
 
+from app.config import get_settings
+_settings = get_settings()
+
 from app.brain.memory import (
     get_falkordb_memory_usage,
     get_or_create_dataset_graph_name,
     query_graph,
     reset,
 )
-from app.config import get_settings
 from app.ingest.decisions_extractor import extract_all_decisions
 from app.ingest.notes_source import ingest_notes_source
 from app.ingest.sql_source import ingest_sql_source

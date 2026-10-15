@@ -14,8 +14,16 @@ from typing import Optional
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Capture explicit LLM_MODEL set in process environment before any .env loading can clobber it
+# Capture and protect explicit process environment variables from Cognee's internal load_dotenv(override=True)
+_EXPLICIT_ENV = dict(os.environ)
 _EXPLICIT_ENV_LLM_MODEL = os.environ.get("LLM_MODEL")
+
+try:
+    import cognee.shared.env_file as _c_env
+    _c_env.load_env_file()
+    os.environ.update(_EXPLICIT_ENV)
+except Exception:
+    pass
 
 
 class Settings(BaseSettings):
