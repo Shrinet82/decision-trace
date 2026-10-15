@@ -1,0 +1,229 @@
+{
+  "answer": "The answer is not found in the Company Brain.",
+  "citations": [],
+  "people": [
+    "Alice Vance",
+    "Carlos Mendez",
+    "Julia Roberts",
+    "Kevin Flynn"
+  ],
+  "graph_path": {
+    "nodes": [
+      {
+        "id": "dec_21a4de59b886",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate application metrics from Datadog to Prometheus Operator",
+          "status": "accepted",
+          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
+        }
+      },
+      {
+        "id": "dec_d1d225a60971",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+          "status": "proposed",
+          "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action."
+        }
+      },
+      {
+        "id": "dec_f564fcd15601",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate session storage to embedded Keycloak cache",
+          "status": "accepted",
+          "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice."
+        }
+      },
+      {
+        "id": "dec_fda8c9b4e631",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention"
+        }
+      },
+      {
+        "id": "Kevin Flynn",
+        "label": "Person",
+        "properties": {
+          "name": "Kevin Flynn"
+        }
+      },
+      {
+        "id": "Prometheus",
+        "label": "System",
+        "properties": {
+          "name": "Prometheus"
+        }
+      },
+      {
+        "id": "Carlos Mendez",
+        "label": "Person",
+        "properties": {
+          "name": "Carlos Mendez"
+        }
+      },
+      {
+        "id": "ClickHouse",
+        "label": "System",
+        "properties": {
+          "name": "ClickHouse"
+        }
+      },
+      {
+        "id": "Alice Vance",
+        "label": "Person",
+        "properties": {
+          "name": "Alice Vance"
+        }
+      },
+      {
+        "id": "Keycloak",
+        "label": "System",
+        "properties": {
+          "name": "Keycloak"
+        }
+      },
+      {
+        "id": "Redis",
+        "label": "System",
+        "properties": {
+          "name": "Redis"
+        }
+      },
+      {
+        "id": "Julia Roberts",
+        "label": "Person",
+        "properties": {
+          "name": "Julia Roberts",
+          "is_active": true,
+          "leave_date": null
+        }
+      },
+      {
+        "id": "Observability Platform Alignment",
+        "label": "Meeting",
+        "properties": {
+          "title": "Observability Platform Alignment",
+          "date": "2026-04-12"
+        }
+      },
+      {
+        "id": "TICK-104",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-104",
+          "title": "High compute credits on daily analytics warehouse rollups"
+        }
+      },
+      {
+        "id": "TICK-102",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-102",
+          "title": "Redis session cluster operational maintenance and failover complexity"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Kevin Flynn",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Prometheus",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Kevin Flynn",
+        "target": "Prometheus",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Observability Platform Alignment",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_d1d225a60971",
+        "target": "Carlos Mendez",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_d1d225a60971",
+        "target": "ClickHouse",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Carlos Mendez",
+        "target": "ClickHouse",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_d1d225a60971",
+        "target": "TICK-104",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "Alice Vance",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "Keycloak",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Julia Roberts",
+        "target": "Keycloak",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "TICK-102",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "dec_fda8c9b4e631",
+        "type": "supersedes",
+        "properties": {}
+      },
+      {
+        "source": "dec_fda8c9b4e631",
+        "target": "Alice Vance",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_fda8c9b4e631",
+        "target": "Redis",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Alice Vance",
+        "target": "Redis",
+        "type": "owns",
+        "properties": {}
+      }
+    ],
+    "omitted_count": 3
+  }
+}

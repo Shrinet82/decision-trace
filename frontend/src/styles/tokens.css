@@ -1,0 +1,127 @@
+@import '@fontsource/overpass/400.css';
+@import '@fontsource/overpass/600.css';
+@import '@fontsource/overpass/700.css';
+@import '@fontsource/overpass-mono/400.css';
+@import '@fontsource/overpass-mono/600.css';
+
+:root {
+  /* Color Tokens - Light Theme (Default) */
+  --color-bg: #F5F7F9;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #EEF1F4;
+  --color-border: #D5DBE1;
+  --color-text: #101B26;
+  --color-text-muted: #52606D;
+
+  --color-primary: #2A68D4;
+  --color-primary-hover: #2158B8;
+  --color-focus-ring: #2A68D4;
+
+  /* Line Colors (Category Identity Only) */
+  --line-messaging: #C72C7A;
+  --line-identity: #12807A;
+  --line-data: #5A47C8;
+  --line-observability: #C98A00;
+  --line-platform: #5F6B76;
+
+  /* Semantic Colors */
+  --color-danger: #C62828;
+  --color-danger-subtle: #FDF2F2;
+  --color-success: #1B7F3B;
+  --color-success-subtle: #F0FDF4;
+  --color-warning: #B45309;
+  --color-warning-subtle: #FFFBEB;
+
+  /* Typography */
+  --font-sans: 'Overpass', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Overpass Mono', monospace;
+
+  /* Type Scale */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-body: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 30px;
+
+  --leading-ui: 1.5;
+  --leading-prose: 1.6;
+
+  /* Shape & Radii (Only two values) */
+  --radius-control: 6px;
+  --radius-panel: 8px;
+
+  /* Motion */
+  --transition-timing: 150ms ease-in-out;
+}
+
+[data-theme="dark"],
+.dark {
+  /* Color Tokens - Dark Theme */
+  --color-bg: #0F1720;
+  --color-surface: #16212C;
+  --color-surface-subtle: #1E2C3A;
+  --color-border: #2A3846;
+  --color-text: #E6EDF3;
+  --color-text-muted: #9AA9B7;
+
+  --color-primary: #2A68D4;
+  --color-primary-hover: #2158B8;
+  --color-focus-ring: #4D8BF5;
+
+  /* Line Colors - Dark Theme (High Contrast) */
+  --line-messaging: #E55C9D;
+  --line-identity: #1BB5AC;
+  --line-data: #8172E5;
+  --line-observability: #E8A71A;
+  --line-platform: #8A98A5;
+
+  /* Semantic Colors - Dark Theme */
+  --color-danger: #E55353;
+  --color-danger-subtle: #301618;
+  --color-success: #2ECC71;
+  --color-success-subtle: #0D2818;
+  --color-warning: #F59E0B;
+  --color-warning-subtle: #332007;
+}
+
+/* Base resets & typography rules */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--leading-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mono fonts for identifiers and tabular numbers */
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessible focus visible styles */
+*:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

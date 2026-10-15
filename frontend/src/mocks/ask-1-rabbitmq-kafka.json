@@ -1,0 +1,233 @@
+{
+  "answer": "Based on the provided context, there is no explicit rationale documented for choosing RabbitMQ over Kafka. The context only shows that the decision 'Adopt RabbitMQ for all event messaging across services' is **accepted** (TICK-106, Core Messaging Architecture Sync), while 'Adopt Kafka for all event messaging across services' remains **proposed** (TICK-105). The two decisions are marked as contradictory, but the reasoning for the accepted choice is not stated.\n\n**Answer:** The answer is not found in the Company Brain.",
+  "citations": [],
+  "people": [
+    "Alice Vance",
+    "Bob Martin",
+    "Ian Malcolm",
+    "Kevin Flynn"
+  ],
+  "graph_path": {
+    "nodes": [
+      {
+        "id": "dec_98a223fad745",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt RabbitMQ for all event messaging across services",
+          "status": "accepted",
+          "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision."
+        }
+      },
+      {
+        "id": "dec_76772c5b323f",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt Kafka for all event messaging across services"
+        }
+      },
+      {
+        "id": "dec_2c6a03017923",
+        "label": "Decision",
+        "properties": {
+          "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+          "status": "rejected",
+          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
+        }
+      },
+      {
+        "id": "dec_5b196394600e",
+        "label": "Decision",
+        "properties": {
+          "title": "Standardize application traces on Datadog APM across all production services",
+          "status": "accepted",
+          "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology."
+        }
+      },
+      {
+        "id": "Bob Martin",
+        "label": "Person",
+        "properties": {
+          "name": "Bob Martin"
+        }
+      },
+      {
+        "id": "RabbitMQ",
+        "label": "System",
+        "properties": {
+          "name": "RabbitMQ"
+        }
+      },
+      {
+        "id": "Alice Vance",
+        "label": "Person",
+        "properties": {
+          "name": "Alice Vance"
+        }
+      },
+      {
+        "id": "Kafka",
+        "label": "System",
+        "properties": {
+          "name": "Kafka"
+        }
+      },
+      {
+        "id": "Ian Malcolm",
+        "label": "Person",
+        "properties": {
+          "name": "Ian Malcolm"
+        }
+      },
+      {
+        "id": "Redis",
+        "label": "System",
+        "properties": {
+          "name": "Redis"
+        }
+      },
+      {
+        "id": "Kevin Flynn",
+        "label": "Person",
+        "properties": {
+          "name": "Kevin Flynn"
+        }
+      },
+      {
+        "id": "Datadog",
+        "label": "System",
+        "properties": {
+          "name": "Datadog"
+        }
+      },
+      {
+        "id": "TICK-106",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-106",
+          "title": "Lightweight pubsub requirements for async background tasks"
+        }
+      },
+      {
+        "id": "Core Messaging Architecture Sync",
+        "label": "Meeting",
+        "properties": {
+          "title": "Core Messaging Architecture Sync",
+          "date": "2026-05-18"
+        }
+      },
+      {
+        "id": "TICK-105",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-105",
+          "title": "Need enterprise event bus for asynchronous order processing"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "dec_98a223fad745",
+        "target": "Bob Martin",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_98a223fad745",
+        "target": "RabbitMQ",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Bob Martin",
+        "target": "RabbitMQ",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_98a223fad745",
+        "target": "TICK-106",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_98a223fad745",
+        "target": "Core Messaging Architecture Sync",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_98a223fad745",
+        "target": "dec_76772c5b323f",
+        "type": "contradicts",
+        "properties": {}
+      },
+      {
+        "source": "dec_76772c5b323f",
+        "target": "Alice Vance",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_76772c5b323f",
+        "target": "Kafka",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Alice Vance",
+        "target": "Kafka",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_76772c5b323f",
+        "target": "TICK-105",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_76772c5b323f",
+        "target": "dec_98a223fad745",
+        "type": "contradicts",
+        "properties": {}
+      },
+      {
+        "source": "dec_2c6a03017923",
+        "target": "Ian Malcolm",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_2c6a03017923",
+        "target": "Redis",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Alice Vance",
+        "target": "Redis",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "Kevin Flynn",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "Datadog",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Kevin Flynn",
+        "target": "Datadog",
+        "type": "owns",
+        "properties": {}
+      }
+    ],
+    "omitted_count": 3
+  }
+}

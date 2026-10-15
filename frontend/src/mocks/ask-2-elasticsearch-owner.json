@@ -1,0 +1,222 @@
+{
+  "answer": "The answer is not found in the Company Brain.",
+  "citations": [],
+  "people": [
+    "Carlos Mendez",
+    "Diana Prince",
+    "Fiona Gallagher",
+    "Kevin Flynn",
+    "Marcus Aurelius"
+  ],
+  "graph_path": {
+    "nodes": [
+      {
+        "id": "dec_21a4de59b886",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate application metrics from Datadog to Prometheus Operator",
+          "status": "accepted",
+          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
+        }
+      },
+      {
+        "id": "dec_d1d225a60971",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+          "status": "proposed",
+          "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action."
+        }
+      },
+      {
+        "id": "dec_8c7075150849",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt Snowflake for analytics ETL queries"
+        }
+      },
+      {
+        "id": "dec_e287aa298850",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+          "status": "accepted",
+          "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy."
+        }
+      },
+      {
+        "id": "Kevin Flynn",
+        "label": "Person",
+        "properties": {
+          "name": "Kevin Flynn"
+        }
+      },
+      {
+        "id": "Prometheus",
+        "label": "System",
+        "properties": {
+          "name": "Prometheus"
+        }
+      },
+      {
+        "id": "Carlos Mendez",
+        "label": "Person",
+        "properties": {
+          "name": "Carlos Mendez"
+        }
+      },
+      {
+        "id": "ClickHouse",
+        "label": "System",
+        "properties": {
+          "name": "ClickHouse"
+        }
+      },
+      {
+        "id": "Diana Prince",
+        "label": "Person",
+        "properties": {
+          "name": "Diana Prince"
+        }
+      },
+      {
+        "id": "Vault",
+        "label": "System",
+        "properties": {
+          "name": "Vault"
+        }
+      },
+      {
+        "id": "Fiona Gallagher",
+        "label": "Person",
+        "properties": {
+          "name": "Fiona Gallagher"
+        }
+      },
+      {
+        "id": "Snowflake",
+        "label": "System",
+        "properties": {
+          "name": "Snowflake"
+        }
+      },
+      {
+        "id": "Elasticsearch",
+        "label": "System",
+        "properties": {
+          "name": "Elasticsearch"
+        }
+      },
+      {
+        "id": "Marcus Aurelius",
+        "label": "Person",
+        "properties": {
+          "name": "Marcus Aurelius",
+          "is_active": false,
+          "leave_date": "2025-11-30"
+        }
+      },
+      {
+        "id": "Observability Platform Alignment",
+        "label": "Meeting",
+        "properties": {
+          "title": "Observability Platform Alignment",
+          "date": "2026-04-12"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Kevin Flynn",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Prometheus",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Kevin Flynn",
+        "target": "Prometheus",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Observability Platform Alignment",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_d1d225a60971",
+        "target": "Carlos Mendez",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_d1d225a60971",
+        "target": "ClickHouse",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Carlos Mendez",
+        "target": "ClickHouse",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_d1d225a60971",
+        "target": "dec_8c7075150849",
+        "type": "supersedes",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "Diana Prince",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "Vault",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Diana Prince",
+        "target": "Vault",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_8c7075150849",
+        "target": "Fiona Gallagher",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_8c7075150849",
+        "target": "Snowflake",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Fiona Gallagher",
+        "target": "Snowflake",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "Marcus Aurelius",
+        "target": "Elasticsearch",
+        "type": "owns",
+        "properties": {}
+      }
+    ],
+    "omitted_count": 4
+  }
+}

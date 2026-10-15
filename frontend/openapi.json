@@ -1,0 +1,1012 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Decision-Trace Company Brain API",
+    "description": "Knowledge graph backend connecting decisions, people, systems, and evidence via FalkorDB.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/decisions": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "List Decisions",
+        "description": "Retrieve decisions filtered by system, person, and/or health status.",
+        "operationId": "list_decisions_decisions_get",
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter decisions by system name (e.g. Redis, Kafka)",
+              "title": "System"
+            },
+            "description": "Filter decisions by system name (e.g. Redis, Kafka)"
+          },
+          {
+            "name": "person",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter decisions by decider name",
+              "title": "Person"
+            },
+            "description": "Filter decisions by decider name"
+          },
+          {
+            "name": "health",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "superseded",
+                    "contradicted",
+                    "possibly_stale"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter decisions by health status",
+              "title": "Health"
+            },
+            "description": "Filter decisions by health status"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Max decisions to return",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Max decisions to return"
+          },
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DecisionSummary"
+                  },
+                  "title": "Response List Decisions Decisions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/decisions/{decision_id}": {
+      "get": {
+        "tags": [
+          "Decisions"
+        ],
+        "summary": "Get Decision",
+        "description": "Retrieve detailed decision profile with full lineage, people, systems, and evidence sources.",
+        "operationId": "get_decision_decisions__decision_id__get",
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Decision Id"
+            }
+          },
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ask": {
+      "post": {
+        "tags": [
+          "Question Answering"
+        ],
+        "summary": "Ask Question",
+        "description": "Answer a natural language question grounded strictly in a retrieved FalkorDB subgraph.",
+        "operationId": "ask_question_ask_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/graph": {
+      "get": {
+        "tags": [
+          "Graph Exploration"
+        ],
+        "summary": "Get Graph",
+        "description": "Retrieve nodes and edges with optional type filters and node limits for visualization.",
+        "operationId": "get_graph_graph_get",
+        "parameters": [
+          {
+            "name": "types",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by node labels (e.g. Decision, Person, System, Ticket, Meeting)",
+              "title": "Types"
+            },
+            "description": "Filter by node labels (e.g. Decision, Person, System, Ticket, Meeting)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "description": "Max nodes to return",
+              "default": 100,
+              "title": "Limit"
+            },
+            "description": "Max nodes to return"
+          },
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/reset": {
+      "post": {
+        "tags": [
+          "Administration"
+        ],
+        "summary": "Reset Database",
+        "description": "Reset the knowledge graph, deleting all nodes, edges, vectors, and Cognee metadata.",
+        "operationId": "reset_database_admin_reset_post",
+        "parameters": [
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name to reset",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name to reset"
+          },
+          {
+            "name": "X-Admin-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Health check endpoint validating service and FalkorDB connectivity.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "Root info endpoint.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AskRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Question",
+            "description": "Natural language question to query the Company Brain"
+          },
+          "dataset_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Name",
+            "description": "Optional target dataset override"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "AskRequest",
+        "description": "Natural language question payload."
+      },
+      "AskResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "description": "Grounded natural language answer"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "type": "array",
+            "title": "Citations",
+            "description": "Sources cited in the answer"
+          },
+          "people": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "People",
+            "description": "People referenced in the subgraph"
+          },
+          "graph_path": {
+            "$ref": "#/components/schemas/GraphPath",
+            "description": "Exact subgraph used to answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "AskResponse",
+        "description": "Grounded question answer with citations and evidence subgraph."
+      },
+      "Citation": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ticket",
+              "meeting",
+              "decision",
+              "document"
+            ],
+            "title": "Type",
+            "description": "Node label type"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Node ID or unique key (e.g. TICK-101)"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Node title or descriptor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "id",
+          "title"
+        ],
+        "title": "Citation",
+        "description": "Evidence citation linking an answer to a graph node."
+      },
+      "DecisionDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique decision ID"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Decision title"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary",
+            "description": "Summary of the decision",
+            "default": ""
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale",
+            "description": "Trade-offs, constraints, and why it was made",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Lifecycle status"
+          },
+          "health": {
+            "type": "string",
+            "enum": [
+              "active",
+              "superseded",
+              "contradicted",
+              "possibly_stale"
+            ],
+            "title": "Health",
+            "description": "Computed health status"
+          },
+          "health_reason": {
+            "type": "string",
+            "title": "Health Reason",
+            "description": "Reason for the health status"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On",
+            "description": "Date decision was reached"
+          },
+          "decided_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By",
+            "description": "Primary decider"
+          },
+          "people": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "People",
+            "description": "Related people (decider, attendees, assignees)"
+          },
+          "systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems",
+            "description": "Related systems (about_system, mentions)"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "Originating tickets or meetings"
+          },
+          "supersedes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Supersedes",
+            "description": "Decisions superseded by this decision"
+          },
+          "superseded_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Superseded By",
+            "description": "Decisions that supersede this decision"
+          },
+          "contradicts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Contradicts",
+            "description": "Decisions contradicted by or contradicting this decision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "health",
+          "health_reason"
+        ],
+        "title": "DecisionDetail",
+        "description": "Detailed decision view including graph connections and health audit."
+      },
+      "DecisionSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique decision ID"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Decision title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Lifecycle status (e.g. accepted, reverted)"
+          },
+          "health": {
+            "type": "string",
+            "enum": [
+              "active",
+              "superseded",
+              "contradicted",
+              "possibly_stale"
+            ],
+            "title": "Health",
+            "description": "Computed health status"
+          },
+          "health_reason": {
+            "type": "string",
+            "title": "Health Reason",
+            "description": "Explanation of computed health status"
+          },
+          "system": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System",
+            "description": "System name this decision governs"
+          },
+          "decided_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided By",
+            "description": "Person who made the decision"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On",
+            "description": "Date decision was made"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "health",
+          "health_reason"
+        ],
+        "title": "DecisionSummary",
+        "description": "Concise decision summary for list views."
+      },
+      "GraphEdge": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "Source node ID"
+          },
+          "target": {
+            "type": "string",
+            "title": "Target",
+            "description": "Target node ID"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "Relationship type (e.g. decided_by, supersedes)"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Properties",
+            "description": "Edge property attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "type"
+        ],
+        "title": "GraphEdge",
+        "description": "Graph relationship edge."
+      },
+      "GraphNode": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Unique node identifier"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Primary node label (e.g. Decision, Person, System)"
+          },
+          "properties": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Properties",
+            "description": "Node property attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "GraphNode",
+        "description": "Graph node in a serialized graph representation."
+      },
+      "GraphPath": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes",
+            "description": "Nodes in the retrieved path"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges",
+            "description": "Edges connecting the nodes"
+          },
+          "omitted_count": {
+            "type": "integer",
+            "title": "Omitted Count",
+            "description": "Number of evidence nodes omitted due to the ~15 node cap",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "GraphPath",
+        "description": "Connected subgraph traversed to formulate an answer."
+      },
+      "GraphResponse": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes",
+            "description": "Graph nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges",
+            "description": "Graph edges"
+          },
+          "total_nodes": {
+            "type": "integer",
+            "title": "Total Nodes",
+            "description": "Count of returned nodes",
+            "default": 0
+          },
+          "total_edges": {
+            "type": "integer",
+            "title": "Total Edges",
+            "description": "Count of returned edges",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "GraphResponse",
+        "description": "Graph query result with type filtering."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ResetResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Reset status, e.g. success"
+          },
+          "dataset": {
+            "type": "string",
+            "title": "Dataset",
+            "description": "Target dataset that was purged"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Confirmation details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "dataset",
+          "message"
+        ],
+        "title": "ResetResponse",
+        "description": "Administrative reset response."
+      },
+      "SourceRef": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ticket",
+              "meeting",
+              "document"
+            ],
+            "title": "Type",
+            "description": "Source entity type"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Identifier (e.g. TICK-101 or meeting title)"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Title or summary"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date",
+            "description": "Date of the source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "id"
+        ],
+        "title": "SourceRef",
+        "description": "Reference to evidence sources (Ticket or Meeting)."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
