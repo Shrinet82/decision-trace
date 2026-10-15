@@ -8,7 +8,7 @@ from fastapi import APIRouter
 
 from app.api.schemas import AskRequest, AskResponse, Citation, GraphEdge, GraphNode, GraphPath
 from app.brain.memory import get_entity_roster, query_graph
-from app.brain.reconciliation import compute_embedding_similarity
+from app.brain.reconciliation import compute_embedding_similarities
 from app.config import get_settings
 
 logger = logging.getLogger("decision_trace.api.ask")
@@ -43,7 +43,7 @@ async def _resolve_entities_in_question(
     matched_decision_ids: list[str] = []
     if all_decisions:
         titles = [t for _, t in all_decisions]
-        scores = compute_embedding_similarity(question, titles)
+        scores = compute_embedding_similarities(question, titles)
         ranked = sorted(zip(all_decisions, scores, strict=False), key=lambda x: x[1], reverse=True)
         for (d_id, _), score in ranked[:4]:
             if score >= 0.35:
@@ -107,27 +107,45 @@ async def ask_question(request: AskRequest) -> AskResponse:
             )
 
     # Subgraph Query A: Decisions matching decision IDs or systems
-    d_query = (
-        "MATCH (d:Decision) "
-        "WHERE d.id IN $d_ids OR (d)-[:about_system]->(:System WHERE s.name IN $systems) "
-        "OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) "
-        "OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) "
-        "OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) "
-        "OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) "
-        "OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) "
-        "OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) "
-        "OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) "
-        "OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) "
-        "RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), "
-        "p.name, s.name, t.ticket_id, t.title, m.title, m.date, "
-        "d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, "
-        "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')"
-    )
-    d_rows = await query_graph(
-        d_query,
-        dataset_name=target_dataset,
-        params={"d_ids": decision_id_matches, "systems": system_matches},
-    )
+    d_rows: list[list[Any]] = []
+    if decision_id_matches:
+        d_ids_str = ", ".join(f"'{did.replace('\'', '\\\'')}'" for did in decision_id_matches)
+        rows_by_id = await query_graph(
+            f"MATCH (d:Decision) WHERE d.id IN [{d_ids_str}] "
+            "OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) "
+            "OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) "
+            "OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) "
+            "OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) "
+            "OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) "
+            "OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) "
+            "OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) "
+            "OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) "
+            "RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), "
+            "p.name, s.name, t.ticket_id, t.title, m.title, m.date, "
+            "d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, "
+            "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+            dataset_name=target_dataset,
+        )
+        d_rows.extend(rows_by_id)
+
+    if system_matches:
+        sys_str = ", ".join(f"'{s.replace('\'', '\\\'')}'" for s in system_matches)
+        rows_by_sys = await query_graph(
+            f"MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN [{sys_str}] "
+            "OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) "
+            "OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) "
+            "OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) "
+            "OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) "
+            "OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) "
+            "OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) "
+            "OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) "
+            "RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), "
+            "p.name, s.name, t.ticket_id, t.title, m.title, m.date, "
+            "d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, "
+            "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+            dataset_name=target_dataset,
+        )
+        d_rows.extend(rows_by_sys)
 
     for row in d_rows:
         if not row or not row[0]:
@@ -215,12 +233,12 @@ async def ask_question(request: AskRequest) -> AskResponse:
 
     # Subgraph Query B: Direct system queries (e.g. "Who owns Elasticsearch now?")
     if system_matches:
+        sys_str = ", ".join(f"'{s.replace('\'', '\\\'')}'" for s in system_matches)
         sys_owner_rows = await query_graph(
-            "MATCH (s:System) WHERE s.name IN $systems "
+            f"MATCH (s:System) WHERE s.name IN [{sys_str}] "
             "OPTIONAL MATCH (s)<-[r:owns]-(p:Person) "
             "RETURN s.name, p.name, coalesce(p.is_active, true), coalesce(p.leave_date, '')",
             dataset_name=target_dataset,
-            params={"systems": system_matches},
         )
         for r in sys_owner_rows:
             if not r or not r[0]:
@@ -262,7 +280,10 @@ async def ask_question(request: AskRequest) -> AskResponse:
         f"CONTEXT SUBGRAPH:\n{context_text}"
     )
 
+    answer_text = ""
     try:
+        from app.brain.memory import apply_groq_key
+        apply_groq_key()
         response = await litellm.acompletion(
             model=_settings.LLM_MODEL,
             messages=[
@@ -275,7 +296,10 @@ async def ask_question(request: AskRequest) -> AskResponse:
         answer_text = response.choices[0].message.content.strip()
     except Exception as exc:
         logger.error("LLM generation failed in /ask: %s", exc)
-        answer_text = f"Retrieved relevant subgraph, but generation failed: {exc}"
+        answer_text = f"Based on the knowledge graph context:\n{context_text}"
+    citations_to_return = list(citations_map.values())
+    if "not found" in answer_text.lower() or "could not find" in answer_text.lower() or "no information" in answer_text.lower():
+        citations_to_return = []
 
     # Extract all people in the subgraph
     subgraph_people = sorted(
@@ -288,7 +312,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
 
     return AskResponse(
         answer=answer_text,
-        citations=list(citations_map.values()),
+        citations=citations_to_return,
         people=subgraph_people,
         graph_path=GraphPath(nodes=list(nodes_map.values()), edges=edges_list),
     )
