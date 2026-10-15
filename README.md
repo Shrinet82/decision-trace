@@ -24,22 +24,22 @@ Every question answered in Decision-Trace surfaces:
 
 ---
 
-## 2. Architecture
+## 2. Architecture & Deployment
 
 ```text
 Browser -> Cloudflare Pages (React + Vite + TypeScript)
-              │ (HTTPS)
-        EC2 / Server: Caddy -> FastAPI + Cognee ────► FalkorDB Cloud (Graph)
-                                   │
-                                   ├──► Local LanceDB (Vector Embeddings)
-                                   └──► LLM API (Extraction & Q&A)
+              │ (HTTPS with strict path normalization & whitelist)
+       Railway: FastAPI + Cognee ────► FalkorDB Cloud (Port 62360, Plaintext TCP, Synthetic Data Only)
+                    │
+                    ├──► Local LanceDB (Vector Embeddings)
+                    └──► Groq / LLM API (Extraction & Q&A)
 ```
 
-- **Primary Graph Database**: **FalkorDB Cloud** using OpenCypher queries to traverse entities, dependencies, and health states.
+- **Primary Graph Database**: **FalkorDB Cloud** free tier using OpenCypher queries to traverse entities, dependencies, and health states. Connected via **Port 62360 over plaintext TCP** (`ssl=None` - free tier provides no TLS; reserved exclusively for synthetic demo data).
 - **Knowledge Orchestration**: **Cognee** with community FalkorDB adapter (`cognee-community-hybrid-adapter-falkor`).
 - **Vector Storage**: Local LanceDB on disk (conserving FalkorDB Cloud free-tier memory for the graph).
-- **Backend**: Python 3.11–3.13, FastAPI, Pydantic, Uvicorn.
-- **Frontend**: React, Vite, TypeScript, interactive graph visualization (Force-directed graph / Cytoscape).
+- **Backend API**: Python 3.12, FastAPI, Pydantic, Uvicorn, hosted on Railway with per-IP rate limiting (20/min, 200/day) and daily LLM quota enforcement (500 calls/day).
+- **Frontend & Edge**: Cloudflare Pages reverse proxy with strict path normalization blocking directory traversal (`..`), routing to React + Vite + TypeScript client.
 
 ---
 
