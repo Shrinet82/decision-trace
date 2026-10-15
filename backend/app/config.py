@@ -44,7 +44,7 @@ class Settings(BaseSettings):
         description="Target model identifier with provider prefix for LiteLLM routing",
     )
     BEDROCK_API_KEY: Optional[SecretStr] = Field(
-        default=SecretStr(os.getenv("BEDROCK_API_KEY", "REDACTED_SECRET")),
+        default=None,
         description="Amazon Bedrock API Key",
     )
     AWS_REGION_NAME: str = Field(

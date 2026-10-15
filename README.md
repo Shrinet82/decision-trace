@@ -159,6 +159,14 @@ To run periodically via crontab:
 0 */6 * * * cd /path/to/decision-trace && /path/to/.venv/bin/python scripts/keepalive.py >> /var/log/falkordb_keepalive.log 2>&1
 ```
 
+### AWS Bedrock Authentication & EC2 IAM Role
+
+When deploying on AWS (e.g. EC2, ECS, or EKS) with Amazon Bedrock Nova Lite:
+- **Zero Hardcoded Secrets**: Decision-Trace reads credentials exclusively from the environment. No API keys or credentials exist in git history or configuration files.
+- **Local / Dev Environment**: Set `BEDROCK_API_KEY` and `AWS_REGION_NAME=us-east-1` in `.env`.
+- **EC2 IAM Role (Recommended for Production)**: When hosted on an EC2 instance, attach an IAM Instance Profile with permission to invoke Bedrock models (e.g., policy granting `bedrock:InvokeModel` on `arn:aws:bedrock:*::foundation-model/amazon.nova-lite-v1:0`). Omit `BEDROCK_API_KEY`; boto3 and LiteLLM automatically discover temporary IAM credentials from the EC2 Instance Metadata Service (IMDSv2) with zero secret management overhead.
+
+
 ---
 
 ## 6. Credits & Attribution
