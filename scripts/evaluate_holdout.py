@@ -89,9 +89,9 @@ async def run_holdout_evaluation(dataset_name: str = "holdout_brain") -> dict[st
         dataset_name=dataset_name,
         tickets_path=HOLDOUT_TICKETS,
         notes_dir=HOLDOUT_NOTES,
-        concurrency_limit=1,
+        concurrency_limit=3,
         include_all_tickets=True,
-        pause_between_calls=1.5,
+        pause_between_calls=0.5,
     )
     elapsed = time.perf_counter() - start_time
 
