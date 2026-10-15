@@ -102,7 +102,10 @@ class AskRequest(BaseModel):
     """Natural language question payload."""
 
     question: str = Field(
-        ..., min_length=2, description="Natural language question to query the Company Brain"
+        ...,
+        min_length=2,
+        max_length=500,
+        description="Natural language question to query the Company Brain (max 500 characters)",
     )
     dataset_name: Optional[str] = Field(
         default=None, description="Optional target dataset override"

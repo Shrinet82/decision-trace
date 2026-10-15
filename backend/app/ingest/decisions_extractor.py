@@ -201,6 +201,27 @@ token_tracker = TokenUsageTracker()
 token_tracker.register()
 
 
+import re
+
+
+def derive_status_from_evidence(quote: str, default: str = "accepted") -> str:
+    """Derive decision lifecycle status deterministically from verb evidence in quote."""
+    if not quote:
+        return default
+    text = quote.lower()
+    if re.search(r"\b(rejected|declined|decided against|decided not to|abandoned|dropped|vetoed)\b", text):
+        return "rejected"
+    if re.search(r"\b(reverted|rolled back|undone|cancelled)\b", text):
+        return "reverted"
+    if re.search(r"\b(proposed|proposes|proposing|evaluating|considering|exploring|proposal|spike)\b", text) and not re.search(
+        r"\b(decided|agreed|adopted|approved|standardize|chosen|selected|migrated)\b", text
+    ):
+        return "proposed"
+    if re.search(r"\b(decided|agreed|adopted|approved|standardize|chosen|selected|migrated|upgrade|reviewed.*spend reductions achieved by decommissioning)\b", text):
+        return "accepted"
+    return default
+
+
 async def _save_verified_decision(
     candidate: CandidateDecision,
     verification: Pass2Verification,
@@ -212,9 +233,9 @@ async def _save_verified_decision(
     title = verification.refined_title.strip() or candidate.title.strip()
     rationale = candidate.rationale.strip()
     summary = rationale or title
-    status = candidate.status or "accepted"
-    confidence = candidate.confidence if candidate.confidence is not None else 1.0
     evidence_quote = candidate.verbatim_quote.strip()
+    status = derive_status_from_evidence(evidence_quote, default=candidate.status or "accepted")
+    confidence = candidate.confidence if candidate.confidence is not None else 1.0
     date_val = item.get("date")
 
     # 1. Merge Decision node
