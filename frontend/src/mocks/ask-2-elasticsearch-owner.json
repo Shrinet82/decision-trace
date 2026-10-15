@@ -1,6 +1,27 @@
 {
-  "answer": "The answer is not found in the Company Brain.",
-  "citations": [],
+  "answer": "Elasticsearch is owned by Marcus Aurelius, who is noted as DEPARTED on 2025-11-30.",
+  "citations": [
+    {
+      "type": "meeting",
+      "id": "Observability Platform Alignment",
+      "title": "Observability Platform Alignment"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-104",
+      "title": "High compute credits on daily analytics warehouse rollups"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-107",
+      "title": "Plaintext secret leakage risk in CI/CD pipeline variables"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-103",
+      "title": "Slow analytical queries on historical clickstream datasets"
+    }
+  ],
   "people": [
     "Carlos Mendez",
     "Diana Prince",
@@ -24,7 +45,7 @@
         "label": "Decision",
         "properties": {
           "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
-          "status": "proposed",
+          "status": "accepted",
           "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action."
         }
       },

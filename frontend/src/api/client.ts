@@ -7,7 +7,10 @@ export const API_BASE_URL =
 export const USE_MOCKS =
   import.meta.env.VITE_USE_MOCKS !== undefined
     ? import.meta.env.VITE_USE_MOCKS === 'true' || import.meta.env.VITE_USE_MOCKS === '1'
-    : import.meta.env.MODE === 'test';
+    : typeof window !== 'undefined' &&
+      (window.location.port === '4173' ||
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1');
 
 export class ApiError extends Error {
   status: number;

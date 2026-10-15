@@ -38,10 +38,10 @@ test.describe('Ask Page and App Shell End-to-End', () => {
     await expect(page.getByText('Alice Vance', { exact: true }).first()).toBeVisible();
 
     // Verify sources list
-    await expect(page.getByText('TICK-102').first()).toBeVisible();
+    await expect(page.getByText('TICK-101').first()).toBeVisible();
 
     // Open source drawer
-    const sourceCard = page.locator('button:has-text("TICK-102")').first();
+    const sourceCard = page.locator('button:has-text("TICK-101")').first();
     await sourceCard.click();
 
     // Verify drawer dialog
