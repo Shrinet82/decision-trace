@@ -1888,7 +1888,7 @@
         "id": "dec_8c7075150849",
         "summary": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
         "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
-        "status": "proposed",
+        "status": "accepted",
         "confidence": 0.95,
         "evidence_quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems.",
         "decided_on": "2026-02-18"
@@ -1920,7 +1920,7 @@
         "id": "dec_76772c5b323f",
         "summary": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
         "rationale": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
-        "status": "proposed",
+        "status": "accepted",
         "confidence": 0.95,
         "evidence_quote": "Use Kafka for all event messaging across services.",
         "decided_on": "2026-03-04"
@@ -1936,7 +1936,7 @@
         "id": "dec_d1d225a60971",
         "summary": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
         "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
-        "status": "proposed",
+        "status": "accepted",
         "confidence": 1.0,
         "evidence_quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster.",
         "decided_on": "2026-06-04"
@@ -2000,7 +2000,7 @@
         "id": "dec_091c86e8e476",
         "summary": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
         "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
-        "status": "proposed",
+        "status": "accepted",
         "confidence": 0.95,
         "evidence_quote": "Deploy Prometheus Operator on all Kubernetes staging clusters.",
         "decided_on": "2026-04-22"
@@ -2016,7 +2016,7 @@
         "id": "dec_2c6a03017923",
         "summary": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
         "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
-        "status": "rejected",
+        "status": "accepted",
         "confidence": 0.95,
         "evidence_quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications.",
         "decided_on": "2026-05-05"
@@ -2032,7 +2032,7 @@
         "id": "dec_f8a30e251e54",
         "summary": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
         "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
-        "status": "proposed",
+        "status": "accepted",
         "confidence": 1.0,
         "evidence_quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication.",
         "decided_on": "2026-05-24"
@@ -2112,7 +2112,7 @@
         "id": "dec_d09476870168",
         "summary": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
         "rationale": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
-        "status": "rejected",
+        "status": "accepted",
         "confidence": 0.9,
         "evidence_quote": "decommissioning Snowflake warehouses in favor of ClickHouse.",
         "decided_on": "2026-10-10"
