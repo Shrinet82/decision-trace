@@ -4,8 +4,9 @@ import logging
 from typing import Any, Optional
 
 import litellm
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
+from app.api.rate_limiter import check_rate_limits, record_llm_call
 from app.api.schemas import AskRequest, AskResponse, Citation, GraphEdge, GraphNode, GraphPath
 from app.brain.memory import get_entity_roster, query_graph
 from app.brain.reconciliation import compute_embedding_similarities
@@ -57,8 +58,9 @@ async def _resolve_entities_in_question(
 
 
 @router.post("/ask", response_model=AskResponse)
-async def ask_question(request: AskRequest) -> AskResponse:
+async def ask_question(request: AskRequest, http_request: Request) -> AskResponse:
     """Answer a natural language question grounded strictly in a retrieved FalkorDB subgraph."""
+    check_rate_limits(http_request)
     target_dataset = request.dataset_name or _settings.DATASET_NAME
     question = request.question.strip()
 
@@ -278,11 +280,12 @@ async def ask_question(request: AskRequest) -> AskResponse:
     system_prompt = (
         "You are the Company Brain assistant for engineering decisions and system ownership.\n"
         "Answer the user's question accurately, concisely, and STRICTLY using only the provided graph context below.\n\n"
-        "CRITICAL RULES:\n"
+        "CRITICAL INTEGRITY RULES:\n"
         "1. Answer ONLY using the facts present in the Context. If the context does not contain the answer, say 'The answer is not found in the Company Brain.'\n"
         "2. You MUST cite relevant Ticket IDs (e.g. TICK-101) or Meeting titles (e.g. 2026-02-10_iam_modernization.md) when referencing facts or decisions.\n"
         "3. If a person has departed (leave_date in past or inactive), explicitly mention their departure status when asked about ownership.\n"
-        "4. Do NOT hallucinate or extrapolate beyond the provided context.\n\n"
+        "4. STATUS INTEGRITY RULE: For decisions with status 'proposed', you MUST describe them as 'proposed' or 'a proposal' and NEVER use words like 'decided', 'adopted', or 'chosen'. For decisions with status 'rejected', you MUST explicitly state that they were 'rejected' or 'decided against'. ONLY decisions with status 'accepted' may be described as decided or adopted.\n"
+        "5. Do NOT hallucinate or extrapolate beyond the provided context.\n\n"
         f"CONTEXT SUBGRAPH:\n{context_text}"
     )
 
@@ -290,6 +293,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
     try:
         from app.brain.memory import apply_groq_key
         apply_groq_key()
+        record_llm_call()
         response = await litellm.acompletion(
             model=_settings.LLM_MODEL,
             messages=[
@@ -304,13 +308,43 @@ async def ask_question(request: AskRequest) -> AskResponse:
         logger.error("LLM generation failed in /ask: %s", exc)
         answer_text = f"Based on the knowledge graph context:\n{context_text}"
 
-    # Step 4: Rank and cap citations at 5
+    # Programmatic verification: never allow 'decided' or 'adopted' for proposed/rejected decisions
+    import re
+    for row in d_rows:
+        if not row or not row[0]:
+            continue
+        d_title = str(row[1])
+        d_status = str(row[4])
+        if d_status == "proposed":
+            answer_text = re.sub(
+                rf"\bdecided(?:\s+to)?\s+({re.escape(d_title)})",
+                r"proposed \1",
+                answer_text,
+                flags=re.IGNORECASE,
+            )
+        elif d_status == "rejected":
+            answer_text = re.sub(
+                rf"\bdecided(?:\s+to)?\s+({re.escape(d_title)})",
+                r"rejected \1",
+                answer_text,
+                flags=re.IGNORECASE,
+            )
+
+    # Step 4: Strict graph-edge citation verification
+    # Citations MUST originate strictly from actual 'based_on' edges in the graph
+    valid_based_on_targets = {
+        e.target for e in edges_list if e.type == "based_on"
+    }
+    verified_citations = [
+        c for c in citations_map.values() if c.id in valid_based_on_targets
+    ]
+
     def _rank_citation(c: Citation) -> tuple[int, float]:
         in_answer = 1 if (c.id.lower() in answer_text.lower() or c.title.lower() in answer_text.lower()) else 0
         weight = node_weights.get(c.id, 0.0)
         return (in_answer, weight)
 
-    ranked_citations = sorted(citations_map.values(), key=_rank_citation, reverse=True)[:5]
+    ranked_citations = sorted(verified_citations, key=_rank_citation, reverse=True)[:5]
     if (
         "not found" in answer_text.lower()
         or "could not find" in answer_text.lower()
