@@ -89,6 +89,7 @@ async def test_custom_extraction_and_reset_deletion():
     )
 
     try:
+        await reset(dataset_name=isolated_dataset)
         # 1. Ingest with CompanyBrainGraph custom extraction
         res = await ingest_text(
             doc,

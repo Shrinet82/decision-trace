@@ -27,53 +27,63 @@ def test_settings_initialization(monkeypatch):
 
 def test_export_cognee_env(monkeypatch):
     """Test that export_cognee_env correctly sets all required environment variables."""
-    monkeypatch.setenv("FALKORDB_HOST", "cloud.falkor.test")
-    monkeypatch.setenv("FALKORDB_PASSWORD", "secret123")
-    monkeypatch.setenv("LLM_API_KEY", "gsk_llm_key")
+    old_env = dict(os.environ)
+    try:
+        monkeypatch.setenv("FALKORDB_HOST", "cloud.falkor.test")
+        monkeypatch.setenv("FALKORDB_PASSWORD", "secret123")
+        monkeypatch.setenv("LLM_API_KEY", "gsk_llm_key")
 
-    settings = Settings(
-        FALKORDB_HOST="cloud.falkor.test",
-        FALKORDB_PORT=62360,
-        FALKORDB_PASSWORD=SecretStr("secret123"),
-        LLM_API_KEY=SecretStr("gsk_llm_key"),
-        LLM_MODEL="groq/qwen/qwen3.8-27b",
-        LLM_BASE_URL="https://api.groq.com/openai/v1",
-    )
+        settings = Settings(
+            FALKORDB_HOST="cloud.falkor.test",
+            FALKORDB_PORT=62360,
+            FALKORDB_PASSWORD=SecretStr("secret123"),
+            LLM_API_KEY=SecretStr("gsk_llm_key"),
+            LLM_MODEL="groq/qwen/qwen3.8-27b",
+            LLM_BASE_URL="https://api.groq.com/openai/v1",
+        )
 
-    export_cognee_env(settings)
+        export_cognee_env(settings)
 
-    assert os.environ["LLM_PROVIDER"] == "custom"
-    assert os.environ["LLM_MODEL"] == "groq/qwen/qwen3.8-27b"
-    assert os.environ["GRAPH_DATABASE_PROVIDER"] == "falkor"
-    assert os.environ["GRAPH_DATABASE_URL"] == "cloud.falkor.test"
-    assert os.environ["GRAPH_DATABASE_PORT"] == "62360"
-    assert os.environ["GROQ_API_KEY"] == "gsk_llm_key"
-    assert os.environ["VECTOR_DB_PROVIDER"] == "lancedb"
+        assert os.environ["LLM_PROVIDER"] == "custom"
+        assert os.environ["LLM_MODEL"] == "groq/qwen/qwen3.8-27b"
+        assert os.environ["GRAPH_DATABASE_PROVIDER"] == "falkor"
+        assert os.environ["GRAPH_DATABASE_URL"] == "cloud.falkor.test"
+        assert os.environ["GRAPH_DATABASE_PORT"] == "62360"
+        assert os.environ["GROQ_API_KEY"] == "gsk_llm_key"
+        assert os.environ["VECTOR_DB_PROVIDER"] == "lancedb"
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
 
 
 def test_export_cognee_env_bedrock(monkeypatch):
     """Test that export_cognee_env correctly maps Bedrock configuration and removes conflicting keys."""
-    monkeypatch.delenv("LLM_ENDPOINT", raising=False)
-    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    old_env = dict(os.environ)
+    try:
+        monkeypatch.delenv("LLM_ENDPOINT", raising=False)
+        monkeypatch.delenv("GROQ_API_KEY", raising=False)
 
-    settings = Settings(
-        FALKORDB_HOST="cloud.falkor.test",
-        FALKORDB_PORT=62360,
-        FALKORDB_PASSWORD=SecretStr("secret123"),
-        LLM_API_KEY=SecretStr("placeholder-key"),
-        LLM_MODEL="bedrock/amazon.nova-lite-v1:0",
-        BEDROCK_API_KEY=SecretStr("test-bearer-token-12345"),
-        AWS_REGION_NAME="us-east-1",
-    )
+        settings = Settings(
+            FALKORDB_HOST="cloud.falkor.test",
+            FALKORDB_PORT=62360,
+            FALKORDB_PASSWORD=SecretStr("secret123"),
+            LLM_API_KEY=SecretStr("placeholder-key"),
+            LLM_MODEL="bedrock/amazon.nova-lite-v1:0",
+            BEDROCK_API_KEY=SecretStr("test-bearer-token-12345"),
+            AWS_REGION_NAME="us-east-1",
+        )
 
-    export_cognee_env(settings)
+        export_cognee_env(settings)
 
-    assert os.environ["LLM_PROVIDER"] == "custom"
-    assert os.environ["LLM_MODEL"] == "bedrock/amazon.nova-lite-v1:0"
-    assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "test-bearer-token-12345"
-    assert os.environ["LLM_API_KEY"] == "test-bearer-token-12345"
-    assert os.environ["AWS_REGION_NAME"] == "us-east-1"
-    assert os.environ["AWS_DEFAULT_REGION"] == "us-east-1"
-    assert "LLM_ENDPOINT" not in os.environ
-    assert "GROQ_API_KEY" not in os.environ
+        assert os.environ["LLM_PROVIDER"] == "custom"
+        assert os.environ["LLM_MODEL"] == "bedrock/amazon.nova-lite-v1:0"
+        assert os.environ["AWS_BEARER_TOKEN_BEDROCK"] == "test-bearer-token-12345"
+        assert os.environ["LLM_API_KEY"] == "test-bearer-token-12345"
+        assert os.environ["AWS_REGION_NAME"] == "us-east-1"
+        assert os.environ["AWS_DEFAULT_REGION"] == "us-east-1"
+        assert "LLM_ENDPOINT" not in os.environ
+        assert "GROQ_API_KEY" not in os.environ
+    finally:
+        os.environ.clear()
+        os.environ.update(old_env)
 
