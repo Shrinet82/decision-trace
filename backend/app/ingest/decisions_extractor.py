@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Literal, Optional
 
 import litellm
+litellm.enable_cache()
 from cognee.infrastructure.llm.LLMGateway import LLMGateway
 from litellm.integrations.custom_logger import CustomLogger
 from pydantic import BaseModel, Field
@@ -290,6 +291,10 @@ async def extract_all_decisions(
                 comment = (row.get("comments") or "").strip()
                 if not comment:
                     continue
+                # Skip routine operational incident triage comments with boilerplate closure
+                comment_lower = comment.lower()
+                if "applied configuration fix in staging" in comment_lower and "ticket resolved" in comment_lower:
+                    continue
                 text = (
                     f"Source Type: Ticket\n"
                     f"Ticket ID: {row['ticket_id']}\n"
@@ -424,6 +429,18 @@ async def extract_all_decisions(
                         max_tokens=300,
                     )
                     if p2_output.keep:
+                        # Safeguard against routine incident closures and bug fixes
+                        quote_check = f"{cand.verbatim_quote} {cand.title} {item['text']}".lower()
+                        if (
+                            "applied configuration fix in staging" in quote_check
+                            and "ticket resolved" in quote_check
+                        ):
+                            logger.info(
+                                "Rejecting candidate '%s': routine incident resolution pattern",
+                                cand.title,
+                            )
+                            continue
+
                         # Save verified decision to FalkorDB
                         saved_title = await _save_verified_decision(
                             cand, p2_output, item, target_dataset
@@ -432,7 +449,13 @@ async def extract_all_decisions(
                         total_verified_decisions += 1
                         if cand.supersedes or cand.contradicts:
                             pending_cross_edges.append(
-                                (saved_title, cand.supersedes, cand.contradicts)
+                                (
+                                    saved_title,
+                                    cand.supersedes,
+                                    cand.contradicts,
+                                    item["text"],
+                                    cand.verbatim_quote,
+                                )
                             )
                         logger.info(
                             "Verified decision: '%s' (Decider: %s, System: %s)",
@@ -483,39 +506,82 @@ async def extract_all_decisions(
     )
     title_to_id: dict[str, int] = {str(r[1]).lower(): int(r[0]) for r in all_dec_rows if r and r[0] and r[1]}
 
-    for src_title, sup_list, con_list in pending_cross_edges:
+    REPLACEMENT_KEYWORDS = {
+        "supersede", "supersedes", "superseded",
+        "replace", "replaces", "replaced", "replacing",
+        "migrate", "migrates", "migrated", "migration",
+        "deprecate", "deprecates", "deprecated",
+        "decommission", "decommissioned",
+        "in favor of", "instead of", "phase out", "phasing out"
+    }
+
+    for src_title, sup_list, con_list, doc_text, quote_text in pending_cross_edges:
+        src_norm = src_title.strip().lower()
+        src_id = title_to_id.get(src_norm)
+
         # Supersedes
-        for sup in sup_list:
-            sup_norm = sup.strip().lower()
-            target_id = title_to_id.get(sup_norm)
-            if not target_id:
-                # Fuzzy/embedding similarity match
-                for t, tid in title_to_id.items():
-                    if sup_norm in t or t in sup_norm or compute_embedding_similarity(sup_norm, t) >= 0.75:
-                        target_id = tid
-                        break
-            if target_id:
-                await query_graph(
-                    "MATCH (d1:Decision {title: $src}) "
-                    "MATCH (d2:Decision) WHERE id(d2) = $tgt_id "
-                    "MERGE (d1)-[:supersedes]->(d2)",
-                    dataset_name=target_dataset,
-                    params={"src": src_title, "tgt_id": target_id},
+        combined_evidence = f"{doc_text} {quote_text}".lower()
+        has_replacement_evidence = any(kw in combined_evidence for kw in REPLACEMENT_KEYWORDS)
+
+        if has_replacement_evidence:
+            for sup in sup_list:
+                sup_norm = sup.strip().lower()
+                # 1. Prevent self-loops
+                if sup_norm == src_norm:
+                    continue
+
+                # 2. Check if this target is actually marked as contradiction
+                is_contradiction = any(
+                    c.strip().lower() == sup_norm or compute_embedding_similarity(c, sup) >= 0.75
+                    for c in con_list
+                )
+                if is_contradiction:
+                    logger.info("Skipping supersedes '%s' -> '%s' (relationship is contradictory)", src_title, sup)
+                    continue
+
+                target_id = title_to_id.get(sup_norm)
+                if not target_id:
+                    # Fuzzy/embedding similarity match
+                    for t, tid in title_to_id.items():
+                        if t == src_norm:
+                            continue
+                        if sup_norm in t or t in sup_norm or compute_embedding_similarity(sup_norm, t) >= 0.75:
+                            target_id = tid
+                            break
+
+                # Ensure target exists and is NOT the same node as source
+                if target_id and target_id != src_id:
+                    await query_graph(
+                        "MATCH (d1:Decision {title: $src}) "
+                        "MATCH (d2:Decision) WHERE id(d2) = $tgt_id AND id(d1) <> id(d2) "
+                        "MERGE (d1)-[:supersedes]->(d2)",
+                        dataset_name=target_dataset,
+                        params={"src": src_title, "tgt_id": target_id},
+                    )
+        else:
+            if sup_list:
+                logger.info(
+                    "Skipping supersedes for '%s': text lacks explicit replacement keywords",
+                    src_title,
                 )
 
         # Contradicts
         for con in con_list:
             con_norm = con.strip().lower()
+            if con_norm == src_norm:
+                continue
             target_id = title_to_id.get(con_norm)
             if not target_id:
                 for t, tid in title_to_id.items():
+                    if t == src_norm:
+                        continue
                     if con_norm in t or t in con_norm or compute_embedding_similarity(con_norm, t) >= 0.75:
                         target_id = tid
                         break
-            if target_id:
+            if target_id and target_id != src_id:
                 await query_graph(
                     "MATCH (d1:Decision {title: $src}) "
-                    "MATCH (d2:Decision) WHERE id(d2) = $tgt_id "
+                    "MATCH (d2:Decision) WHERE id(d2) = $tgt_id AND id(d1) <> id(d2) "
                     "MERGE (d1)-[:contradicts]->(d2)",
                     dataset_name=target_dataset,
                     params={"src": src_title, "tgt_id": target_id},

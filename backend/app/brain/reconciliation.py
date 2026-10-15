@@ -177,7 +177,9 @@ def can_merge_decisions(
     p1 = (d1.get("person") or "").strip().lower()
     p2 = (d2.get("person") or "").strip().lower()
     if p1 and p2 and p1 != p2:
-        return False
+        if p1 not in ("unknown", "none", "") and p2 not in ("unknown", "none", ""):
+            if p1 not in p2 and p2 not in p1:
+                return False
 
     # Tiebreak rule 3: Distinct actions/purposes on the same system must not merge
     # (e.g. 'Adopt Redis for sessions' vs 'Adopt Redis for rate limiting')
@@ -217,25 +219,29 @@ async def cleanup_empty_stubs(dataset_name: Optional[str] = None) -> int:
             sid, name = row[0], row[1]
             clean_name = re.sub(r"^System:\s*", "", name, flags=re.IGNORECASE).strip()
             existing = await query_graph(
-                f"MATCH (clean:System) WHERE clean.name = '{clean_name}' RETURN id(clean)",
+                "MATCH (clean:System) WHERE clean.name = $clean_name RETURN id(clean)",
                 dataset_name=dataset_name,
+                params={"clean_name": clean_name},
             )
             if existing:
                 clean_id = existing[0][0]
                 await query_graph(
-                    f"MATCH (src)-[r]->(old:System) WHERE id(old) = {sid} "
-                    f"MATCH (clean:System) WHERE id(clean) = {clean_id} "
-                    f"MERGE (src)-[new_r:about_system]->(clean)",
+                    "MATCH (src)-[r]->(old:System) WHERE id(old) = $sid "
+                    "MATCH (clean:System) WHERE id(clean) = $clean_id "
+                    "MERGE (src)-[new_r:about_system]->(clean)",
                     dataset_name=dataset_name,
+                    params={"sid": sid, "clean_id": clean_id},
                 )
                 await query_graph(
-                    f"MATCH (s:System) WHERE id(s) = {sid} DETACH DELETE s",
+                    "MATCH (s:System) WHERE id(s) = $sid DETACH DELETE s",
                     dataset_name=dataset_name,
+                    params={"sid": sid},
                 )
             else:
                 await query_graph(
-                    f"MATCH (s:System) WHERE id(s) = {sid} SET s.name = '{clean_name}'",
+                    "MATCH (s:System) WHERE id(s) = $sid SET s.name = $clean_name",
                     dataset_name=dataset_name,
+                    params={"sid": sid, "clean_name": clean_name},
                 )
     except Exception as exc:
         logger.debug("System normalization error: %s", exc)
@@ -268,9 +274,9 @@ async def reconcile_decisions(
     if not results or len(results) < 2:
         return {"merged_count": 0, "merges": []}
 
-    # Identify decisions connected by contradicts or supersedes relationships
+    # Identify decisions connected by contradicts relationships (forbidden to merge)
     rel_rows = await query_graph(
-        "MATCH (d1:Decision)-[:contradicts|supersedes]-(d2:Decision) RETURN id(d1), id(d2)",
+        "MATCH (d1:Decision)-[:contradicts]-(d2:Decision) RETURN id(d1), id(d2)",
         dataset_name=dataset_name,
     )
     forbidden_pairs: set[tuple[int, int]] = set()
@@ -325,44 +331,49 @@ async def reconcile_decisions(
 
                 # 1. Re-point incoming edges to duplicate node
                 incoming_edges = await query_graph(
-                    f"MATCH (src)-[r]->(dup:Decision) WHERE id(dup) = {dup_id} AND id(src) <> {can_id} "
-                    f"RETURN id(src), type(r)",
+                    "MATCH (src)-[r]->(dup:Decision) WHERE id(dup) = $dup_id AND id(src) <> $can_id "
+                    "RETURN id(src), type(r)",
                     dataset_name=dataset_name,
+                    params={"dup_id": dup_id, "can_id": can_id},
                 )
                 for edge in incoming_edges:
                     src_id, rel_type = edge[0], edge[1]
                     await query_graph(
-                        f"MATCH (src), (can:Decision) WHERE id(src) = {src_id} AND id(can) = {can_id} "
+                        f"MATCH (src), (can:Decision) WHERE id(src) = $src_id AND id(can) = $can_id "
                         f"MERGE (src)-[:{rel_type}]->(can)",
                         dataset_name=dataset_name,
+                        params={"src_id": src_id, "can_id": can_id},
                     )
 
                 # 2. Re-point outgoing edges from duplicate node
                 outgoing_edges = await query_graph(
-                    f"MATCH (dup:Decision)-[r]->(tgt) WHERE id(dup) = {dup_id} AND id(tgt) <> {can_id} "
-                    f"RETURN id(tgt), type(r)",
+                    "MATCH (dup:Decision)-[r]->(tgt) WHERE id(dup) = $dup_id AND id(tgt) <> $can_id "
+                    "RETURN id(tgt), type(r)",
                     dataset_name=dataset_name,
+                    params={"dup_id": dup_id, "can_id": can_id},
                 )
                 for edge in outgoing_edges:
                     tgt_id, rel_type = edge[0], edge[1]
                     await query_graph(
-                        f"MATCH (can:Decision), (tgt) WHERE id(can) = {can_id} AND id(tgt) = {tgt_id} "
+                        f"MATCH (can:Decision), (tgt) WHERE id(can) = $can_id AND id(tgt) = $tgt_id "
                         f"MERGE (can)-[:{rel_type}]->(tgt)",
                         dataset_name=dataset_name,
+                        params={"can_id": can_id, "tgt_id": tgt_id},
                     )
 
                 # 3. Preserve provenance on canonical node
-                escaped_dup_title = dup_title.replace("'", "\\'")
                 await query_graph(
-                    f"MATCH (can:Decision) WHERE id(can) = {can_id} "
-                    f"SET can.merged_titles = coalesce(can.merged_titles, []) + ['{escaped_dup_title}']",
+                    "MATCH (can:Decision) WHERE id(can) = $can_id "
+                    "SET can.merged_titles = coalesce(can.merged_titles, []) + [$dup_title]",
                     dataset_name=dataset_name,
+                    params={"can_id": can_id, "dup_title": dup_title},
                 )
 
                 # 4. Detach and delete duplicate node
                 await query_graph(
-                    f"MATCH (dup:Decision) WHERE id(dup) = {dup_id} DETACH DELETE dup",
+                    "MATCH (dup:Decision) WHERE id(dup) = $dup_id DETACH DELETE dup",
                     dataset_name=dataset_name,
+                    params={"dup_id": dup_id},
                 )
 
                 merged_ids.add(dup_id)
