@@ -50,6 +50,31 @@ def compute_embedding_similarity(text1: str, text2: str) -> float:
     return float(np.dot(v1, v2) / denom)
 
 
+def compute_embedding_similarities(query: str, candidates: list[str]) -> list[float]:
+    """Compute cosine similarities between a query text and a list of candidates in a single embed pass."""
+    if not candidates:
+        return []
+    norm_query = normalize_title(query)
+    norm_candidates = [normalize_title(c) for c in candidates]
+
+    model = get_embedding_model()
+    all_texts = [norm_query] + norm_candidates
+    embeddings = list(model.embed(all_texts))
+
+    q_vec = np.array(embeddings[0], dtype=np.float32)
+    q_norm = np.linalg.norm(q_vec)
+    if q_norm == 0:
+        return [0.0] * len(candidates)
+
+    scores: list[float] = []
+    for i in range(len(candidates)):
+        c_vec = np.array(embeddings[i + 1], dtype=np.float32)
+        c_norm = np.linalg.norm(c_vec)
+        denom = q_norm * c_norm
+        scores.append(float(np.dot(q_vec, c_vec) / denom) if denom > 0 else 0.0)
+    return scores
+
+
 def is_stub_node(decision: dict[str, Any]) -> bool:
     """Determine whether a Decision node is an unresolved stub or reference placeholder."""
     summary = (decision.get("summary") or "").strip()
