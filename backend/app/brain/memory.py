@@ -13,7 +13,7 @@ from typing import Any, Optional
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from app.brain.models import CompanyBrainGraph
-from app.config import get_settings
+from app.config import export_cognee_env, get_settings
 
 # 1. Initialize settings and export required environment variables
 _settings = get_settings()
@@ -23,6 +23,9 @@ _settings = get_settings()
 import cognee  # noqa: E402
 from cognee import SearchType, prune  # noqa: E402
 from cognee.infrastructure.databases.graph import get_graph_engine  # noqa: E402
+
+# Re-export environment in case Cognee's internal dotenv loader clobbered preset env vars
+export_cognee_env(_settings)
 
 import app.brain.falkor_compat  # noqa: F401, E402
 

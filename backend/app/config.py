@@ -14,6 +14,9 @@ from typing import Optional
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Capture explicit LLM_MODEL set in process environment before any .env loading can clobber it
+_EXPLICIT_ENV_LLM_MODEL = os.environ.get("LLM_MODEL")
+
 
 class Settings(BaseSettings):
     """Application settings loaded from environment and .env."""
@@ -97,6 +100,9 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def resolve_bedrock(self) -> "Settings":
+        if _EXPLICIT_ENV_LLM_MODEL:
+            self.LLM_MODEL = _EXPLICIT_ENV_LLM_MODEL
+            return self
         env_model = os.getenv("LLM_MODEL")
         if env_model:
             self.LLM_MODEL = env_model
@@ -114,9 +120,12 @@ def export_cognee_env(settings: Settings) -> None:
     Cognee evaluates its LLMConfig, GraphConfig, and VectorConfig during module
     import time. These settings must be exported into os.environ beforehand.
     """
+    if _EXPLICIT_ENV_LLM_MODEL:
+        settings.LLM_MODEL = _EXPLICIT_ENV_LLM_MODEL
     os.environ["SYSTEM_ROOT_DIRECTORY"] = settings.SYSTEM_ROOT_DIRECTORY
     os.environ["DATA_ROOT_DIRECTORY"] = settings.DATA_ROOT_DIRECTORY
     os.environ["LLM_TEMPERATURE"] = "0.0"
+    os.environ["LLM_MODEL"] = settings.LLM_MODEL
 
     if settings.LLM_MODEL.startswith("bedrock/"):
         os.environ["LLM_PROVIDER"] = "custom"
