@@ -1,0 +1,195 @@
+{
+  "answer": "The answer is not found in the Company Brain.",
+  "citations": [],
+  "people": [
+    "Diana Prince",
+    "Julia Roberts"
+  ],
+  "graph_path": {
+    "nodes": [
+      {
+        "id": "dec_e287aa298850",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+          "status": "accepted",
+          "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy."
+        }
+      },
+      {
+        "id": "dec_f8a30e251e54",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+          "status": "proposed",
+          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice."
+        }
+      },
+      {
+        "id": "dec_f17ee7ad31a2",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt Keycloak for company-wide single sign-on",
+          "status": "accepted",
+          "rationale": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption."
+        }
+      },
+      {
+        "id": "dec_ecd94c860f08",
+        "label": "Decision",
+        "properties": {
+          "title": "Rotate all database passwords into Vault dynamic secrets",
+          "status": "accepted",
+          "rationale": "To eliminate static credentials"
+        }
+      },
+      {
+        "id": "Diana Prince",
+        "label": "Person",
+        "properties": {
+          "name": "Diana Prince"
+        }
+      },
+      {
+        "id": "Vault",
+        "label": "System",
+        "properties": {
+          "name": "Vault"
+        }
+      },
+      {
+        "id": "Julia Roberts",
+        "label": "Person",
+        "properties": {
+          "name": "Julia Roberts"
+        }
+      },
+      {
+        "id": "Keycloak",
+        "label": "System",
+        "properties": {
+          "name": "Keycloak"
+        }
+      },
+      {
+        "id": "TICK-107",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-107",
+          "title": "Plaintext secret leakage risk in CI/CD pipeline variables"
+        }
+      },
+      {
+        "id": "TICK-111",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-111",
+          "title": "OAuth2 token issuance architecture for internal gateway"
+        }
+      },
+      {
+        "id": "IAM Architecture Modernization",
+        "label": "Meeting",
+        "properties": {
+          "title": "IAM Architecture Modernization",
+          "date": "2026-02-10"
+        }
+      },
+      {
+        "id": "Security Architecture Review",
+        "label": "Meeting",
+        "properties": {
+          "title": "Security Architecture Review",
+          "date": "2026-06-08"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "dec_e287aa298850",
+        "target": "Diana Prince",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "Vault",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Diana Prince",
+        "target": "Vault",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "TICK-107",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f8a30e251e54",
+        "target": "Julia Roberts",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_f8a30e251e54",
+        "target": "Keycloak",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Julia Roberts",
+        "target": "Keycloak",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_f8a30e251e54",
+        "target": "TICK-111",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f17ee7ad31a2",
+        "target": "Julia Roberts",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_f17ee7ad31a2",
+        "target": "Keycloak",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "dec_f17ee7ad31a2",
+        "target": "IAM Architecture Modernization",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_ecd94c860f08",
+        "target": "Diana Prince",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_ecd94c860f08",
+        "target": "Vault",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "dec_ecd94c860f08",
+        "target": "Security Architecture Review",
+        "type": "based_on",
+        "properties": {}
+      }
+    ],
+    "omitted_count": 0
+  }
+}

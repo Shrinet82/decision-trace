@@ -1,0 +1,241 @@
+{
+  "answer": "Laura Croft decided to deploy Prometheus Operator on all Kubernetes staging clusters (Source Ticket: TICK-109).",
+  "citations": [
+    {
+      "type": "ticket",
+      "id": "TICK-109",
+      "title": "Cluster-wide metrics collection and automated alerts"
+    },
+    {
+      "type": "meeting",
+      "id": "Observability Platform Alignment",
+      "title": "Observability Platform Alignment"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-111",
+      "title": "OAuth2 token issuance architecture for internal gateway"
+    },
+    {
+      "type": "ticket",
+      "id": "TICK-108",
+      "title": "Inconsistent distributed trace propagation in checkout services"
+    }
+  ],
+  "people": [
+    "Julia Roberts",
+    "Kevin Flynn",
+    "Laura Croft"
+  ],
+  "graph_path": {
+    "nodes": [
+      {
+        "id": "dec_21a4de59b886",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate application metrics from Datadog to Prometheus Operator",
+          "status": "accepted",
+          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
+        }
+      },
+      {
+        "id": "dec_5b196394600e",
+        "label": "Decision",
+        "properties": {
+          "title": "Standardize application traces on Datadog APM across all production services"
+        }
+      },
+      {
+        "id": "dec_091c86e8e476",
+        "label": "Decision",
+        "properties": {
+          "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+          "status": "proposed",
+          "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance."
+        }
+      },
+      {
+        "id": "dec_f8a30e251e54",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+          "status": "proposed",
+          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice."
+        }
+      },
+      {
+        "id": "Kevin Flynn",
+        "label": "Person",
+        "properties": {
+          "name": "Kevin Flynn"
+        }
+      },
+      {
+        "id": "Prometheus",
+        "label": "System",
+        "properties": {
+          "name": "Prometheus"
+        }
+      },
+      {
+        "id": "Laura Croft",
+        "label": "Person",
+        "properties": {
+          "name": "Laura Croft"
+        }
+      },
+      {
+        "id": "Julia Roberts",
+        "label": "Person",
+        "properties": {
+          "name": "Julia Roberts"
+        }
+      },
+      {
+        "id": "Keycloak",
+        "label": "System",
+        "properties": {
+          "name": "Keycloak"
+        }
+      },
+      {
+        "id": "Datadog",
+        "label": "System",
+        "properties": {
+          "name": "Datadog"
+        }
+      },
+      {
+        "id": "Observability Platform Alignment",
+        "label": "Meeting",
+        "properties": {
+          "title": "Observability Platform Alignment",
+          "date": "2026-04-12"
+        }
+      },
+      {
+        "id": "TICK-109",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-109",
+          "title": "Cluster-wide metrics collection and automated alerts"
+        }
+      },
+      {
+        "id": "TICK-111",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-111",
+          "title": "OAuth2 token issuance architecture for internal gateway"
+        }
+      },
+      {
+        "id": "TICK-108",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-108",
+          "title": "Inconsistent distributed trace propagation in checkout services"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Kevin Flynn",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Prometheus",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Kevin Flynn",
+        "target": "Prometheus",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "Observability Platform Alignment",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_21a4de59b886",
+        "target": "dec_5b196394600e",
+        "type": "supersedes",
+        "properties": {}
+      },
+      {
+        "source": "dec_091c86e8e476",
+        "target": "Laura Croft",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_091c86e8e476",
+        "target": "Prometheus",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "dec_091c86e8e476",
+        "target": "TICK-109",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f8a30e251e54",
+        "target": "Julia Roberts",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_f8a30e251e54",
+        "target": "Keycloak",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Julia Roberts",
+        "target": "Keycloak",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_f8a30e251e54",
+        "target": "TICK-111",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "Kevin Flynn",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "Datadog",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Kevin Flynn",
+        "target": "Datadog",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_5b196394600e",
+        "target": "TICK-108",
+        "type": "based_on",
+        "properties": {}
+      }
+    ],
+    "omitted_count": 0
+  }
+}
