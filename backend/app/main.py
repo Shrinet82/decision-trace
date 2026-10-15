@@ -55,13 +55,14 @@ app = FastAPI(
 )
 
 # CORS Middleware
-origins = [settings.FRONTEND_ORIGIN]
+origins = [settings.FRONTEND_ORIGIN, "https://decision-trace.pages.dev"]
 if "localhost" in settings.FRONTEND_ORIGIN:
     origins.append("http://127.0.0.1:5173")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.pages\.dev",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
