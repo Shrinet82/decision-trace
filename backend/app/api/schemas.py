@@ -93,6 +93,9 @@ class GraphPath(BaseModel):
 
     nodes: list[GraphNode] = Field(default_factory=list, description="Nodes in the retrieved path")
     edges: list[GraphEdge] = Field(default_factory=list, description="Edges connecting the nodes")
+    omitted_count: int = Field(
+        default=0, description="Number of evidence nodes omitted due to the ~15 node cap"
+    )
 
 
 class AskRequest(BaseModel):

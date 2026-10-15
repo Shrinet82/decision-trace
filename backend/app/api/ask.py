@@ -87,14 +87,16 @@ async def ask_question(request: AskRequest) -> AskResponse:
 
     # Step 2: Retrieve connected subgraph via Cypher
     nodes_map: dict[str, GraphNode] = {}
+    node_weights: dict[str, float] = {}
     edges_set: set[tuple[str, str, str]] = set()
     edges_list: list[GraphEdge] = []
     citations_map: dict[str, Citation] = {}
     subgraph_text_lines: list[str] = []
 
-    def _add_node(n_id: str, label: str, props: dict[str, Any]) -> None:
+    def _add_node(n_id: str, label: str, props: dict[str, Any], weight: float = 1.0) -> None:
         if n_id not in nodes_map:
             nodes_map[n_id] = GraphNode(id=n_id, label=label, properties=props)
+        node_weights[n_id] = max(node_weights.get(n_id, 0.0), weight)
 
     def _add_edge(
         src: str, tgt: str, rel_type: str, props: Optional[dict[str, Any]] = None
@@ -109,9 +111,8 @@ async def ask_question(request: AskRequest) -> AskResponse:
     # Subgraph Query A: Decisions matching decision IDs or systems
     d_rows: list[list[Any]] = []
     if decision_id_matches:
-        d_ids_str = ", ".join(f"'{did.replace('\'', '\\\'')}'" for did in decision_id_matches)
         rows_by_id = await query_graph(
-            f"MATCH (d:Decision) WHERE d.id IN [{d_ids_str}] "
+            "MATCH (d:Decision) WHERE d.id IN $decision_ids "
             "OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) "
             "OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) "
             "OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) "
@@ -125,13 +126,13 @@ async def ask_question(request: AskRequest) -> AskResponse:
             "d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, "
             "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
             dataset_name=target_dataset,
+            params={"decision_ids": decision_id_matches},
         )
         d_rows.extend(rows_by_id)
 
     if system_matches:
-        sys_str = ", ".join(f"'{s.replace('\'', '\\\'')}'" for s in system_matches)
         rows_by_sys = await query_graph(
-            f"MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN [{sys_str}] "
+            "MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN $system_names "
             "OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) "
             "OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) "
             "OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) "
@@ -144,6 +145,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
             "d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, "
             "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
             dataset_name=target_dataset,
+            params={"system_names": system_matches},
         )
         d_rows.extend(rows_by_sys)
 
@@ -172,7 +174,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
         owner_leave_date = str(row[19]) if row[19] else None
 
         _add_node(
-            d_id, "Decision", {"title": d_title, "status": d_status, "rationale": d_rationale}
+            d_id, "Decision", {"title": d_title, "status": d_status, "rationale": d_rationale}, weight=10.0
         )
 
         text_block = [f"Decision: '{d_title}' (Status: {d_status})"]
@@ -182,12 +184,12 @@ async def ask_question(request: AskRequest) -> AskResponse:
             text_block.append(f"  Rationale: {d_rationale}")
 
         if decider:
-            _add_node(decider, "Person", {"name": decider})
+            _add_node(decider, "Person", {"name": decider}, weight=8.0)
             _add_edge(d_id, decider, "decided_by")
             text_block.append(f"  Decided by: {decider}")
 
         if system:
-            _add_node(system, "System", {"name": system})
+            _add_node(system, "System", {"name": system}, weight=8.0)
             _add_edge(d_id, system, "about_system")
             text_block.append(f"  System: {system}")
             if owner_name:
@@ -195,6 +197,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
                     owner_name,
                     "Person",
                     {"name": owner_name, "is_active": owner_active, "leave_date": owner_leave_date},
+                    weight=7.0,
                 )
                 _add_edge(owner_name, system, "owns")
                 status_desc = (
@@ -203,29 +206,29 @@ async def ask_question(request: AskRequest) -> AskResponse:
                 text_block.append(f"  System Owner: {owner_name} ({status_desc})")
 
         if t_id:
-            _add_node(t_id, "Ticket", {"ticket_id": t_id, "title": t_title or t_id})
+            _add_node(t_id, "Ticket", {"ticket_id": t_id, "title": t_title or t_id}, weight=6.0)
             _add_edge(d_id, t_id, "based_on")
             citations_map[t_id] = Citation(type="ticket", id=t_id, title=t_title or t_id)
             text_block.append(f"  Source Ticket: {t_id} ('{t_title}')")
 
         if m_title:
-            _add_node(m_title, "Meeting", {"title": m_title, "date": m_date})
+            _add_node(m_title, "Meeting", {"title": m_title, "date": m_date}, weight=6.0)
             _add_edge(d_id, m_title, "based_on")
             citations_map[m_title] = Citation(type="meeting", id=m_title, title=m_title)
             text_block.append(f"  Source Meeting: {m_title} (Date: {m_date})")
 
         if sup_id and sup_title:
-            _add_node(sup_id, "Decision", {"title": sup_title})
+            _add_node(sup_id, "Decision", {"title": sup_title}, weight=5.0)
             _add_edge(d_id, sup_id, "supersedes")
             text_block.append(f"  Supersedes: '{sup_title}'")
 
         if supby_id and supby_title:
-            _add_node(supby_id, "Decision", {"title": supby_title})
+            _add_node(supby_id, "Decision", {"title": supby_title}, weight=5.0)
             _add_edge(supby_id, d_id, "supersedes")
             text_block.append(f"  Superseded by: '{supby_title}'")
 
         if con_id and con_title:
-            _add_node(con_id, "Decision", {"title": con_title})
+            _add_node(con_id, "Decision", {"title": con_title}, weight=5.0)
             _add_edge(d_id, con_id, "contradicts")
             text_block.append(f"  Contradicts: '{con_title}'")
 
@@ -233,12 +236,12 @@ async def ask_question(request: AskRequest) -> AskResponse:
 
     # Subgraph Query B: Direct system queries (e.g. "Who owns Elasticsearch now?")
     if system_matches:
-        sys_str = ", ".join(f"'{s.replace('\'', '\\\'')}'" for s in system_matches)
         sys_owner_rows = await query_graph(
-            f"MATCH (s:System) WHERE s.name IN [{sys_str}] "
+            "MATCH (s:System) WHERE s.name IN $system_names "
             "OPTIONAL MATCH (s)<-[r:owns]-(p:Person) "
             "RETURN s.name, p.name, coalesce(p.is_active, true), coalesce(p.leave_date, '')",
             dataset_name=target_dataset,
+            params={"system_names": system_matches},
         )
         for r in sys_owner_rows:
             if not r or not r[0]:
@@ -248,10 +251,13 @@ async def ask_question(request: AskRequest) -> AskResponse:
             p_active = bool(r[2])
             p_leave = str(r[3]) if r[3] else None
 
-            _add_node(s_name, "System", {"name": s_name})
+            _add_node(s_name, "System", {"name": s_name}, weight=8.0)
             if p_name:
                 _add_node(
-                    p_name, "Person", {"name": p_name, "is_active": p_active, "leave_date": p_leave}
+                    p_name,
+                    "Person",
+                    {"name": p_name, "is_active": p_active, "leave_date": p_leave},
+                    weight=7.5,
                 )
                 _add_edge(p_name, s_name, "owns")
                 status_str = "active employee" if p_active else f"DEPARTED on {p_leave}"
@@ -264,7 +270,7 @@ async def ask_question(request: AskRequest) -> AskResponse:
             answer="I could not find any relevant information in the Company Brain to answer your question.",
             citations=[],
             people=[],
-            graph_path=GraphPath(nodes=[], edges=[]),
+            graph_path=GraphPath(nodes=[], edges=[], omitted_count=0),
         )
 
     # Step 3: LLM generation grounded strictly in subgraph
@@ -297,22 +303,44 @@ async def ask_question(request: AskRequest) -> AskResponse:
     except Exception as exc:
         logger.error("LLM generation failed in /ask: %s", exc)
         answer_text = f"Based on the knowledge graph context:\n{context_text}"
-    citations_to_return = list(citations_map.values())
-    if "not found" in answer_text.lower() or "could not find" in answer_text.lower() or "no information" in answer_text.lower():
-        citations_to_return = []
 
-    # Extract all people in the subgraph
+    # Step 4: Rank and cap citations at 5
+    def _rank_citation(c: Citation) -> tuple[int, float]:
+        in_answer = 1 if (c.id.lower() in answer_text.lower() or c.title.lower() in answer_text.lower()) else 0
+        weight = node_weights.get(c.id, 0.0)
+        return (in_answer, weight)
+
+    ranked_citations = sorted(citations_map.values(), key=_rank_citation, reverse=True)[:5]
+    if (
+        "not found" in answer_text.lower()
+        or "could not find" in answer_text.lower()
+        or "no information" in answer_text.lower()
+    ):
+        ranked_citations = []
+
+    # Step 5: Rank and cap graph_path nodes at ~15, ordered by relevance
+    sorted_nodes = sorted(
+        nodes_map.values(), key=lambda n: node_weights.get(n.id, 0.0), reverse=True
+    )
+    capped_nodes = sorted_nodes[:15]
+    omitted_count = max(0, len(sorted_nodes) - len(capped_nodes))
+    capped_node_ids = {n.id for n in capped_nodes}
+    capped_edges = [
+        e for e in edges_list if e.source in capped_node_ids and e.target in capped_node_ids
+    ]
+
+    # Extract all people in the retained subgraph
     subgraph_people = sorted(
         [
             node.properties.get("name", node.id)
-            for node in nodes_map.values()
+            for node in capped_nodes
             if node.label == "Person"
         ]
     )
 
     return AskResponse(
         answer=answer_text,
-        citations=citations_to_return,
+        citations=ranked_citations,
         people=subgraph_people,
-        graph_path=GraphPath(nodes=list(nodes_map.values()), edges=edges_list),
+        graph_path=GraphPath(nodes=capped_nodes, edges=capped_edges, omitted_count=omitted_count),
     )
