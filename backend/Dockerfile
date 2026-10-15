@@ -19,12 +19,12 @@ FROM python:3.12-slim AS runner
 
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd -r appgroup && useradd -r -g appgroup -u 1000 appuser
+# Create non-root user with home directory
+RUN groupadd -r appgroup && useradd -m -r -g appgroup -u 1000 appuser
 
-# Set up data directories for persistent storage (SQLite and LanceDB)
-RUN mkdir -p /app/data_storage/.cognee_system /app/data_storage/.lancedb && \
-    chown -R appuser:appgroup /app
+# Set up data directories for persistent storage (SQLite and LanceDB) and caches
+RUN mkdir -p /app/data_storage/.cognee_system /app/data_storage/.lancedb /tmp/fastembed_cache /home/appuser/.cache && \
+    chown -R appuser:appgroup /app /tmp/fastembed_cache /home/appuser
 
 # Copy virtual environment from builder
 COPY --from=builder --chown=appuser:appgroup /app/.venv /app/.venv
@@ -36,6 +36,9 @@ COPY --chown=appuser:appgroup app/ /app/app/
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
+    HOME=/home/appuser \
+    HF_HOME=/home/appuser/.cache/huggingface \
+    FASTEMBED_CACHE_PATH=/tmp/fastembed_cache \
     LANCEDB_PATH=/app/data_storage/.lancedb
 
 USER appuser
