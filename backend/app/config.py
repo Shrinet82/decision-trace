@@ -97,6 +97,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def resolve_bedrock(self) -> "Settings":
+        env_model = os.getenv("LLM_MODEL")
+        if env_model:
+            self.LLM_MODEL = env_model
+            return self
         if "LLM_MODEL" not in self.model_fields_set and os.getenv("USE_GROQ") != "1" and self.BEDROCK_API_KEY:
             target_model = os.getenv("BEDROCK_MODEL", "bedrock/amazon.nova-lite-v1:0")
             if not self.LLM_MODEL.startswith("bedrock/"):
@@ -112,6 +116,7 @@ def export_cognee_env(settings: Settings) -> None:
     """
     os.environ["SYSTEM_ROOT_DIRECTORY"] = settings.SYSTEM_ROOT_DIRECTORY
     os.environ["DATA_ROOT_DIRECTORY"] = settings.DATA_ROOT_DIRECTORY
+    os.environ["LLM_TEMPERATURE"] = "0.0"
 
     if settings.LLM_MODEL.startswith("bedrock/"):
         os.environ["LLM_PROVIDER"] = "custom"

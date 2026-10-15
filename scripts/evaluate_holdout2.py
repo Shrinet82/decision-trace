@@ -6,6 +6,7 @@ Ground truth contains 5 expected decisions and 3 negative documents (expecting 0
 
 import asyncio
 import logging
+import os
 import time
 from pathlib import Path
 from typing import Any
@@ -67,8 +68,10 @@ EXPECTED_HOLDOUT2 = [
 
 async def run_holdout2_evaluation(dataset_name: str = "holdout2_brain") -> dict[str, Any]:
     """Run extraction on holdout 2 documents and benchmark against ground truth."""
+    active_model = os.getenv("LLM_MODEL", "bedrock/deepseek.v3.2")
     print("=" * 70)
     print(f"HOLDOUT 2 DATASET EVALUATION: '{dataset_name}'")
+    print(f"ACTIVE LLM MODEL: {active_model}")
     print("=" * 70)
 
     # 1. Reset dataset
