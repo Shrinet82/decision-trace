@@ -9,10 +9,15 @@ Links supersedes and contradicts relationships, re-points edges, and reconciles 
 import asyncio
 import csv
 import logging
+import os
 import time
 import uuid
 from pathlib import Path
 from typing import Any, Literal, Optional
+
+from app.config import export_cognee_env, get_settings
+_settings = get_settings()
+export_cognee_env(_settings)
 
 import litellm
 from litellm.caching import Cache
@@ -31,11 +36,11 @@ from app.brain.memory import (
     rotate_groq_key,
 )
 from app.brain.reconciliation import compute_embedding_similarity, reconcile_decisions
-from app.config import get_settings
 from app.ingest.notes_source import parse_meeting_note
 
 logger = logging.getLogger("decision_trace.ingest.decisions")
-_settings = get_settings()
+export_cognee_env(_settings)
+apply_groq_key()
 
 # Initialize fresh extraction cache keyed by model + prompt version
 model_slug = _settings.LLM_MODEL.replace("/", "_").replace(":", "_").replace(".", "_")
