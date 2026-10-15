@@ -112,6 +112,15 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
             'font-weight': 400,
           },
         },
+        // Stale or possibly stale decision node (dashed ring)
+        {
+          selector: 'node[nodeType = "decision"][health = "possibly_stale"]',
+          style: {
+            'border-style': 'dashed',
+            'border-color': isDarkMode ? '#F5A623' : '#D97706',
+            'border-width': 2.5,
+          },
+        },
         // Cited Decision node (heavier outline)
         {
           selector: 'node[isCited = 1], node[?isCited]',
@@ -428,6 +437,13 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
               aria-hidden="true"
             />
             <span>Decision (circle)</span>
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span
+              className="w-2.5 h-2.5 rounded-full inline-block border-2 border-dashed border-warning"
+              aria-hidden="true"
+            />
+            <span>Possibly stale (dashed ring)</span>
           </span>
           <span className="inline-flex items-center gap-1">
             <span
