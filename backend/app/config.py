@@ -44,7 +44,8 @@ class Settings(BaseSettings):
     FALKORDB_USERNAME: str = Field(default="falkordb", description="FalkorDB username")
     FALKORDB_PASSWORD: SecretStr = Field(..., description="FalkorDB password")
     FALKORDB_GRAPH_NAME: str = Field(
-        default="company_brain", description="Target graph database name"
+        default=os.getenv("FALKORDB_GRAPH_NAME", "c87aa0cf-1c09-5296-8518-a3e8b9a1e744"),
+        description="Target graph database name",
     )
 
     # LLM & Embedding Settings
