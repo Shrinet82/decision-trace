@@ -50,17 +50,48 @@ def rotate_groq_key() -> str:
 
 
 def apply_groq_key(key: Optional[str] = None) -> None:
+    if _settings.LLM_MODEL.startswith("bedrock/"):
+        target_key = key or (
+            _settings.BEDROCK_API_KEY.get_secret_value()
+            if getattr(_settings, "BEDROCK_API_KEY", None)
+            else _settings.LLM_API_KEY.get_secret_value()
+        )
+        os.environ["AWS_BEARER_TOKEN_BEDROCK"] = target_key
+        os.environ["LLM_API_KEY"] = target_key
+        os.environ["LLM_MODEL"] = _settings.LLM_MODEL
+        os.environ.pop("LLM_ENDPOINT", None)
+        os.environ.pop("GROQ_API_KEY", None)
+        os.environ.pop("OPENAI_API_KEY", None)
+        os.environ["AWS_REGION_NAME"] = getattr(_settings, "AWS_REGION_NAME", "us-east-1")
+        os.environ["AWS_DEFAULT_REGION"] = getattr(_settings, "AWS_REGION_NAME", "us-east-1")
+        try:
+            from cognee.infrastructure.llm.config import get_llm_config
+
+            get_llm_config.cache_clear()
+            cfg = get_llm_config()
+            cfg.llm_api_key = target_key
+            cfg.llm_model = _settings.LLM_MODEL
+            cfg.llm_endpoint = None
+            if cfg.llm_args is None:
+                cfg.llm_args = {}
+            cfg.llm_args["aws_region_name"] = getattr(_settings, "AWS_REGION_NAME", "us-east-1")
+        except Exception:
+            pass
+        return
+
     target_key = key or get_active_groq_key()
+    os.environ["LLM_API_KEY"] = target_key
+    os.environ["GROQ_API_KEY"] = target_key
+    os.environ["OPENAI_API_KEY"] = target_key
     try:
         from cognee.infrastructure.llm.config import get_llm_config
 
+        get_llm_config.cache_clear()
         cfg = get_llm_config()
         cfg.llm_api_key = target_key
         cfg.llm_model = _settings.LLM_MODEL
     except Exception:
         pass
-    os.environ["GROQ_API_KEY"] = target_key
-    os.environ["OPENAI_API_KEY"] = target_key
 
 
 # Ensure active key is applied at import time
@@ -81,9 +112,11 @@ async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
         return default_name
 
     try:
+        from cognee.infrastructure.databases.relational import create_db_and_tables
         from cognee.modules.data.methods import get_datasets_by_name
         from cognee.modules.users.methods import get_default_user
 
+        await create_db_and_tables()
         user = await get_default_user()
         if user:
             ds_list = await get_datasets_by_name(dataset_name, user.id)
@@ -242,15 +275,23 @@ def build_extraction_prompt(
         '     NEVER output empty strings ("") or placeholder text.\n\n'
         "4. Entity Identity Consistency:\n"
         "   - Reference fields must use the EXACT same identifier defined in the top-level entity lists (e.g. 'name' for Person/System, 'ticket_id' for Ticket, 'title' for Meeting and Decision).\n\n"
-        "5. Deliberate Decisions Only:\n"
-        "   - Extract a Decision ONLY when an architectural choice, technology adoption, standard-setting, policy reversal, or explicit technical trade-off was made (e.g. adopting Redis, migrating to ClickHouse, choosing Kafka over RabbitMQ, standardizing on Kubernetes 1.30).\n"
-        "   - Do NOT extract routine bug investigations, parameter tweaks, troubleshooting notes, or operational checks where no architectural or technology decision was made. If the text only describes standard debugging or investigation without an architectural/technology decision, leave 'decisions' empty ([]).\n"
+        "5. Deliberate Decisions (General Definition):\n"
+        "   - A Decision is a choice about technology, vendor, process, or policy that is adopted, rejected, deprecated, migrated, upgraded to a specific version, or standardized, even when written as routine work, maintenance, or troubleshooting.\n"
+        "   - Generic Examples (NOT from dataset):\n"
+        "     * 'Adopt SQLite in WAL mode for local desktop cache to prevent filesystem locks during multi-process read operations.'\n"
+        "     * 'Standardize on TLS 1.3 across all edge load balancers and deprecate CBC-mode ciphers to meet PCI-DSS compliance.'\n"
+        "   - Explicit Non-Decisions (Do NOT extract as decisions):\n"
+        "     * Bug reports (e.g. stack traces, null pointer exceptions, CSS styling defects).\n"
+        "     * Incident debugging and root cause triage without a permanent technology or policy choice (e.g. restarting a crashed pod, bumping memory limits to survive a leak, inspecting connection queue telemetry).\n"
+        "     * Routine status updates or progress sharing (e.g. sprint burndown updates, standup notes, vacation schedules, completion percentages).\n"
+        "     * Questions, inquiries, or open discussion without a chosen path.\n"
+        "   - Even when framed as routine maintenance, quarterly review, or troubleshooting, if a choice about technology, vendor, process, or policy was adopted, rejected, deprecated, migrated, upgraded to a specific version, or standardized, extract it as a Decision.\n"
     )
 
     if existing_decision_titles:
         titles_str = "\n".join(f'  - "{t}"' for t in existing_decision_titles)
         base_prompt += (
-            f"\n5. Existing Decisions (Identity Reuse):\n"
+            f"\n6. Existing Decisions (Identity Reuse):\n"
             f"The following decisions already exist in the knowledge base:\n"
             f"{titles_str}\n"
             f"When a decision in the text supersedes, contradicts, or updates an existing decision, "
@@ -261,7 +302,7 @@ def build_extraction_prompt(
         people_list = ", ".join(f'"{p}"' for p in roster.get("people", []))
         systems_list = ", ".join(f'"{s}"' for s in roster.get("systems", []))
         base_prompt += (
-            f"\n6. Known Entity Roster (Resolution Guide):\n"
+            f"\n7. Known Entity Roster (Resolution Guide):\n"
             f"The company has the following known people and systems in its catalog:\n"
             f"- People: [{people_list}]\n"
             f"- Systems: [{systems_list}]\n"
@@ -269,6 +310,73 @@ def build_extraction_prompt(
             f"resolve it to the EXACT corresponding canonical name from this roster (e.g. 'Dave Miller', 'Redis').\n"
         )
     return base_prompt
+
+
+def build_pass1_prompt(
+    existing_decision_titles: Optional[list[str]] = None,
+    roster: Optional[dict[str, list[str]]] = None,
+) -> str:
+    """Build the Pass 1 (recall-oriented) system prompt extracting candidate decisions with verbatim evidence quotes."""
+    prompt = (
+        "You are a high-recall information extraction engine for an engineering Company Brain.\n"
+        "Extract all candidate engineering decisions from the provided text.\n\n"
+        "DECISION DEFINITION:\n"
+        "A Decision is a choice about technology, vendor, process, configuration, or policy that is adopted, rejected, deprecated, migrated, upgraded to a specific version, standardized, or changed (including infrastructure parameters, timeouts, retention policies, partitioning, or caching strategies), even when written as routine work, maintenance, or troubleshooting.\n\n"
+        "GENERIC EXAMPLES (for reference, NOT from the dataset):\n"
+        "- 'Adopt SQLite in WAL mode for local desktop cache to prevent filesystem locks during multi-process read operations.'\n"
+        "- 'Standardize on TLS 1.3 across all edge load balancers and deprecate CBC-mode ciphers to meet PCI-DSS compliance.'\n\n"
+        "EXPLICIT NON-DECISIONS (Do NOT extract):\n"
+        "- Pure bug reports without a permanent policy/configuration choice (e.g. stack traces, null pointer exceptions, CSS styling defects).\n"
+        "- Temporary incident firefighting (e.g. restarting a crashed pod, bumping memory limits to survive a leak temporarily).\n"
+        "- Routine status updates or progress sharing (e.g. sprint burndown updates, standup notes, vacation schedules, completion percentages).\n"
+        "- Questions, inquiries, or open discussion without a chosen path.\n\n"
+        "RULES:\n"
+        "1. For each candidate decision, provide an exact 'verbatim_quote' from the text that directly proves the choice.\n"
+        "2. Extract the canonical system/tool name into 'system' (e.g. 'Postgres', 'Redis', 'Keycloak', 'Snowflake', 'Kubernetes'). Strip any 'System:' prefix.\n"
+        "3. Extract the person who made the decision into 'decided_by'.\n"
+        "4. If no decision was made, return candidates: [].\n"
+    )
+
+    if existing_decision_titles:
+        titles_str = "\n".join(f'  - "{t}"' for t in existing_decision_titles[:25])
+        prompt += (
+            f"\nEXISTING DECISIONS (for supersedes/contradicts matching):\n"
+            f"{titles_str}\n"
+        )
+
+    if roster and (roster.get("people") or roster.get("systems")):
+        people_list = ", ".join(f'"{p}"' for p in roster.get("people", []))
+        systems_list = ", ".join(f'"{s}"' for s in roster.get("systems", []))
+        prompt += (
+            f"\nKNOWN ROSTER:\n"
+            f"- People: [{people_list}]\n"
+            f"- Systems: [{systems_list}]\n"
+        )
+    return prompt
+
+
+def build_pass2_prompt(roster: Optional[dict[str, list[str]]] = None) -> str:
+    """Build the Pass 2 (precision verification) system prompt."""
+    prompt = (
+        "You are a strict precision verification engine for engineering decisions in a Company Brain.\n"
+        "Evaluate the candidate decision against its verbatim evidence quote and document context.\n\n"
+        "VERIFICATION CRITERIA:\n"
+        "1. was_choice_made: Did the team or individual make a definitive choice, approval, agreement, or standardization about technology, vendor, process, configuration, or policy in the quote? (e.g. 'we have decided to adopt', 'approved upgrading', 'standardized on').\n"
+        "2. is_decision_not_status_or_bug: Is this an actual decision or policy/version/architectural change rather than routine debugging, a pod restart, temporary incident triage, or routine task update? Note: Version upgrades, technology adoptions, and architectural migrations performed during maintenance or routine tickets COUNT as decisions.\n"
+        "3. decided_by_verified: Check if the decider is explicitly identified in the quote or document context. Resolve to their canonical full name from the roster.\n"
+        "4. system_verified: Check the system affected. Strip any 'System:' prefix and match against the canonical system name.\n"
+        "5. refined_title: Refine the decision title into a concise, professional title (e.g. 'Adopt Snowflake for analytics ETL queries', 'Upgrade production Postgres instances to version 16').\n"
+        "6. keep: Set to True ONLY if was_choice_made is True, is_decision_not_status_or_bug is True, and the choice is directly supported by the quote. If weak, speculative, or a routine bug/status, set keep=False.\n"
+    )
+    if roster and (roster.get("people") or roster.get("systems")):
+        people_list = ", ".join(f'"{p}"' for p in roster.get("people", []))
+        systems_list = ", ".join(f'"{s}"' for s in roster.get("systems", []))
+        prompt += (
+            f"\nKNOWN CANONICAL ROSTER:\n"
+            f"- People: [{people_list}]\n"
+            f"- Systems: [{systems_list}]\n"
+        )
+    return prompt
 
 
 @retry(
