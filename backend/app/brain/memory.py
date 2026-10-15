@@ -142,7 +142,7 @@ async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
     if dataset_name in existing_graphs:
         return dataset_name
 
-    return default_name
+    return dataset_name if dataset_name else default_name
 
 
 async def get_or_create_dataset_graph_name(dataset_name: Optional[str] = None) -> str:
@@ -452,11 +452,23 @@ async def ingest_text(
                 getattr(target_model, "__name__", str(target_model)),
             )
             apply_groq_key()
-            await cognee.cognify(
-                datasets=[target_dataset],
-                graph_model=target_model,
-                custom_prompt=extraction_prompt,
-            )
+            engine = await get_graph_engine()
+            target_graph = await resolve_active_graph_name(target_dataset)
+            adapter = getattr(engine, "_engine", lambda: engine)()
+            orig_graph = getattr(adapter, "graph_name", _settings.DATASET_NAME)
+            if hasattr(adapter, "graph_name") and target_graph:
+                adapter.graph_name = target_graph
+
+            try:
+                await cognee.cognify(
+                    datasets=[target_dataset],
+                    graph_model=target_model,
+                    custom_prompt=extraction_prompt,
+                )
+            finally:
+                if hasattr(adapter, "graph_name") and orig_graph:
+                    adapter.graph_name = orig_graph
+
             logger.info("Cognify completed successfully for '%s'.", target_dataset)
 
             if reconcile:
@@ -492,11 +504,22 @@ async def ask(question: str, dataset_name: Optional[str] = None) -> dict[str, An
 
     try:
         apply_groq_key()
-        search_results = await cognee.search(
-            query_type=SearchType.GRAPH_COMPLETION,
-            query_text=question,
-            datasets=[target_dataset],
-        )
+        engine = await get_graph_engine()
+        target_graph = await resolve_active_graph_name(target_dataset)
+        adapter = getattr(engine, "_engine", lambda: engine)()
+        orig_graph = getattr(adapter, "graph_name", _settings.DATASET_NAME)
+        if hasattr(adapter, "graph_name") and target_graph:
+            adapter.graph_name = target_graph
+
+        try:
+            search_results = await cognee.search(
+                query_type=SearchType.GRAPH_COMPLETION,
+                query_text=question,
+                datasets=[target_dataset],
+            )
+        finally:
+            if hasattr(adapter, "graph_name") and orig_graph:
+                adapter.graph_name = orig_graph
 
         formatted_answers: list[str] = []
         citations: list[str] = []
@@ -662,10 +685,41 @@ async def reset(dataset_name: Optional[str] = None, delete_all_graphs: bool = Fa
             except Exception:
                 pass
 
-        # 1. Prune local data and system metadata only when full reset requested
+        # 1. Prune local data and system metadata
         if delete_all_graphs or not dataset_name:
             await prune.prune_data()
             await prune.prune_system(metadata=True)
+        elif dataset_name:
+            try:
+                from cognee.infrastructure.databases.relational import get_relational_engine
+                from sqlalchemy import text as sa_text
+                rel_engine = get_relational_engine()
+                async with rel_engine.get_async_session() as session:
+                    await session.execute(
+                        sa_text(
+                            "DELETE FROM pipeline_runs WHERE dataset_id IN (SELECT id FROM datasets WHERE name = :ds)"
+                        ),
+                        {"ds": dataset_name},
+                    )
+                    await session.execute(
+                        sa_text(
+                            "DELETE FROM data WHERE dataset_id IN (SELECT id FROM datasets WHERE name = :ds)"
+                        ),
+                        {"ds": dataset_name},
+                    )
+                    await session.execute(
+                        sa_text(
+                            "DELETE FROM dataset_database WHERE dataset_id IN (SELECT id FROM datasets WHERE name = :ds)"
+                        ),
+                        {"ds": dataset_name},
+                    )
+                    await session.execute(
+                        sa_text("DELETE FROM datasets WHERE name = :ds"),
+                        {"ds": dataset_name},
+                    )
+                    await session.commit()
+            except Exception as exc:
+                logger.debug("Failed to prune dataset '%s' from relational db: %s", dataset_name, exc)
 
         # 2. Delete the graph(s) directly on the FalkorDB instance
         remaining_graphs: list[str] = []

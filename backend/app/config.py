@@ -22,6 +22,9 @@ try:
     import cognee.shared.env_file as _c_env
     _c_env.load_env_file()
     os.environ.update(_EXPLICIT_ENV)
+    os.environ["ENABLE_BACKEND_ACCESS_CONTROL"] = "false"
+    if not _EXPLICIT_ENV_LLM_MODEL and os.getenv("USE_GROQ") != "1" and os.getenv("BEDROCK_API_KEY"):
+        os.environ["LLM_MODEL"] = os.getenv("BEDROCK_MODEL", "bedrock/deepseek.v3.2")
 except Exception:
     pass
 
@@ -106,16 +109,23 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000, description="FastAPI port binding")
     LOG_LEVEL: str = Field(default="INFO", description="Logging level")
 
+    def __init__(self, **values):
+        super().__init__(**values)
+        if "LLM_MODEL" in values:
+            self.LLM_MODEL = values["LLM_MODEL"]
+            self.__dict__["_passed_llm_model"] = values["LLM_MODEL"]
+        else:
+            if not _EXPLICIT_ENV_LLM_MODEL and not os.getenv("LLM_MODEL"):
+                if os.getenv("USE_GROQ") != "1" and self.BEDROCK_API_KEY:
+                    self.LLM_MODEL = os.getenv("BEDROCK_MODEL", "bedrock/deepseek.v3.2")
+
     @model_validator(mode="after")
     def resolve_bedrock(self) -> "Settings":
-        if "LLM_MODEL" in self.model_fields_set:
+        if hasattr(self, "_passed_llm_model"):
+            self.LLM_MODEL = self._passed_llm_model
             return self
         if _EXPLICIT_ENV_LLM_MODEL:
             self.LLM_MODEL = _EXPLICIT_ENV_LLM_MODEL
-            return self
-        env_model = os.getenv("LLM_MODEL")
-        if env_model:
-            self.LLM_MODEL = env_model
             return self
         if os.getenv("USE_GROQ") != "1" and self.BEDROCK_API_KEY:
             target_model = os.getenv("BEDROCK_MODEL", "bedrock/deepseek.v3.2")
@@ -130,8 +140,6 @@ def export_cognee_env(settings: Settings) -> None:
     Cognee evaluates its LLMConfig, GraphConfig, and VectorConfig during module
     import time. These settings must be exported into os.environ beforehand.
     """
-    if "LLM_MODEL" not in settings.model_fields_set and _EXPLICIT_ENV_LLM_MODEL:
-        settings.LLM_MODEL = _EXPLICIT_ENV_LLM_MODEL
     os.environ["SYSTEM_ROOT_DIRECTORY"] = settings.SYSTEM_ROOT_DIRECTORY
     os.environ["DATA_ROOT_DIRECTORY"] = settings.DATA_ROOT_DIRECTORY
     os.environ["LLM_TEMPERATURE"] = "0.0"
@@ -173,7 +181,10 @@ def export_cognee_env(settings: Settings) -> None:
 
     # Vector storage configuration
     os.environ["VECTOR_DB_PROVIDER"] = settings.VECTOR_DB_PROVIDER
-    os.environ["VECTOR_DB_URL"] = settings.LANCEDB_PATH
+    os.environ["VECTOR_DB_URL"] = str(Path(settings.LANCEDB_PATH).resolve())
+
+    # Cognee access control configuration (falkor handler does not support multi-user access control)
+    os.environ["ENABLE_BACKEND_ACCESS_CONTROL"] = "false"
 
 
 @lru_cache
