@@ -344,6 +344,8 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
         weight = node_weights.get(c.id, 0.0)
         return (in_answer, weight)
 
+    ranked_citations = sorted(verified_citations, key=_rank_citation, reverse=True)[:5]
+
     has_explicit_evidence = any(
         c.id.lower() in answer_text.lower() or (len(c.title) > 5 and c.title.lower() in answer_text.lower())
         for c in verified_citations
@@ -355,9 +357,8 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
     ):
         ranked_citations = []
     elif has_explicit_evidence:
-        # Prioritize citations specifically referenced in the answer text
         in_text_citations = [
-            c for c in ranked_citations
+            c for c in verified_citations
             if c.id.lower() in answer_text.lower() or (len(c.title) > 5 and c.title.lower() in answer_text.lower())
         ]
         if in_text_citations:
