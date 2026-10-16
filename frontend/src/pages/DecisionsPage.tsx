@@ -3,12 +3,15 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { LayoutGrid, SlidersHorizontal, X } from 'lucide-react';
 import { useDecisions, useGraph } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
+import { ChangedBadge } from '../components/entity/Badge';
+import { useLatestDiff } from '../components/ingest/ingestContext';
 import { PageFrame } from '../components/PageFrame';
 import { PopoverButton } from '../components/Popover';
 import { StatusIcon } from '../components/StatusIcon';
 import { SystemChip, SystemSquare } from '../components/SystemMark';
 import { decisionHref } from '../utils/links';
 import { btnOutline } from '../components/ui';
+import { isDecisionChanged } from '../utils/changes';
 import { formatShortDate } from '../utils/format';
 import {
   buildDecisionRows,
@@ -68,7 +71,8 @@ const SkeletonRows: React.FC = () => (
 const DecisionRowLink: React.FC<{
   row: DecisionRow;
   index: GraphIndex | undefined;
-}> = ({ row, index }) => (
+  changed?: boolean;
+}> = ({ row, index, changed = false }) => (
   <li>
     <Link
       to={decisionHref(row.code ?? row.id)}
@@ -81,6 +85,7 @@ const DecisionRowLink: React.FC<{
       >
         {row.title}
       </span>
+      {changed && <ChangedBadge />}
       {row.hint && (
         <span
           className={`hidden shrink-0 text-xs md:inline ${
@@ -116,6 +121,7 @@ export const DecisionsPage: React.FC = () => {
   const [params, setParams] = useSearchParams();
   const decisionsQuery = useDecisions();
   const graphQuery = useGraph();
+  const latestDiff = useLatestDiff();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const index = useMemo(
@@ -311,7 +317,7 @@ export const DecisionsPage: React.FC = () => {
             </h2>
             <ul className="m-0 list-none p-0">
               {visible.map((row) => (
-                <DecisionRowLink key={row.id} row={row} index={index} />
+                <DecisionRowLink key={row.id} row={row} index={index} changed={isDecisionChanged(latestDiff, row.code)} />
               ))}
             </ul>
             {collapsible && !isExpanded && (

@@ -96,7 +96,7 @@ export interface paths {
         /**
          * List Systems
          * @description Every system with its owner, orphaned flag, and decision/ticket counts.
-         *     Orphaned systems first, then by number of decisions.
+         *     Orphaned systems first, then by number of decisions. One Cypher query.
          */
         get: operations["list_systems_systems_get"];
         put?: never;
@@ -117,6 +117,7 @@ export interface paths {
         /**
          * Get System
          * @description A system's owner, orphaned flag, decisions (oldest first), people and teams.
+         *     Three Cypher queries, run concurrently.
          */
         get: operations["get_system_systems__name__get"];
         put?: never;
@@ -159,6 +160,68 @@ export interface paths {
          * @description A person's decisions (oldest first), systems owned, teams led or joined, and activity.
          */
         get: operations["get_person_people__name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ingest
+         * @description Ingest one source and stream each pipeline step, ending with a `diff` (or `error`) event.
+         *
+         *     Everything written is tagged with a demo_ingest_id so POST /ingest/reset can remove it.
+         */
+        post: operations["ingest_ingest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ingest/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset
+         * @description Remove all demo-ingested nodes/edges and restore changed values (e.g. a person leaving).
+         */
+        post: operations["reset_ingest_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Changes
+         * @description Recent ingests and resets, newest first, with their diffs.
+         */
+        get: operations["changes_changes_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -652,6 +715,22 @@ export interface components {
             /** People */
             people?: components["schemas"]["PersonRef"][];
         };
+        /** IngestRequest */
+        IngestRequest: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "meeting" | "ticket" | "announcement";
+            /** Title */
+            title: string;
+            /** Date */
+            date: string;
+            /** Text */
+            text: string;
+            /** Participants */
+            participants?: string[];
+        };
         /**
          * Lineage
          * @description Full supersedes chains (both directions) and contradiction links of a decision.
@@ -880,9 +959,14 @@ export interface components {
             date?: string | null;
             /**
              * Quote
-             * @description Verbatim evidence quote. Quotes are stored per decision, so this is set only when the decision has a single source; otherwise see DecisionDetail.evidence_quote.
+             * @description Verbatim quote from this source, stored on the BASED_ON edge. Falls back to the decision-level quote only when it is found in this source's text or there is one source.
              */
             quote?: string | null;
+            /**
+             * Text
+             * @description Verbatim body of the ticket or meeting note (first 1,500 chars)
+             */
+            text?: string | null;
         };
         /**
          * SubgraphOut
@@ -1245,6 +1329,96 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PersonDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ingest_ingest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reset_ingest_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    changes_changes_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                /** @description Target dataset name */
+                dataset_name?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
                 };
             };
             /** @description Validation Error */

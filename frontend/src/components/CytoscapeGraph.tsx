@@ -93,6 +93,23 @@ const STYLE = [
     selector: 'edge[type = "contradicts"]',
     style: { 'line-style': 'dashed', 'line-color': '#D9363E', 'line-dash-pattern': [5, 4] },
   },
+  // Ingest mini graph: what the latest source added or changed, against muted context.
+  {
+    selector: 'node[change = "added"]',
+    style: { 'border-color': '#4F5BD5', 'border-width': 2 },
+  },
+  {
+    selector: 'node[change = "changed"]',
+    style: { 'border-color': '#C77D00', 'border-width': 2 },
+  },
+  {
+    selector: 'node[change = "context"]',
+    style: { color: '#6B6F76' },
+  },
+  {
+    selector: 'edge[change = "added"]',
+    style: { 'line-color': '#4F5BD5' },
+  },
 ] as unknown as cytoscape.StylesheetJson;
 
 function useFontsReady(): boolean {

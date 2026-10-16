@@ -13,6 +13,7 @@ from typing import Any, Optional
 from app.brain.memory import get_or_create_dataset_graph_name, query_graph
 from app.brain.models import Ticket
 from app.config import get_settings
+from app.ingest.source_text import ticket_body
 
 logger = logging.getLogger("decision_trace.ingest.tickets")
 _settings = get_settings()
@@ -78,6 +79,12 @@ async def ingest_tickets_source(
             f"ON MATCH SET t.ticket_id = '{t_id_str}', t.title = '{title}', "
             f"t.status = '{status}', t.opened = '{opened}', t.closed = '{closed}', t.system = '{system}'",
             dataset_name=target_dataset,
+        )
+        # Verbatim body for the "View source" drawer and per-source quotes (parameterized)
+        await query_graph(
+            "MATCH (t:Ticket {id: $id}) SET t.body = $body",
+            dataset_name=target_dataset,
+            params={"id": t_node_id, "body": ticket_body(t)},
         )
         counts["tickets"] += 1
 

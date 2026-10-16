@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from app.brain.health import DecisionHealthInfo, SystemOrphanInfo, is_departed
+from app.brain.health import DecisionHealthInfo, is_departed
 from app.main import app
 
 client = TestClient(app)
@@ -45,28 +45,29 @@ def common_patches(module: str):
     )
 
 
+ES_TEXT = "Ticket TICK-1. Sessions drop on failover. Alice decided: mid. Done."
+
 DECISION_CANNED = {
-    "decision": [
+    "decision_and_lineage": [
         [
             {"id": "d_mid", "title": "Mid", "decided_on": "2026-03-01", "evidence_quote": "Alice decided: mid."},
             [ALICE, MARCUS],
             ["Redis"],
+            [["d_old", 1]],
+            [["d_new", 1]],
+            [["d_rival", False]],
+            ["d_old", "d_new"],
         ]
     ],
-    "supersedes_chain": [["d_old", 1]],
-    "superseded_by_chain": [["d_new", 1]],
-    "contradictions": [["d_rival", False]],
-    "system_timeline": [["d_old"], ["d_new"]],
-    "decision_attributes": [
-        ["d_old", "Old", "2026-01-01", ["Alice Vance"], ["Redis"]],
-        ["d_mid", "Mid", "2026-03-01", ["Alice Vance", "Marcus Aurelius"], ["Redis"]],
-        ["d_new", "New", "2026-05-01", ["Alice Vance"], ["Redis"]],
-        ["d_rival", "Rival", "2026-05-02", ["Bob Martin"], ["Kafka"]],
-    ],
-    "lineage_edges": [["d_mid", "supersedes", "d_old"], ["d_new", "supersedes", "d_mid"], ["d_rival", "contradicts", "d_mid"]],
-    "sources": [
-        ["d_mid", "Ticket", {"ticket_id": "TICK-1", "title": "Latency", "closed": "2026-03-01"}],
-        ["d_old", "Meeting", {"title": "Kickoff", "date": "2026-01-01"}],
+    "related_decisions": [
+        ["d_old", "Old", "2026-01-01", None, ["Alice Vance"], ["Redis"], [[None, None]],
+         [["Meeting", {"title": "Kickoff", "date": "2026-01-01"}, {}]]],
+        ["d_mid", "Mid", "2026-03-01", "Alice decided: mid.", ["Alice Vance", "Marcus Aurelius"], ["Redis"],
+         [["supersedes", "d_old"]],
+         [["Ticket", {"ticket_id": "TICK-1", "title": "Latency", "closed": "2026-03-01", "body": ES_TEXT},
+           {"quote": "Alice decided: mid."}]]],
+        ["d_new", "New", "2026-05-01", None, ["Alice Vance"], ["Redis"], [["supersedes", "d_mid"]], [[None, None, None]]],
+        ["d_rival", "Rival", "2026-05-02", None, ["Bob Martin"], ["Kafka"], [["contradicts", "d_mid"]], [[None, None, None]]],
     ],
     "impact": [
         ["Person", ALICE, "owns", "System", {"name": "Redis"}],
@@ -85,7 +86,7 @@ def test_decision_page_by_code_assembles_lineage_timeline_impact_and_trace():
     d = res.json()
 
     assert d["id"] == "d_mid" and d["decision_code"] == "DEC-02"
-    assert "resolve" not in calls  # a DEC code resolves from the code map, no query needed
+    assert sorted(calls) == ["decision_and_lineage", "impact", "related_decisions"]  # at most 3
     assert [(p["name"], p["departed"]) for p in d["deciders"]] == [
         ("Alice Vance", False),
         ("Marcus Aurelius", True),
@@ -97,7 +98,8 @@ def test_decision_page_by_code_assembles_lineage_timeline_impact_and_trace():
     assert d["lineage"]["contradicts"] == []
     assert [x["decision_code"] for x in d["timeline"]] == ["DEC-01", "DEC-02", "DEC-03"]
     assert d["sources"] == [
-        {"type": "ticket", "id": "TICK-1", "title": "Latency", "date": "2026-03-01", "quote": "Alice decided: mid."}
+        {"type": "ticket", "id": "TICK-1", "title": "Latency", "date": "2026-03-01",
+         "quote": "Alice decided: mid.", "text": ES_TEXT}
     ]
     assert d["impact"]["teams"] == ["Core Infrastructure"]
     assert d["impact"]["projects"] == ["Project Horizon"]
@@ -110,46 +112,50 @@ def test_decision_page_by_code_assembles_lineage_timeline_impact_and_trace():
     mid = next(n for n in d["subgraph"]["nodes"] if n["id"] == "Decision:d_mid")
     assert mid["properties"]["decision_code"] == "DEC-02" and mid["properties"]["health"] == "superseded"
 
-    assert [q["name"] for q in d["cypher"]["queries"]] == calls
+    assert sorted(q["name"] for q in d["cypher"]["queries"]) == sorted(calls)
     assert all(q["query"].startswith("MATCH") for q in d["cypher"]["queries"])
-    assert d["cypher"]["total_ms"] == float(len(calls))
 
 
-def test_decision_page_hides_per_source_quote_when_several_sources():
-    canned = dict(DECISION_CANNED)
-    canned["sources"] = [
-        ["d_mid", "Ticket", {"ticket_id": "TICK-1", "title": "A"}],
-        ["d_mid", "Meeting", {"title": "Sync", "date": "2026-03-01"}],
-    ]
-    trace_patch, _ = stub_trace(canned)
-    codes_patch, health_patch = common_patches("app.brain.lineage")
-    with trace_patch, codes_patch, health_patch:
-        d = client.get("/decisions/DEC-02").json()
-    assert [s["quote"] for s in d["sources"]] == [None, None]
-    assert d["evidence_quote"] == "Alice decided: mid."
+def test_quotes_come_from_the_edge_then_from_text_then_single_source():
+    from app.brain.lineage import attribute_quotes
+
+    edge = [{"id": "A", "quote": "from edge", "text": "x"}, {"id": "B", "quote": None, "text": "y"}]
+    attribute_quotes(edge, "decided: z")
+    assert [s["quote"] for s in edge] == ["from edge", None]
+
+    by_text = [{"id": "A", "quote": None, "text": "Nothing here"}, {"id": "B", "quote": None, "text": "We  DECIDED: z today"}]
+    attribute_quotes(by_text, "decided: z")
+    assert [s["quote"] for s in by_text] == [None, "decided: z"]
+
+    unknown = [{"id": "A", "quote": None, "text": None}, {"id": "B", "quote": None, "text": None}]
+    attribute_quotes(unknown, "decided: z")
+    assert [s["quote"] for s in unknown] == [None, None]
+
+    single = [{"id": "A", "quote": None, "text": None}]
+    attribute_quotes(single, "decided: z")
+    assert single[0]["quote"] == "decided: z"
 
 
 def test_decision_page_404_for_unknown_code_and_title():
-    trace_patch, _ = stub_trace({"resolve": []})
+    trace_patch, calls = stub_trace({})
     codes_patch, health_patch = common_patches("app.brain.lineage")
     with trace_patch, codes_patch, health_patch:
         assert client.get("/decisions/DEC-77").status_code == 404
         assert client.get("/decisions/no-such-title").status_code == 404
+    assert calls == []  # unknown refs resolve from the cached code/title maps, no query
 
 
 SYSTEM_ROWS = [
-    ["Elasticsearch", "search", "Elastic", [MARCUS], 0, 4],
-    ["Redis", "cache", "Redis Ltd", [ALICE], 2, 9],
+    ["Elasticsearch", "search", "Elastic", [MARCUS], 0, 4, ["Core Infrastructure"]],
+    ["Redis", "cache", "Redis Ltd", [ALICE], 2, 9, ["Core Infrastructure"]],
 ]
 
 
 def test_list_systems_flags_orphaned_and_sorts_them_first():
-    trace_patch, _ = stub_trace(
-        {"systems": SYSTEM_ROWS, "system_teams": [["Redis", ["Core Infrastructure"]]]}
-    )
-    orphans = {"Elasticsearch": SystemOrphanInfo(system="Elasticsearch", owner="Marcus Aurelius")}
-    with trace_patch, patch("app.api.systems.evaluate_system_orphans", new=AsyncMock(return_value=orphans)):
+    trace_patch, calls = stub_trace({"systems": SYSTEM_ROWS})
+    with trace_patch:
         items = client.get("/systems").json()
+    assert calls == ["systems"]  # one query; orphaned comes from the owner row
     assert [s["name"] for s in items] == ["Elasticsearch", "Redis"]
     es, redis = items
     assert es["orphaned"] is True and es["owner"]["departed"] is True
@@ -160,8 +166,7 @@ def test_list_systems_flags_orphaned_and_sorts_them_first():
 def test_system_detail_merges_people_roles_and_timeline():
     trace_patch, _ = stub_trace(
         {
-            "systems": [SYSTEM_ROWS[1]],
-            "system_teams": [],
+            "system": [SYSTEM_ROWS[1]],
             "system_decisions": [
                 ["d_old", "Old", "2026-01-01", ["Alice Vance"], ["Redis"]],
                 ["d_mid", "Mid", "2026-03-01", ["Alice Vance"], ["Redis"]],
@@ -180,12 +185,7 @@ def test_system_detail_merges_people_roles_and_timeline():
         }
     )
     codes_patch, health_patch = common_patches("app.api.systems")
-    with (
-        trace_patch,
-        codes_patch,
-        health_patch,
-        patch("app.api.systems.evaluate_system_orphans", new=AsyncMock(return_value={})),
-    ):
+    with trace_patch, codes_patch, health_patch:
         s = client.get("/systems/redis").json()
     assert s["name"] == "Redis" and s["orphaned"] is False
     assert [d["decision_code"] for d in s["decisions"]] == ["DEC-01", "DEC-02"]
@@ -194,12 +194,13 @@ def test_system_detail_merges_people_roles_and_timeline():
     assert people["Alice Vance"]["roles"] == ["owner", "decider", "tickets"]
     assert people["Bob Martin"]["roles"] == ["tickets"] and people["Bob Martin"]["ticket_count"] == 2
     assert [p["name"] for p in s["people"]][0] == "Alice Vance"  # owner first
-    assert len(s["cypher"]["queries"]) == 4
+    assert sorted(q["name"] for q in s["cypher"]["queries"]) == ["system", "system_decisions", "system_people"]
 
 
 def test_system_detail_404():
-    trace_patch, _ = stub_trace({"systems": [], "system_teams": []})
-    with trace_patch, patch("app.api.systems.evaluate_system_orphans", new=AsyncMock(return_value={})):
+    trace_patch, _ = stub_trace({"system": []})
+    codes_patch, health_patch = common_patches("app.api.systems")
+    with trace_patch, codes_patch, health_patch:
         assert client.get("/systems/Nope").status_code == 404
 
 
@@ -251,7 +252,8 @@ def test_person_detail_lists_decisions_and_leadership():
 
 def test_person_detail_404():
     trace_patch, _ = stub_trace({"person": []})
-    with trace_patch:
+    codes_patch, health_patch = common_patches("app.api.people")
+    with trace_patch, codes_patch, health_patch:
         assert client.get("/people/Nobody").status_code == 404
 
 

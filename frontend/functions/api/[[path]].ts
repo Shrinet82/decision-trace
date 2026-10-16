@@ -11,6 +11,9 @@
  *    - GET  /systems, /systems/:name
  *    - GET  /people,  /people/:name
  *    - POST /ask
+ *    - POST /ingest           (text/event-stream response, streamed through unbuffered)
+ *    - POST /ingest/reset
+ *    - GET  /changes
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
  *    and unwhitelisted routes.
  */
@@ -66,7 +69,10 @@ export async function onRequest(context: {
     (method === 'GET' && normalizedPath === '/graph') ||
     (method === 'GET' && (normalizedPath === '/systems' || normalizedPath === '/people')) ||
     (method === 'GET' && entityDetail.test(normalizedPath)) ||
-    (method === 'POST' && normalizedPath === '/ask');
+    (method === 'POST' && normalizedPath === '/ask') ||
+    (method === 'POST' && normalizedPath === '/ingest') ||
+    (method === 'POST' && normalizedPath === '/ingest/reset') ||
+    (method === 'GET' && normalizedPath === '/changes');
 
   if (!isWhitelisted) {
     return new Response(JSON.stringify({ error: 'Endpoint not found or method not allowed' }), {
@@ -80,6 +86,13 @@ export async function onRequest(context: {
 
   const requestHeaders = new Headers(context.request.headers);
   requestHeaders.set('Host', 'decision-trace-api-production.up.railway.app');
+  // Per-IP rate limits (POST /ingest) need the visitor's address, not the proxy's. Overwrite
+  // rather than append so a client cannot spoof it through the proxy.
+  const clientIp = context.request.headers.get('CF-Connecting-IP');
+  if (clientIp) {
+    requestHeaders.set('X-Forwarded-For', clientIp);
+    requestHeaders.set('X-Real-IP', clientIp);
+  }
 
   const modifiedRequest = new Request(targetUrl, {
     method: context.request.method,
@@ -88,5 +101,22 @@ export async function onRequest(context: {
     redirect: 'follow',
   });
 
-  return fetch(modifiedRequest);
+  const upstream = await fetch(modifiedRequest);
+
+  // Server-sent events: hand the body stream straight back (never buffer it) and tell any
+  // intermediary not to compress or transform it, which would delay events.
+  const contentType = upstream.headers.get('Content-Type') ?? '';
+  if (contentType.includes('text/event-stream')) {
+    const headers = new Headers(upstream.headers);
+    headers.set('Cache-Control', 'no-cache, no-transform');
+    headers.set('X-Accel-Buffering', 'no');
+    headers.delete('Content-Length');
+    return new Response(upstream.body, {
+      status: upstream.status,
+      statusText: upstream.statusText,
+      headers,
+    });
+  }
+
+  return upstream;
 }

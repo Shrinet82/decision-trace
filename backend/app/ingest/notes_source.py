@@ -12,6 +12,7 @@ from typing import Any, Optional
 from app.brain.memory import get_or_create_dataset_graph_name, query_graph
 from app.brain.models import Meeting
 from app.config import get_settings
+from app.ingest.source_text import meeting_body
 
 logger = logging.getLogger("decision_trace.ingest.notes")
 _settings = get_settings()
@@ -114,6 +115,11 @@ async def ingest_notes_source(
             f"ON MATCH SET m.title = '{m_title_esc}', m.date = '{m_date_esc}', "
             f"m.meeting_date = '{m_date_esc}', m.file_name = '{m_file_esc}'",
             dataset_name=target_dataset,
+        )
+        await query_graph(
+            "MATCH (m:Meeting {id: $id}) SET m.body = $body",
+            dataset_name=target_dataset,
+            params={"id": m_node_id, "body": meeting_body(content)},
         )
         counts["meetings"] += 1
 

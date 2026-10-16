@@ -2,14 +2,16 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useSystem } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
-import { Badge, LeftBadge } from '../components/entity/Badge';
+import { Badge, ChangedBadge, LeftBadge } from '../components/entity/Badge';
 import { CypherBlock } from '../components/entity/CypherBlock';
 import { DecisionTimeline } from '../components/entity/DecisionTimeline';
 import { DetailSkeleton, LoadError } from '../components/entity/EntityStates';
 import { Section } from '../components/entity/Section';
 import { PageFrame, Property, PropertyList, SidePanel } from '../components/PageFrame';
+import { useLatestDiff } from '../components/ingest/ingestContext';
 import { SystemSquare } from '../components/SystemMark';
 import { btnPrimary } from '../components/ui';
+import { isSystemChanged } from '../utils/changes';
 import { askHref, formatLongDate } from '../utils/format';
 import { personHref } from '../utils/links';
 
@@ -19,6 +21,7 @@ export const SystemPage: React.FC = () => {
   const { name = '' } = useParams();
   const query = useSystem(name);
   const s = query.data;
+  const latestDiff = useLatestDiff();
 
   const header = (
     <>
@@ -72,10 +75,11 @@ export const SystemPage: React.FC = () => {
     <PageFrame header={header} panel={panel}>
       <div className="flex flex-col gap-6 px-5 py-6 min-[900px]:px-8">
         <header className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <SystemSquare system={s.name} size={10} />
             <h1 className="m-0 text-[20px] font-semibold">{s.name}</h1>
             {s.orphaned && <Badge tone="stale">Orphaned</Badge>}
+            {isSystemChanged(latestDiff, s.name) && <ChangedBadge />}
           </div>
           <p className="m-0 text-muted">{[s.system_type, s.vendor].filter(Boolean).join(' · ')}</p>
           {s.orphaned && s.owner && (

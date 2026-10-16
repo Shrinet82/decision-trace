@@ -8,6 +8,7 @@ Features:
 - GET /health endpoint verifying FalkorDB connectivity
 """
 
+import asyncio
 import logging
 import time
 import uuid
@@ -22,6 +23,7 @@ from app.api.admin import router as admin_router
 from app.api.ask import router as ask_router
 from app.api.decisions import router as decisions_router
 from app.api.graph import router as graph_router
+from app.api.ingest import router as ingest_router
 from app.api.people import router as people_router
 from app.api.systems import router as systems_router
 from app.brain.memory import ping_falkordb
@@ -36,6 +38,25 @@ logging.basicConfig(
 logger = logging.getLogger("decision_trace.api")
 
 
+async def _keep_caches_warm(interval_seconds: float = 240.0) -> None:
+    """Recompute the health map and decision codes every few minutes (cache TTL is 5 min)."""
+    from app.brain import cache
+    from app.brain.codes import get_decision_codes
+    from app.brain.health import evaluate_graph_health
+
+    dataset = settings.DATASET_NAME
+    while True:
+        try:
+            health, codes = await asyncio.gather(
+                evaluate_graph_health(dataset_name=dataset), get_decision_codes(dataset)
+            )
+            cache.put("health", dataset, health)
+            cache.put("codes", dataset or "", codes)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Cache warm-up failed: %s", exc)
+        await asyncio.sleep(interval_seconds)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan context manager."""
@@ -45,7 +66,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         logger.info("FalkorDB Cloud connection verified successfully.")
     else:
         logger.warning("FalkorDB Cloud connection ping failed during startup.")
+    # Keep the health map and decision codes warm so no request pays for computing them.
+    # Started in the background so it never delays startup (or the deploy healthcheck).
+    warmer = asyncio.create_task(_keep_caches_warm())
     yield
+    warmer.cancel()
     logger.info("Shutting down Decision-Trace backend...")
 
 
@@ -75,6 +100,7 @@ app.include_router(ask_router)
 app.include_router(graph_router)
 app.include_router(systems_router)
 app.include_router(people_router)
+app.include_router(ingest_router)
 app.include_router(admin_router)
 
 
@@ -88,6 +114,7 @@ async def request_id_and_logging_middleware(request: Request, call_next) -> Resp
         response: Response = await call_next(request)
         duration_ms = (time.perf_counter() - start_time) * 1000
         response.headers["X-Request-ID"] = request_id
+        response.headers["Server-Timing"] = f"app;dur={duration_ms:.1f}"
         logger.info(
             "%s %s -> %d (%.2f ms) [req_id=%s]",
             request.method,

@@ -12,13 +12,20 @@ import systemsFixture from '../mocks/systems.json';
 import systemDetailsFixture from '../mocks/system-details.json';
 import peopleFixture from '../mocks/people.json';
 import personDetailsFixture from '../mocks/person-details.json';
+import ingestKafkaFixture from '../mocks/ingest-kafka.json';
+import ingestAliceFixture from '../mocks/ingest-alice-leaves.json';
 import type {
   AskResponse,
+  ChangeEntry,
   DecisionDetail,
   DecisionSummary,
   GraphResponse,
+  IngestDiff,
+  IngestEvent,
+  IngestRequest,
   PersonDetail,
   PersonSummary,
+  ResetResult,
   SystemDetail,
   SystemSummary,
 } from './types';
@@ -131,4 +138,74 @@ export function getMockAskResponse(question: string): AskResponse {
       omitted_count: 0,
     },
   };
+}
+
+/* Live ingest -------------------------------------------------------------------------------- */
+
+export const MOCK_INGEST_KAFKA = ingestKafkaFixture as unknown as IngestEvent[];
+export const MOCK_INGEST_ALICE = ingestAliceFixture as unknown as IngestEvent[];
+
+/** Recorded event stream for a source text: "Kafka" or a departure, else the Kafka stream. */
+export function getMockIngestEvents(text: string): IngestEvent[] {
+  const t = text.toLowerCase();
+  if (t.includes('kafka')) return MOCK_INGEST_KAFKA;
+  if (t.includes('leaves') || t.includes('left the company')) return MOCK_INGEST_ALICE;
+  return MOCK_INGEST_KAFKA;
+}
+
+// In-memory change log so the mock app behaves like the API within one page session.
+let mockChanges: ChangeEntry[] = [];
+let mockIngestedNodes = 0;
+let mockIngestedEdges = 0;
+
+export function recordMockIngest(request: IngestRequest, diff: IngestDiff): void {
+  mockIngestedNodes += diff.nodes_added.length;
+  mockIngestedEdges += diff.edges_added.length;
+  mockChanges = [
+    {
+      id: diff.ingest_id,
+      kind: 'ingest',
+      title: request.title,
+      type: request.type,
+      created_at: new Date().toISOString(),
+      summary: diff.summary,
+      diff,
+    },
+    ...mockChanges,
+  ];
+}
+
+export function resetMockIngest(): ResetResult {
+  const restored = mockChanges
+    .filter((c) => c.kind === 'ingest')
+    .reduce(
+      (sum, c) =>
+        sum +
+        (c.diff ? c.diff.status_changes.length + c.diff.person_changes.length + c.diff.orphan_changes.length : 0),
+      0
+    );
+  const result: ResetResult = {
+    removed_nodes: mockIngestedNodes,
+    removed_edges: mockIngestedEdges,
+    restored_properties: restored,
+    nodes: MOCK_GRAPH.total_nodes,
+    edges: MOCK_GRAPH.total_edges,
+  };
+  mockIngestedNodes = 0;
+  mockIngestedEdges = 0;
+  mockChanges = [
+    {
+      id: `reset_${Date.now()}`,
+      kind: 'reset',
+      title: 'Demo data reset',
+      created_at: new Date().toISOString(),
+      summary: `Removed ${result.removed_nodes} nodes and ${result.removed_edges} edges`,
+    },
+    ...mockChanges,
+  ];
+  return result;
+}
+
+export function listMockChanges(limit: number): ChangeEntry[] {
+  return mockChanges.slice(0, limit);
 }
