@@ -1,31 +1,17 @@
 import React from 'react';
+import { PageFrame } from '../components/PageFrame';
 
-export interface EmptyRoutePageProps {
+interface EmptyRoutePageProps {
   title: string;
   description: string;
 }
 
-export const EmptyRoutePage: React.FC<EmptyRoutePageProps> = ({
-  title,
-  description,
-}) => {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-text tracking-tight">
-          {title}
-        </h1>
-        <p className="mt-1 text-sm text-text-muted">{description}</p>
-      </div>
-
-      <div className="p-8 border border-border rounded-panel bg-surface text-center space-y-3">
-        <h2 className="text-base font-semibold text-text">
-          {title} explorer view
-        </h2>
-        <p className="text-sm text-text-muted max-w-md mx-auto">
-          This section will be populated in subsequent frontend steps. Use the Ask page to query decisions, rationale, owners, and evidence paths.
-        </p>
-      </div>
+export const EmptyRoutePage: React.FC<EmptyRoutePageProps> = ({ title, description }) => (
+  <PageFrame header={<span className="font-medium text-text">{title}</span>}>
+    <div className="px-10 py-8">
+      <h1 className="m-0 text-xl font-semibold">{title}</h1>
+      <p className="mt-2 max-w-prose text-muted">{description}</p>
+      <p className="mt-4 text-muted">Coming soon.</p>
     </div>
-  );
-};
+  </PageFrame>
+);

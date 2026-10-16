@@ -1,5 +1,12 @@
-import type { AskRequest, AskResponse, DecisionDetail } from './types';
-import { getMockAskResponse } from './mocks';
+import type {
+  AskRequest,
+  AskResponse,
+  DecisionDetail,
+  DecisionSummary,
+  GraphResponse,
+} from './types';
+// Fixtures are loaded on demand so they stay out of the production bundle.
+const loadMocks = () => import('./mocks');
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? '/api' : 'http://localhost:8000');
@@ -31,6 +38,7 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
   if (USE_MOCKS) {
     // Simulate brief network latency for realism
     await new Promise((resolve) => setTimeout(resolve, 80));
+    const { getMockAskResponse } = await loadMocks();
     return getMockAskResponse(payload.question);
   }
 
@@ -59,6 +67,13 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
  * Fetch detailed decision by ID.
  */
 export async function getDecision(decisionId: string): Promise<DecisionDetail> {
+  if (USE_MOCKS) {
+    const { MOCK_DECISION_DETAILS } = await loadMocks();
+    const mock = MOCK_DECISION_DETAILS[decisionId];
+    if (!mock) throw new ApiError(`Decision ${decisionId} not found`, 404);
+    return mock;
+  }
+
   const response = await fetch(`${API_BASE_URL}/decisions/${encodeURIComponent(decisionId)}`, {
     headers: {
       Accept: 'application/json',
@@ -75,4 +90,37 @@ export async function getDecision(decisionId: string): Promise<DecisionDetail> {
   }
 
   return response.json();
+}
+
+async function getJson<T>(path: string, failure: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    throw new ApiError(
+      `${failure}: ${response.statusText} (${response.status})`,
+      response.status,
+      errorBody
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetch all decisions with computed health.
+ */
+export async function listDecisions(): Promise<DecisionSummary[]> {
+  if (USE_MOCKS) return (await loadMocks()).MOCK_DECISIONS;
+  return getJson<DecisionSummary[]>('/decisions?limit=500', 'Failed to load decisions');
+}
+
+/**
+ * Fetch the full graph (the API caps a response at 500 nodes).
+ */
+export async function getGraph(): Promise<GraphResponse> {
+  if (USE_MOCKS) return (await loadMocks()).MOCK_GRAPH;
+  return getJson<GraphResponse>('/graph?limit=500', 'Failed to load graph');
 }

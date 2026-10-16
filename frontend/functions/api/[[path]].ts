@@ -56,7 +56,7 @@ export async function onRequest(context: {
   const isWhitelisted =
     (method === 'GET' && normalizedPath === '/health') ||
     (method === 'GET' && normalizedPath === '/decisions') ||
-    (method === 'GET' && /^\/decisions\/[a-zA-Z0-9_\-]+$/.test(normalizedPath)) ||
+    (method === 'GET' && /^\/decisions\/[a-zA-Z0-9_-]+$/.test(normalizedPath)) ||
     (method === 'GET' && normalizedPath === '/graph') ||
     (method === 'POST' && normalizedPath === '/ask');
 

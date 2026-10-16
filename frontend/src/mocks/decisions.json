@@ -1,0 +1,172 @@
+[
+ {
+  "id": "dec_98a223fad745",
+  "title": "Adopt RabbitMQ for all event messaging across services",
+  "status": "accepted",
+  "health": "contradicted",
+  "health_reason": "Contradicted by 'Adopt Kafka for all event messaging across services' decided by Alice Vance",
+  "system": "RabbitMQ",
+  "decided_by": "Bob Martin",
+  "decided_on": "2026-04-08"
+ },
+ {
+  "id": "dec_d09476870168",
+  "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Snowflake, ClickHouse",
+  "decided_by": "Laura Croft, Fiona Gallagher, Bob Martin",
+  "decided_on": "2026-10-10"
+ },
+ {
+  "id": "dec_04ed8d5c10ae",
+  "title": "Standardize on Kubernetes 1.30 across all production regions",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Kubernetes",
+  "decided_by": "Laura Croft",
+  "decided_on": "2026-08-20"
+ },
+ {
+  "id": "dec_f17ee7ad31a2",
+  "title": "Adopt Keycloak for company-wide single sign-on",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Keycloak",
+  "decided_by": "Julia Roberts",
+  "decided_on": "2026-02-10"
+ },
+ {
+  "id": "dec_21a4de59b886",
+  "title": "Migrate application metrics from Datadog to Prometheus Operator",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Prometheus",
+  "decided_by": "Kevin Flynn",
+  "decided_on": "2026-04-12"
+ },
+ {
+  "id": "dec_53d51a7d4549",
+  "title": "Upgrade all production Postgres instances to version 16",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Postgres",
+  "decided_by": "Evan Wright",
+  "decided_on": "2026-06-18"
+ },
+ {
+  "id": "dec_f8a30e251e54",
+  "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Keycloak",
+  "decided_by": "Julia Roberts",
+  "decided_on": "2026-05-24"
+ },
+ {
+  "id": "dec_2c6a03017923",
+  "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Redis",
+  "decided_by": "Ian Malcolm",
+  "decided_on": "2026-05-05"
+ },
+ {
+  "id": "dec_091c86e8e476",
+  "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Prometheus",
+  "decided_by": "Laura Croft",
+  "decided_on": "2026-04-22"
+ },
+ {
+  "id": "dec_5b196394600e",
+  "title": "Standardize application traces on Datadog APM across all production services",
+  "status": "accepted",
+  "health": "superseded",
+  "health_reason": "Superseded by 'Migrate application metrics from Datadog to Prometheus Operator' (date: 2026-04-12)",
+  "system": "Datadog",
+  "decided_by": "Kevin Flynn",
+  "decided_on": "2026-03-28"
+ },
+ {
+  "id": "dec_e287aa298850",
+  "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Vault",
+  "decided_by": "Diana Prince",
+  "decided_on": "2026-03-14"
+ },
+ {
+  "id": "dec_d1d225a60971",
+  "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "ClickHouse",
+  "decided_by": "Carlos Mendez",
+  "decided_on": "2026-06-04"
+ },
+ {
+  "id": "dec_76772c5b323f",
+  "title": "Adopt Kafka for all event messaging across services",
+  "status": "accepted",
+  "health": "contradicted",
+  "health_reason": "Contradicted by 'Adopt RabbitMQ for all event messaging across services' decided by Bob Martin",
+  "system": "Kafka",
+  "decided_by": "Alice Vance",
+  "decided_on": "2026-03-04"
+ },
+ {
+  "id": "dec_fda8c9b4e631",
+  "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+  "status": "accepted",
+  "health": "superseded",
+  "health_reason": "Superseded by 'Migrate session storage to embedded Keycloak cache' (date: 2026-05-12)",
+  "system": "Redis",
+  "decided_by": "Alice Vance",
+  "decided_on": "2026-02-03"
+ },
+ {
+  "id": "dec_8c7075150849",
+  "title": "Adopt Snowflake for analytics ETL queries",
+  "status": "accepted",
+  "health": "superseded",
+  "health_reason": "Superseded by 'Migrate analytics reporting queries from Snowflake to ClickHouse cluster' (date: 2026-06-04)",
+  "system": "Snowflake",
+  "decided_by": "Fiona Gallagher",
+  "decided_on": "2026-02-18"
+ },
+ {
+  "id": "dec_f564fcd15601",
+  "title": "Migrate session storage to embedded Keycloak cache",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Keycloak",
+  "decided_by": "Alice Vance",
+  "decided_on": "2026-05-12"
+ },
+ {
+  "id": "dec_ecd94c860f08",
+  "title": "Rotate all database passwords into Vault dynamic secrets",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "system": "Vault",
+  "decided_by": "Diana Prince",
+  "decided_on": "2026-06-08"
+ }
+]
