@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.brain.health import DecisionHealthInfo, is_departed
-from app.main import app
+from app.server import app
 
 client = TestClient(app)
 

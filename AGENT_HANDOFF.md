@@ -78,7 +78,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 * Guardrails: 3 ingest/reset requests per minute per IP, one at a time (409 when busy), text 1-5,000 chars, 45 s timeout per LLM call, rollback of tagged data if a run fails mid-write.
 
 ### A3. Performance
-* Detail endpoints use at most 3 Cypher statements, run concurrently in worker threads (`query_graph_threaded`, `CypherTrace.gather`). The health map and decision codes are cached for 5 minutes and refreshed in the background every 4 minutes (`_keep_caches_warm` in `main.py`), so requests never pay for them. Responses carry `Server-Timing: app;dur=<ms>`.
+* Detail endpoints use at most 3 Cypher statements, run concurrently in worker threads (`query_graph_threaded`, `CypherTrace.gather`). The health map and decision codes are cached for 5 minutes and refreshed in the background every 4 minutes (`_keep_caches_warm` in `server.py`), so requests never pay for them. Responses carry `Server-Timing: app;dur=<ms>`.
 
 ### B. Backup Snapshot
 * **Committed Snapshot File**: `data/snapshot/company_brain_snapshot.json` (146 nodes, 374 edges, 17 decisions; Person 15 and System 12 match `data/GROUND_TRUTH.md`).
@@ -180,7 +180,8 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   ├── railway.json                  # Backend-scoped railway config
 │   ├── pyproject.toml                # Dependencies (FastAPI, Cognee, FalkorDB, LiteLLM, LanceDB)
 │   ├── app/
-│   │   ├── main.py                   # FastAPI entrypoint, middleware, CORS, lifespan
+│   │   ├── main.py                   # Fast-binding ASGI entrypoint: /health answers at once, loads app.server in a thread
+│   │   ├── server.py                 # The FastAPI app: middleware, CORS, lifespan, cache warmer
 │   │   ├── config.py                 # Pydantic Settings & environment validation
 │   │   ├── api/
 │   │   │   ├── ask.py                # POST /ask endpoint (graph retrieval, one LLM call, citations, primary decision)

@@ -8,7 +8,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.brain.memory import query_graph
-from app.main import app
+from app.server import app
 
 
 @pytest.mark.asyncio
