@@ -11,7 +11,7 @@ COPY backend/pyproject.toml ./pyproject.toml
 
 # Install dependencies into /app/.venv
 RUN uv venv /app/.venv && \
-    uv pip install --python /app/.venv/bin/python --no-cache -r pyproject.toml
+    uv pip install --python /app/.venv/bin/python --no-cache --compile-bytecode -r pyproject.toml
 
 # Stage 2: Minimal runtime image
 FROM python:3.12-slim AS runner
@@ -30,6 +30,8 @@ COPY --from=builder --chown=appuser:appgroup /app/.venv /app/.venv
 
 # Copy application source from backend
 COPY --chown=appuser:appgroup backend/app/ /app/app/
+# Precompile app bytecode too, so the first boot does not compile anything (fast healthcheck)
+RUN /app/.venv/bin/python -m compileall -q /app/app
 
 # Environment variables
 ENV PATH="/app/.venv/bin:$PATH" \
