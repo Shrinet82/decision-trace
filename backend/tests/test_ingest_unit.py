@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from app.api import rate_limiter
 from app.brain.health import DecisionHealthInfo
 from app.ingest import live
-from app.main import app
+from app.server import app
 
 client = TestClient(app)
 GOOD = {"type": "meeting", "title": "Sync", "date": "2026-10-16", "text": "We decided X."}

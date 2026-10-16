@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.brain.health import DecisionHealthInfo
 from app.config import get_settings
-from app.main import app
+from app.server import app
 
 settings = get_settings()
 client = TestClient(app)
@@ -30,7 +30,7 @@ def test_root_endpoint():
 
 def test_health_check_endpoint():
     """Verify health check endpoint returns 200 when alive."""
-    with patch("app.main.ping_falkordb", new_callable=AsyncMock) as mock_ping:
+    with patch("app.server.ping_falkordb", new_callable=AsyncMock) as mock_ping:
         mock_ping.return_value = True
         response = client.get("/health")
         assert response.status_code == 200

@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.config import get_settings
-from app.main import app
+from app.server import app
 
 has_credentials = bool(get_settings().FALKORDB_HOST)
 pytestmark = [
