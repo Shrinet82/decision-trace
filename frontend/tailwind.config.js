@@ -1,32 +1,39 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
       colors: {
         bg: 'var(--color-bg)',
+        sidebar: 'var(--color-sidebar)',
         surface: 'var(--color-surface)',
-        'surface-subtle': 'var(--color-surface-subtle)',
+        subtle: 'var(--color-subtle)',
+        selected: 'var(--color-selected)',
+        hover: 'var(--color-hover)',
+        panel: 'var(--color-panel)',
         border: 'var(--color-border)',
-        text: 'var(--color-text)',
-        'text-muted': 'var(--color-text-muted)',
-        primary: {
-          DEFAULT: 'var(--color-primary)',
-          hover: 'var(--color-primary-hover)',
+        divider: 'var(--color-divider)',
+        'row-divider': 'var(--color-row-divider)',
+        text: {
+          DEFAULT: 'var(--color-text)',
+          2: 'var(--color-text-2)',
         },
-        focus: 'var(--color-focus-ring)',
-        danger: {
-          DEFAULT: 'var(--color-danger)',
-          subtle: 'var(--color-danger-subtle)',
+        muted: 'var(--color-muted)',
+        faint: 'var(--color-faint)',
+        accent: {
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          ring: 'var(--color-accent-ring)',
         },
-        success: {
-          DEFAULT: 'var(--color-success)',
-          subtle: 'var(--color-success-subtle)',
-        },
-        warning: {
-          DEFAULT: 'var(--color-warning)',
-          subtle: 'var(--color-warning-subtle)',
+        status: {
+          active: 'var(--status-active)',
+          conflict: 'var(--status-conflict)',
+          stale: 'var(--status-stale)',
+          superseded: 'var(--status-superseded)',
+          'stale-text': 'var(--status-stale-text)',
+          'conflict-text': 'var(--status-conflict-text)',
+          'conflict-bg': 'var(--status-conflict-bg)',
+          'conflict-border': 'var(--status-conflict-border)',
         },
         line: {
           messaging: 'var(--line-messaging)',
@@ -41,17 +48,19 @@ export default {
         mono: ['var(--font-mono)'],
       },
       fontSize: {
-        xs: ['var(--text-xs)', { lineHeight: 'var(--leading-ui)' }],
-        sm: ['var(--text-sm)', { lineHeight: 'var(--leading-ui)' }],
-        base: ['var(--text-base)', { lineHeight: 'var(--leading-ui)' }],
-        body: ['var(--text-body)', { lineHeight: 'var(--leading-prose)' }],
-        lg: ['var(--text-lg)', { lineHeight: 'var(--leading-ui)' }],
-        xl: ['var(--text-xl)', { lineHeight: 'var(--leading-ui)' }],
-        '2xl': ['var(--text-2xl)', { lineHeight: 'var(--leading-ui)' }],
+        xs: ['12px', { lineHeight: '1.45' }],
+        sm: ['13px', { lineHeight: '1.45' }],
+        base: ['14px', { lineHeight: '1.65' }],
+        lg: ['15px', { lineHeight: '1.45' }],
+        xl: ['16px', { lineHeight: '1.35' }],
       },
       borderRadius: {
         control: 'var(--radius-control)',
         panel: 'var(--radius-panel)',
+        chip: 'var(--radius-chip)',
+      },
+      boxShadow: {
+        composer: 'var(--shadow-composer)',
       },
     },
   },

@@ -5,7 +5,22 @@ import ask4 from '../mocks/ask-4-prometheus-decider.json';
 import ask5 from '../mocks/ask-5-vault-secrets.json';
 import ask6 from '../mocks/ask-6-unanswerable-quantum.json';
 import ask7 from '../mocks/ask-7-unanswerable-oracle.json';
-import type { AskResponse } from './types';
+import decisionsFixture from '../mocks/decisions.json';
+import decisionDetailsFixture from '../mocks/decision-details.json';
+import graphFixture from '../mocks/graph.json';
+import type {
+  AskResponse,
+  DecisionDetail,
+  DecisionSummary,
+  GraphResponse,
+} from './types';
+
+export const MOCK_DECISIONS = decisionsFixture as DecisionSummary[];
+export const MOCK_DECISION_DETAILS = decisionDetailsFixture as unknown as Record<
+  string,
+  DecisionDetail
+>;
+export const MOCK_GRAPH = graphFixture as unknown as GraphResponse;
 
 export interface BenchmarkQuestion {
   id: string;

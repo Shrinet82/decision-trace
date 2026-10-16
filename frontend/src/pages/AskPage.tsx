@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { AlertCircle, ArrowUp, User } from 'lucide-react';
+import { useAsk, useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
+import { AnswerBody } from '../components/ask/AnswerBody';
+import { AskProperties } from '../components/ask/AskProperties';
+import { EvidencePathCard } from '../components/ask/EvidencePathCard';
+import { SourceCards } from '../components/ask/SourceCards';
+import { PageFrame } from '../components/PageFrame';
+import { StatusIcon } from '../components/StatusIcon';
+import { btnOutline, btnPrimary } from '../components/ui';
+import { isNotFoundAnswer } from '../utils/answer';
+import { buildEvidencePath, pickMainDecision } from '../utils/evidence';
 import {
-  Search,
-  Users,
-  FileText,
-  AlertCircle,
-  RotateCcw,
-  History,
-} from 'lucide-react';
-import { askQuestion, ApiError } from '../api/client';
-import type { AskResponse, Citation } from '../api/types';
-import { StatusMarker } from '../components/StatusMarker';
-import { CytoscapeGraph } from '../components/CytoscapeGraph';
-import { SourceDrawer } from '../components/SourceDrawer';
-import { getSystemLine } from '../config/lines';
+  buildGraphIndex,
+  healthToStatus,
+  sourceTicketId,
+  STATUS_LABEL,
+  type GraphIndex,
+  type StatusKind,
+} from '../utils/model';
 
 const EXAMPLE_QUESTIONS = [
   'Why did we choose Kafka over RabbitMQ?',
@@ -23,390 +28,325 @@ const EXAMPLE_QUESTIONS = [
   'Why did we choose Vault for secret management?',
 ];
 
-export const AskPage: React.FC = () => {
-  const [questionInput, setQuestionInput] = useState('');
-  const [submittedQuestion, setSubmittedQuestion] = useState<string | null>(null);
-  const [recentQueries, setRecentQueries] = useState<string[]>([]);
-  const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+const VERDICT: Record<StatusKind, string> = {
+  active: 'Still valid',
+  conflict: 'Conflicting decisions',
+  stale: STATUS_LABEL.stale,
+  superseded: STATUS_LABEL.superseded,
+};
 
-  // TanStack Query for answering questions
-  const {
-    data,
-    error,
-    isLoading,
-    isFetching,
-    refetch,
-  } = useQuery<AskResponse, ApiError>({
-    queryKey: ['ask', submittedQuestion],
-    queryFn: () => askQuestion({ question: submittedQuestion! }),
-    enabled: Boolean(submittedQuestion && submittedQuestion.trim().length >= 2),
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
-    retry: 1,
-  });
+const AnswerSkeleton: React.FC = () => (
+  <div role="status" aria-label="Searching the Company Brain" className="flex flex-col gap-3">
+    <div className="skeleton h-[22px] w-28" />
+    <div className="skeleton h-4 w-full" />
+    <div className="skeleton h-4 w-11/12" />
+    <div className="skeleton h-4 w-3/4" />
+    <div className="skeleton mt-2 h-40 w-full" />
+  </div>
+);
 
-  const handleAsk = (q: string) => {
-    const trimmed = q.trim();
-    if (trimmed.length < 2) return;
+interface TurnProps {
+  question: string;
+  turnKey: string;
+  index: GraphIndex | undefined;
+  decisionCount: number | undefined;
+  statusById: Map<string, StatusKind>;
+}
 
-    setQuestionInput(trimmed);
-    setSubmittedQuestion(trimmed);
-    setRecentQueries((prev) => {
-      const filtered = prev.filter((item) => item !== trimmed);
-      return [trimmed, ...filtered].slice(0, 5);
-    });
+const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, statusById }) => {
+  const ask = useAsk(question);
+  const data = ask.data;
+  const notFound = data ? isNotFoundAnswer(data.answer, data.citations.length) : false;
+  const main = data && !notFound ? pickMainDecision(data, statusById) : undefined;
+  const detail = useDecisionDetail(main?.id);
+
+  const scrollTo = (anchorId: string) => {
+    const el = document.getElementById(anchorId);
+    el?.scrollIntoView?.({ block: 'center' });
+    el?.focus({ preventScroll: true });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleAsk(questionInput);
-  };
-
-  const handleOpenSource = (citation: Citation) => {
-    setSelectedCitation(citation);
-    setIsDrawerOpen(true);
-  };
-
-  // Inspect if the answer represents a "not found" state
-  const isNotFound =
-    data &&
-    ((data.citations?.length ?? 0) === 0 ||
-      data.answer.toLowerCase().includes('not found in the company brain') ||
-      data.answer.toLowerCase().includes('the answer is not found'));
-
-  // Extract decision nodes from graph_path for summary cards
-  const decisionNodes =
-    data?.graph_path?.nodes?.filter((n) => n.label === 'Decision') || [];
+  const verdict = detail.data ? VERDICT[healthToStatus(detail.data.health)] : null;
+  const verdictStatus = detail.data ? healthToStatus(detail.data.health) : null;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-text tracking-tight">
-          Ask
-        </h1>
-        <p className="mt-1 text-sm text-text-muted">
-          Query why decisions were made, who owns a system, or what replaced something with grounded evidence.
-        </p>
+    <>
+      <div className="flex gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-hover text-text-2"
+        >
+          <User className="h-3.5 w-3.5" />
+        </span>
+        <p className="m-0 pt-0.5 text-lg font-medium">{question}</p>
       </div>
 
-      {/* Question Form */}
-      <div className="bg-surface border border-border rounded-panel p-4 space-y-3">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
-              aria-hidden="true"
-            />
-            <input
-              type="text"
-              id="question-input"
-              value={questionInput}
-              onChange={(e) => setQuestionInput(e.target.value)}
-              placeholder="Ask why a decision was made, who owns a system, or what replaced something"
-              disabled={isLoading || isFetching}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-surface-subtle border border-border rounded-control text-text placeholder:text-text-muted focus-visible:outline-focus disabled:opacity-60"
-            />
-          </div>
+      <div className="flex gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-control bg-accent text-[10px] font-semibold text-white"
+        >
+          DT
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          {ask.isLoading && <AnswerSkeleton />}
 
-          <button
-            type="submit"
-            id="ask-submit-button"
-            disabled={isLoading || isFetching || questionInput.trim().length < 2}
-            className="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-control transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-focus"
-          >
-            {isLoading || isFetching ? 'Searching…' : 'Ask'}
-          </button>
-        </form>
-
-        {/* Example Questions */}
-        <div className="space-y-1.5 pt-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-text-muted block">
-            Example questions:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {EXAMPLE_QUESTIONS.map((example, idx) => (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => handleAsk(example)}
-                disabled={isLoading || isFetching}
-                className="px-2.5 py-1 text-xs rounded-control border border-border bg-surface-subtle hover:bg-surface text-text hover:border-primary transition-colors text-left focus-visible:outline-focus disabled:opacity-60"
-              >
-                {example}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* In-session recent queries history */}
-        {recentQueries.length > 0 && (
-          <div className="flex items-center gap-2 pt-2 border-t border-border text-xs text-text-muted">
-            <History className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span className="font-medium text-text">Recent:</span>
-            <div className="flex flex-wrap gap-1.5 overflow-x-auto">
-              {recentQueries.map((item, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleAsk(item)}
-                  className="hover:text-primary hover:underline truncate max-w-xs focus-visible:outline-focus"
-                >
-                  {item}
-                  {idx < recentQueries.length - 1 && ' ·'}
+          {ask.isError && !ask.isLoading && (
+            <div
+              role="alert"
+              className="flex flex-col gap-2 rounded-panel border border-status-conflict-border bg-status-conflict-bg p-3"
+            >
+              <div className="flex items-center gap-2 font-medium text-status-conflict-text">
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
+                Search failed
+              </div>
+              <p className="m-0 text-text-2">
+                {ask.error?.message || 'An error occurred while querying the Company Brain.'}
+              </p>
+              <div>
+                <button type="button" onClick={() => ask.refetch()} className={btnOutline}>
+                  Retry
                 </button>
-              ))}
+              </div>
+            </div>
+          )}
+
+          {data && notFound && (
+            <div
+              role="status"
+              className="flex flex-col gap-1 rounded-panel border border-divider bg-subtle px-4 py-5"
+            >
+              <h2 className="m-0 text-lg font-semibold">No decision found</h2>
+              <p className="m-0 text-muted">
+                Nothing in the indexed tickets, notes, and records answers this question.
+              </p>
+            </div>
+          )}
+
+          {data && !notFound && (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                {verdict && verdictStatus && (
+                  <span className="inline-flex h-[22px] items-center gap-1.5 rounded-chip border border-border px-2 text-xs font-medium">
+                    <StatusIcon status={verdictStatus} size={12} />
+                    {verdict}
+                  </span>
+                )}
+                {decisionCount !== undefined && (
+                  <span className="text-xs text-muted">
+                    Health checked across {decisionCount} decisions
+                  </span>
+                )}
+              </div>
+
+              <AnswerBody
+                answer={data.answer}
+                citations={data.citations}
+                turnKey={turnKey}
+                onCite={scrollTo}
+              />
+
+              {main && (
+                <EvidencePathCard
+                  path={buildEvidencePath(data, main.id)}
+                  statusOf={(id) => statusById.get(id) ?? 'active'}
+                />
+              )}
+
+              {data.citations.length > 0 && (
+                <SourceCards citations={data.citations} turnKey={turnKey} index={index} />
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export const AskPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const [input, setInput] = useState('');
+  const [turns, setTurns] = useState<string[]>([]);
+  const composerRef = useRef<HTMLInputElement>(null);
+
+  const graphQuery = useGraph();
+  const decisionsQuery = useDecisions();
+  const index = useMemo(
+    () => (graphQuery.data ? buildGraphIndex(graphQuery.data) : undefined),
+    [graphQuery.data]
+  );
+  const statusById = useMemo(() => {
+    const map = new Map<string, StatusKind>();
+    for (const d of decisionsQuery.data ?? []) map.set(d.id, healthToStatus(d.health));
+    return map;
+  }, [decisionsQuery.data]);
+
+  const submit = (raw: string) => {
+    const q = raw.trim();
+    if (q.length < 2) return;
+    setTurns((prev) => [...prev, q]);
+    setInput('');
+  };
+
+  // Deep link: /?q=... asks once, then clears the parameter.
+  const seeded = useRef<string | null>(null);
+  useEffect(() => {
+    const q = params.get('q');
+    if (q && seeded.current !== q) {
+      seeded.current = q;
+      submit(q);
+      const next = new URLSearchParams(params);
+      next.delete('q');
+      setParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params]);
+
+  const lastQuestion = turns.length > 0 ? turns[turns.length - 1] : null;
+  const lastAsk = useAsk(lastQuestion);
+  const lastNotFound = lastAsk.data
+    ? isNotFoundAnswer(lastAsk.data.answer, lastAsk.data.citations.length)
+    : false;
+  const lastMain =
+    lastAsk.data && !lastNotFound ? pickMainDecision(lastAsk.data, statusById) : undefined;
+  const lastDetail = useDecisionDetail(lastMain?.id);
+
+  useEffect(() => {
+    if (turns.length > 0) {
+      window.scrollTo?.({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+  }, [turns.length]);
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submit(input);
+  };
+
+  const copyLink = async () => {
+    if (!lastQuestion) return;
+    const url = `${window.location.origin}/?q=${encodeURIComponent(lastQuestion)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Clipboard can be blocked; the link is still visible in the address bar flow.
+    }
+  };
+
+  const header = (
+    <>
+      <span>Ask</span>
+      {lastQuestion && (
+        <>
+          <span aria-hidden="true">/</span>
+          <span className="truncate font-medium text-text">{lastQuestion}</span>
+        </>
+      )}
+    </>
+  );
+
+  const actions = lastQuestion ? (
+    <>
+      <button type="button" onClick={copyLink} className={btnOutline}>
+        Copy link
+      </button>
+      <button
+        type="button"
+        disabled={!lastMain}
+        onClick={() => lastMain && navigate(`/graph?node=${encodeURIComponent(lastMain.id)}`)}
+        className={btnOutline}
+      >
+        Open in graph
+      </button>
+    </>
+  ) : undefined;
+
+  const panel = (
+    <AskProperties
+      detail={lastDetail.data}
+      loading={lastAsk.isLoading || (Boolean(lastMain) && lastDetail.isLoading)}
+      ticketId={lastMain ? sourceTicketId(index, lastMain.id) : null}
+      index={index}
+    />
+  );
+
+  const busy = lastAsk.isLoading;
+
+  return (
+    <PageFrame header={header} actions={actions} panel={panel}>
+      <div className="mx-auto flex min-h-[calc(100vh-45px)] max-w-[820px] flex-col gap-7 px-5 pt-8 min-[900px]:px-10">
+        <h1 className={turns.length > 0 ? 'sr-only' : 'm-0 text-[20px] font-semibold'}>Ask</h1>
+
+        {turns.length === 0 && (
+          <div className="flex flex-col gap-3">
+            <p className="m-0 max-w-prose text-muted">
+              Ask why a decision was made, who decided it, what it is based on, and whether it is
+              still valid. Every answer cites its sources.
+            </p>
+            <div className="flex flex-col items-start gap-1.5">
+              <span className="text-xs font-medium text-muted">Example questions</span>
+              <div className="flex flex-wrap gap-2">
+                {EXAMPLE_QUESTIONS.map((example) => (
+                  <button
+                    key={example}
+                    type="button"
+                    onClick={() => submit(example)}
+                    className="rounded-chip border border-border bg-surface px-3 py-1 text-left text-sm text-text-2 transition-colors hover:bg-subtle"
+                  >
+                    {example}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Loading Skeleton State */}
-      {(isLoading || isFetching) && (
-        <div
-          className="grid grid-cols-1 lg:grid-cols-12 gap-6"
-          role="status"
-          aria-live="polite"
-          aria-label="Searching knowledge graph"
+        {turns.map((q, i) => (
+          <Turn
+            key={`${i}-${q}`}
+            question={q}
+            turnKey={String(i)}
+            index={index}
+            decisionCount={decisionsQuery.data?.length}
+            statusById={statusById}
+          />
+        ))}
+
+        <form
+          onSubmit={onSubmit}
+          className="sticky bottom-0 z-10 mt-auto flex items-center gap-2 bg-surface pb-4 pt-2"
         >
-          {/* Answer column skeleton (~60%) */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="p-5 bg-surface border border-border rounded-panel space-y-3 animate-pulse">
-              <div className="h-4 bg-surface-subtle rounded w-1/4" />
-              <div className="h-4 bg-surface-subtle rounded w-full" />
-              <div className="h-4 bg-surface-subtle rounded w-5/6" />
-              <div className="h-4 bg-surface-subtle rounded w-3/4" />
-            </div>
-
-            <div className="p-5 bg-surface border border-border rounded-panel space-y-3 animate-pulse">
-              <div className="h-4 bg-surface-subtle rounded w-1/3" />
-              <div className="h-12 bg-surface-subtle rounded w-full" />
-              <div className="h-12 bg-surface-subtle rounded w-full" />
-            </div>
-          </div>
-
-          {/* Evidence column skeleton (~40%) */}
-          <div className="lg:col-span-5">
-            <div className="h-[420px] bg-surface border border-border rounded-panel p-4 animate-pulse flex flex-col justify-between">
-              <div className="h-6 bg-surface-subtle rounded w-1/3" />
-              <div className="h-48 bg-surface-subtle rounded w-full" />
-              <div className="h-8 bg-surface-subtle rounded w-full" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Error State */}
-      {error && !isLoading && !isFetching && (
-        <div
-          className="p-5 bg-surface border border-danger/40 rounded-panel text-sm text-text space-y-3"
-          role="alert"
-        >
-          <div className="flex items-center gap-2 text-danger font-semibold">
-            <AlertCircle className="w-5 h-5 shrink-0" aria-hidden="true" />
-            <span>Search query failed</span>
-          </div>
-          <p className="text-text-muted">
-            {error.message || 'An error occurred while querying the Company Brain.'}
-          </p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-surface border border-border hover:bg-surface-subtle focus-visible:outline-focus"
-          >
-            <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Retry query</span>
-          </button>
-        </div>
-      )}
-
-      {/* Result Layout: 2 Columns at 1024px and wider (60% / 40%), stacked below */}
-      {data && !isLoading && !isFetching && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Answer Column (~60%) */}
-          <div className="lg:col-span-7 space-y-5">
-            {/* Answer Box */}
-            <div
-              className="p-5 bg-surface border border-border rounded-panel space-y-4"
-              role="region"
-              aria-label="Answer summary"
-            >
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                Answer
-              </h2>
-
-              {isNotFound ? (
-                <div className="p-4 bg-surface-subtle border border-border rounded-panel text-sm text-text-muted">
-                  No answer found in the indexed tickets, notes, and records.
-                </div>
-              ) : (
-                <div className="text-body text-text font-normal leading-prose max-w-prose whitespace-pre-wrap">
-                  {data.answer}
-                </div>
-              )}
-
-              {/* People Involved Chips */}
-              {data.people && data.people.length > 0 && (
-                <div className="pt-3 border-t border-border">
-                  <div className="flex items-center gap-1.5 text-xs text-text-muted mb-2">
-                    <Users className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span className="font-semibold uppercase tracking-wider">
-                      People involved
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {data.people.map((person, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center px-2.5 py-1 rounded-control text-xs border border-border bg-surface-subtle text-text"
-                      >
-                        {person}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Decision Summary Rows */}
-            {decisionNodes.length > 0 && !isNotFound && (
-              <div
-                className="p-5 bg-surface border border-border rounded-panel space-y-3"
-                role="region"
-                aria-label="Decisions related to this query"
-              >
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Decisions ({decisionNodes.length})
-                </h2>
-
-                <div className="space-y-2">
-                  {decisionNodes.map((node) => {
-                    const props = node.properties || {};
-                    const title = (props.title as string) || node.id;
-                    const status = (props.status as string) || 'active';
-                    const rationale = (props.rationale as string) || '';
-                    const systemName = props.system as string | undefined;
-                    const lineConfig = getSystemLine(systemName);
-
-                    return (
-                      <div
-                        key={node.id}
-                        className="p-3 bg-surface-subtle border border-border rounded-panel space-y-1.5"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="font-semibold text-sm text-text">
-                            {title}
-                          </span>
-                          <StatusMarker
-                            health={status}
-                            lineColor={lineConfig.lightColor}
-                            showLabel
-                          />
-                        </div>
-
-                        {rationale && (
-                          <p className="text-xs text-text-muted leading-relaxed line-clamp-3">
-                            {rationale}
-                          </p>
-                        )}
-
-                        {systemName && (
-                          <div className="flex items-center gap-1.5 pt-1 text-xs">
-                            <span className="text-text-muted">System:</span>
-                            <span className="font-medium text-text">
-                              {systemName}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Sources List */}
-            {data.citations && data.citations.length > 0 && !isNotFound && (
-              <div
-                className="p-5 bg-surface border border-border rounded-panel space-y-3"
-                role="region"
-                aria-label="Evidence sources"
-              >
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                  Sources ({data.citations.length})
-                </h2>
-
-                <ul className="space-y-2 list-none p-0 m-0">
-                  {data.citations.map((citation, idx) => (
-                    <li key={idx}>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenSource(citation)}
-                        className="w-full text-left p-3 rounded-panel border border-border bg-surface-subtle hover:bg-surface hover:border-primary transition-colors flex items-center justify-between gap-3 focus-visible:outline-focus"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          {citation.type === 'meeting' ? (
-                            <Users
-                              className="w-4 h-4 text-primary shrink-0"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <FileText
-                              className="w-4 h-4 text-primary shrink-0"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <span className="font-mono text-xs font-semibold text-text shrink-0">
-                            {citation.id}
-                          </span>
-                          <span className="text-xs text-text truncate">
-                            {citation.title}
-                          </span>
-                        </div>
-
-                        <span className="text-xs font-medium text-text-muted shrink-0">
-                          View details
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* Evidence Column (~40%) */}
-          <div className="lg:col-span-5 flex flex-col">
-            <CytoscapeGraph
-              graphPath={data.graph_path}
-              citations={data.citations}
-              onSelectNode={(nodeId, nodeType) => {
-                const matchedCitation = data.citations?.find(
-                  (c) => c.id === nodeId || c.title === nodeId
-                );
-                if (matchedCitation) {
-                  handleOpenSource(matchedCitation);
-                } else {
-                  handleOpenSource({
-                    id: nodeId,
-                    title: nodeId,
-                    type: (nodeType.toLowerCase() as Citation['type']) || 'document',
-                  });
-                }
-              }}
-              className="h-full min-h-[500px]"
+          <div className="flex flex-1 items-center gap-2 rounded-[10px] border border-border bg-surface py-2 pl-3.5 pr-2 shadow-composer">
+            <label htmlFor="question-input" className="sr-only">
+              {turns.length > 0 ? 'Ask a follow-up' : 'Ask a question'}
+            </label>
+            <input
+              ref={composerRef}
+              id="question-input"
+              type="text"
+              value={input}
+              maxLength={500}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={
+                turns.length > 0
+                  ? 'Ask a follow-up…'
+                  : 'Ask why a decision was made, who owns a system, or what replaced something'
+              }
+              className="h-7 min-w-0 flex-1 border-0 bg-transparent text-base text-text outline-none placeholder:text-muted"
             />
+            <button
+              type="submit"
+              id="ask-submit-button"
+              disabled={busy || input.trim().length < 2}
+              className={btnPrimary}
+            >
+              <ArrowUp className="h-3.5 w-3.5 sm:hidden" aria-hidden="true" />
+              <span className="max-sm:sr-only">Ask</span>
+            </button>
           </div>
-        </div>
-      )}
-
-      {/* Right Side Source Drawer */}
-      <SourceDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        citation={selectedCitation}
-        graphPath={data?.graph_path}
-      />
-    </div>
+        </form>
+      </div>
+    </PageFrame>
   );
 };

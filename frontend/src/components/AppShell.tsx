@@ -1,212 +1,271 @@
-import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { CheckCircle2, Database, MessageCircle, Network, Search } from 'lucide-react';
+import { useDecisions, useGraph } from '../api/hooks';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
-  HelpCircle,
-  CheckCircle2,
-  Share2,
-  FolderOpen,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Database,
-  Menu,
-  X,
-} from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
+  buildDecisionRows,
+  buildGraphIndex,
+  countByStatus,
+  STATUS_LABEL,
+  systemsWithDecisions,
+  type StatusKind,
+} from '../utils/model';
+import { CommandPalette } from './CommandPalette';
+import { StatusIcon } from './StatusIcon';
+import { SystemSquare } from './SystemMark';
 
-export const AppShell: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const NODE_TYPES = ['Decision', 'Person', 'System', 'Ticket', 'Meeting', 'Project', 'Team'];
 
-  const navItems = [
-    { to: '/', label: 'Ask', icon: HelpCircle },
-    { to: '/decisions', label: 'Decisions', icon: CheckCircle2 },
-    { to: '/graph', label: 'Graph', icon: Share2 },
-    { to: '/sources', label: 'Sources', icon: FolderOpen },
+const rowBase =
+  'flex items-center gap-2 rounded-control px-2 text-text-2 transition-colors hover:bg-hover';
+
+const NavItem: React.FC<{
+  to: string;
+  end?: boolean;
+  icon: React.ReactNode;
+  label: string;
+  count?: number;
+}> = ({ to, end, icon, label, count }) => (
+  <NavLink
+    to={to}
+    end={end}
+    className={({ isActive }) =>
+      `${rowBase} h-[30px] shrink-0 ${isActive ? 'bg-hover font-medium text-text' : ''}`
+    }
+  >
+    {({ isActive }) => (
+      <>
+        <span className={`inline-flex ${isActive ? 'text-accent' : ''}`}>{icon}</span>
+        <span className="flex-1">{label}</span>
+        {count !== undefined && (
+          <span className={isActive ? 'text-text-2' : 'text-muted'}>{count}</span>
+        )}
+      </>
+    )}
+  </NavLink>
+);
+
+const GroupLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="px-2 pb-1 text-xs font-medium text-muted">{children}</div>
+);
+
+const Views: React.FC<{ counts: Record<StatusKind, number> | null }> = ({ counts }) => {
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const current = location.pathname === '/decisions' ? params.get('view') : null;
+  const views: { key: StatusKind; param: string }[] = [
+    { key: 'conflict', param: 'conflict' },
+    { key: 'stale', param: 'stale' },
+    { key: 'superseded', param: 'superseded' },
   ];
+  return (
+    <div className="flex flex-col gap-px">
+      <GroupLabel>Views</GroupLabel>
+      {views.map(({ key, param }) => (
+        <Link
+          key={key}
+          to={`/decisions?view=${param}`}
+          aria-current={current === param ? 'page' : undefined}
+          className={`${rowBase} h-7 ${current === param ? 'bg-hover font-medium text-text' : ''}`}
+        >
+          <StatusIcon status={key} />
+          <span className="flex-1">{key === 'conflict' ? 'Conflicts' : STATUS_LABEL[key]}</span>
+          {counts && (
+            <span className={current === param ? 'text-text-2' : 'text-muted'}>{counts[key]}</span>
+          )}
+        </Link>
+      ))}
+    </div>
+  );
+};
+
+const Systems: React.FC<{ systems: { name: string; decisionCount: number }[] }> = ({ systems }) => {
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const current = location.pathname === '/decisions' ? params.get('system') : null;
+  if (systems.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-px">
+      <GroupLabel>Systems</GroupLabel>
+      {systems.map((s) => (
+        <Link
+          key={s.name}
+          to={`/decisions?system=${encodeURIComponent(s.name)}`}
+          aria-current={current === s.name ? 'page' : undefined}
+          className={`${rowBase} h-7 ${current === s.name ? 'bg-hover font-medium text-text' : ''}`}
+        >
+          <SystemSquare system={s.name} />
+          <span className="min-w-0 flex-1 truncate">{s.name}</span>
+          <span className={current === s.name ? 'text-text-2' : 'text-muted'}>{s.decisionCount}</span>
+        </Link>
+      ))}
+    </div>
+  );
+};
+
+const GraphTypeFilters: React.FC<{ counts: Map<string, number> | null }> = ({ counts }) => {
+  const [params, setParams] = useSearchParams();
+  const hidden = new Set((params.get('hide') ?? '').split(',').filter(Boolean));
+  const types = NODE_TYPES.filter((t) => (counts?.get(t) ?? 0) > 0);
+
+  const toggle = (type: string) => {
+    const next = new Set(hidden);
+    if (next.has(type)) next.delete(type);
+    else next.add(type);
+    const copy = new URLSearchParams(params);
+    if (next.size > 0) copy.set('hide', [...next].join(','));
+    else copy.delete('hide');
+    setParams(copy, { replace: true });
+  };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-bg text-text">
-      {/* Skip to main content link for screen-readers & keyboard navigation */}
+    <fieldset className="m-0 flex flex-col gap-1.5 border-0 px-2 py-0">
+      <legend className="p-0 pb-1 text-xs font-medium text-muted">Show node types</legend>
+      {types.map((type) => (
+        <label key={type} className="flex min-h-[26px] cursor-pointer items-center gap-2 text-text-2">
+          <input
+            type="checkbox"
+            checked={!hidden.has(type)}
+            onChange={() => toggle(type)}
+            className="m-0 h-3.5 w-3.5 accent-[#4F5BD5]"
+          />
+          {type}
+          <span className="ml-auto text-muted">{counts?.get(type)}</span>
+        </label>
+      ))}
+    </fieldset>
+  );
+};
+
+export const AppShell: React.FC = () => {
+  const location = useLocation();
+  const isDesktop = useMediaQuery('(min-width: 900px)');
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const paletteTrigger = useRef<HTMLElement | null>(null);
+
+  const decisionsQuery = useDecisions();
+  const graphQuery = useGraph();
+  const index = useMemo(
+    () => (graphQuery.data ? buildGraphIndex(graphQuery.data) : undefined),
+    [graphQuery.data]
+  );
+  const rows = useMemo(
+    () => (decisionsQuery.data ? buildDecisionRows(decisionsQuery.data, index) : []),
+    [decisionsQuery.data, index]
+  );
+  const counts = decisionsQuery.data ? countByStatus(rows) : null;
+  const systems = useMemo(() => (index ? systemsWithDecisions(index) : []), [index]);
+
+  const openPalette = () => {
+    paletteTrigger.current = document.activeElement as HTMLElement | null;
+    setPaletteOpen(true);
+  };
+  const closePalette = () => {
+    setPaletteOpen(false);
+    paletteTrigger.current?.focus?.();
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((open) => {
+          if (!open) paletteTrigger.current = document.activeElement as HTMLElement | null;
+          return !open;
+        });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const onGraph = location.pathname === '/graph';
+  const secondary = onGraph ? (
+    <GraphTypeFilters counts={index?.countsByLabel ?? null} />
+  ) : (
+    <>
+      <Views counts={counts} />
+      <Systems systems={systems} />
+    </>
+  );
+
+  const footer = graphQuery.isError ? (
+    <>
+      <span className="h-1.5 w-1.5 rounded-full bg-status-conflict" aria-hidden="true" />
+      Graph unavailable
+    </>
+  ) : (
+    <>
+      <span className="h-1.5 w-1.5 rounded-full bg-status-active" aria-hidden="true" />
+      FalkorDB{graphQuery.data ? ` · ${graphQuery.data.total_nodes} nodes` : ''}
+    </>
+  );
+
+  return (
+    <div className="flex min-h-screen flex-col bg-bg text-text min-[900px]:flex-row">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-control"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-control focus:bg-accent focus:px-3 focus:py-2 focus:text-white"
       >
         Skip to content
       </a>
 
-      {/* Mobile top bar (visible below 768px) */}
-      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-surface border-b border-border">
-        <div className="flex items-center gap-2">
-          {/* Small circle-and-line glyph */}
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            aria-hidden="true"
-            className="shrink-0"
-          >
-            <circle cx="5" cy="9" r="3.5" stroke="var(--color-primary)" strokeWidth="2" />
-            <line x1="8.5" y1="9" x2="16" y2="9" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          <span className="font-semibold text-sm tracking-tight text-text">
-            Decision Trace
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-control text-text-muted hover:text-text hover:bg-surface-subtle border border-border"
-            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          >
-            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
-        </div>
-      </header>
-
-      {/* Mobile menu dropdown */}
-      {mobileMenuOpen && (
-        <nav
-          className="md:hidden bg-surface border-b border-border px-4 py-2 space-y-1"
-          aria-label="Mobile navigation"
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setMobileMenuOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-3 py-2 rounded-control text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-surface-subtle text-text border border-primary/60 font-semibold'
-                      : 'text-text-muted hover:text-text hover:bg-surface-subtle border border-transparent'
-                  }`
-                }
-              >
-                <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-                <span>{item.label}</span>
-              </NavLink>
-            );
-          })}
-        </nav>
-      )}
-
-      {/* Desktop Left Sidebar (240px or collapsed to 64px) */}
       <aside
-        className={`hidden md:flex flex-col border-r border-border bg-surface transition-all duration-150 ease-in-out shrink-0 ${
-          isCollapsed ? 'w-16' : 'w-[240px]'
-        }`}
-        aria-label="Sidebar navigation"
+        aria-label="Sidebar"
+        className="box-border flex w-full shrink-0 flex-col gap-3 border-b border-border bg-sidebar px-2.5 py-3 min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:w-[232px] min-[900px]:gap-[18px] min-[900px]:overflow-y-auto min-[900px]:border-b-0 min-[900px]:border-r"
       >
-        {/* Wordmark & Collapse Toggle */}
-        <div className="flex items-center justify-between px-4 h-14 border-b border-border">
-          {!isCollapsed && (
-            <div className="flex items-center gap-2 overflow-hidden">
-              {/* Plain circle-and-line glyph */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                aria-hidden="true"
-                className="shrink-0"
-              >
-                <circle cx="5" cy="9" r="3.5" stroke="var(--color-primary)" strokeWidth="2" />
-                <line x1="8.5" y1="9" x2="16" y2="9" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <span className="font-semibold text-sm tracking-tight text-text whitespace-nowrap">
-                Decision Trace
-              </span>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-1.5 rounded-control text-text-muted hover:text-text hover:bg-surface-subtle border border-transparent hover:border-border transition-colors ${
-              isCollapsed ? 'mx-auto' : ''
-            }`}
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        <div className="flex items-center gap-2 px-1.5 py-1">
+          <span
+            aria-hidden="true"
+            className="flex h-5 w-5 items-center justify-center rounded-[5px] bg-accent text-[11px] font-semibold text-white"
           >
-            {isCollapsed ? (
-              <PanelLeftOpen className="w-4 h-4" />
-            ) : (
-              <PanelLeftClose className="w-4 h-4" />
-            )}
-          </button>
+            DT
+          </span>
+          <span className="text-sm font-semibold">Decision Trace</span>
         </div>
 
-        {/* Navigation items */}
-        <nav className="flex-1 p-2 space-y-1" aria-label="Main application sections">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-control text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-surface-subtle text-text border border-primary/60 font-semibold'
-                      : 'text-text-muted hover:text-text hover:bg-surface-subtle border border-transparent'
-                  } ${isCollapsed ? 'justify-center px-2' : ''}`
-                }
-                title={isCollapsed ? item.label : undefined}
-              >
-                <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
-                {!isCollapsed && <span>{item.label}</span>}
-              </NavLink>
-            );
-          })}
+        <button
+          type="button"
+          onClick={openPalette}
+          className="flex h-[30px] items-center gap-2 rounded-control border border-border bg-surface px-2 text-left text-sm text-muted hover:bg-subtle"
+        >
+          <Search className="h-3.5 w-3.5" aria-hidden="true" />
+          <span className="flex-1">Search</span>
+          <kbd className="rounded-[4px] border border-border px-1.5 py-px font-sans text-[11px]">⌘K</kbd>
+        </button>
+
+        <nav aria-label="Primary" className="flex gap-px overflow-x-auto min-[900px]:flex-col">
+          <NavItem to="/" end icon={<MessageCircle size={15} aria-hidden="true" />} label="Ask" />
+          <NavItem
+            to="/decisions"
+            icon={<CheckCircle2 size={15} aria-hidden="true" />}
+            label="Decisions"
+            count={decisionsQuery.data?.length}
+          />
+          <NavItem to="/graph" icon={<Network size={15} aria-hidden="true" />} label="Graph" />
+          <NavItem to="/sources" icon={<Database size={15} aria-hidden="true" />} label="Sources" />
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="p-3 border-t border-border bg-surface-subtle text-xs text-text-muted">
-          {!isCollapsed ? (
-            <div className="flex items-center gap-2">
-              <Database className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
-              <div className="truncate">
-                <span className="block font-medium text-text">Dataset</span>
-                <span className="font-mono text-[11px] text-text-muted">company_brain</span>
-              </div>
-            </div>
-          ) : (
-            <div className="flex justify-center" title="Dataset: company_brain">
-              <Database className="w-4 h-4 text-primary" aria-hidden="true" />
-            </div>
-          )}
+        {isDesktop ? (
+          <div className="flex flex-col gap-[18px]">{secondary}</div>
+        ) : (
+          <details className="group">
+            <summary className="flex h-7 cursor-pointer items-center rounded-control px-2 text-sm text-text-2 hover:bg-hover">
+              {onGraph ? 'Node types' : 'Views and systems'}
+            </summary>
+            <div className="mt-2 flex flex-col gap-3">{secondary}</div>
+          </details>
+        )}
+
+        <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-muted min-[900px]:mt-auto">
+          {footer}
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Desktop Top Bar */}
-        <header className="hidden md:flex items-center justify-between px-6 h-14 bg-surface border-b border-border">
-          <div className="flex items-center gap-2 text-xs text-text-muted">
-            <span className="font-medium text-text">Dataset:</span>
-            <span className="font-mono px-2 py-0.5 rounded-control bg-surface-subtle border border-border text-text">
-              company_brain
-            </span>
-            <span className="text-text-muted">·</span>
-            <span>Frozen graph</span>
-          </div>
+      <Outlet />
 
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-          </div>
-        </header>
-
-        {/* Page View with skip-to landmark */}
-        <main id="main-content" className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto" tabIndex={-1}>
-          <Outlet />
-        </main>
-      </div>
+      <CommandPalette open={paletteOpen} onClose={closePalette} decisions={rows} />
     </div>
   );
 };
