@@ -5,8 +5,10 @@ Web UI for Decision Trace — an interactive, evidence-grounded decision memory 
 ## Key Features
 
 - **Ask**: A chat thread. Each answer shows a validity verdict, the answer text with numbered citation markers, a vertical **evidence path** around the primary decision, and source cards with the verbatim evidence quote. A properties panel shows the decision's status, deciders, system, supersedes/conflicts and validity checks. Unanswerable questions show a "No decision found" empty state with no evidence or citations.
+- **Decision pages** (`/decisions/:code`): lineage graph (sources, supersedes chain both ways, conflicts), system timeline, sources with quotes, impact, and the exact Cypher used.
+- **Systems and People**: list and detail pages with ownership, orphaned systems and departed people flagged.
 - **Decisions**: Decisions grouped by status (Conflict, Possibly stale, Active, Superseded), each with a stable `DEC-NN` code, a relation hint, system chip, decider avatar and date. Tabs, filter, display options, and a peek panel.
-- **Graph**: A Cytoscape explorer centred on one node (radial layout) with node-type filters showing real counts, Expand / Fit / Copy Cypher, and an inspector listing properties and edges.
+- **Explore**: A Cytoscape explorer centred on one node (radial layout) with node-type filters showing real counts, Expand / Fit / Copy Cypher, and an inspector listing properties and edges.
 - **Command palette**: `Cmd/Ctrl+K` searches decisions or asks a question.
 - **Accessible**: Keyboard-reachable controls, visible focus rings, an `axe` check on every page at desktop and mobile widths, and a screen-reader node list for the graph canvas.
 - **Standalone mock mode**: Frozen API responses (`src/mocks/`, captured from the live backend) let reviewers click through every page without any backend.

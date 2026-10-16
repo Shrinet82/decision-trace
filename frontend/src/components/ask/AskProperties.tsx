@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { decisionHref } from '../../utils/links';
 import type { DecisionDetail } from '../../api/types';
 import { formatLongDate } from '../../utils/format';
 import {
@@ -49,7 +51,9 @@ export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading })
     <SidePanel label="Decision properties">
       <div className="flex flex-col gap-1">
         {detail.decision_code && <div className="text-xs text-muted">{detail.decision_code}</div>}
-        <div className="font-semibold">{detail.title}</div>
+        <Link to={decisionHref(detail.decision_code ?? detail.id)} className="font-semibold hover:underline">
+          {detail.title}
+        </Link>
       </div>
       <PropertyList>
         <Property label="Status">

@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import type { PersonSummary, SystemSummary } from '../api/types';
 import type { DecisionRow } from '../utils/model';
+import { decisionHref, personHref, systemHref } from '../utils/links';
 import { askHref } from '../utils/format';
 import { StatusIcon } from './StatusIcon';
 
@@ -17,9 +19,17 @@ export interface CommandPaletteProps {
   open: boolean;
   onClose: () => void;
   decisions: DecisionRow[];
+  systems?: SystemSummary[];
+  people?: PersonSummary[];
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose, decisions }) => {
+export const CommandPalette: React.FC<CommandPaletteProps> = ({
+  open,
+  onClose,
+  decisions,
+  systems = [],
+  people = [],
+}) => {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -33,14 +43,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose, d
           ? true
           : [d.title, d.code, ...d.systems, ...d.deciders].some((v) => v?.toLowerCase().includes(q))
       )
-      .slice(0, 8)
+      .slice(0, 6)
       .map<PaletteItem>((d) => ({
         key: d.id,
         label: d.title,
         hint: d.code ?? d.systems[0] ?? '',
         status: d.status,
-        href: `/decisions?selected=${encodeURIComponent(d.id)}`,
+        href: decisionHref(d.code ?? d.id),
       }));
+    if (q !== '') {
+      for (const s of systems.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 3)) {
+        matches.push({ key: `system:${s.name}`, label: s.name, hint: s.orphaned ? 'System · orphaned' : 'System', href: systemHref(s.name) });
+      }
+      for (const p of people.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 3)) {
+        matches.push({ key: `person:${p.name}`, label: p.name, hint: p.departed ? 'Person · left' : 'Person', href: personHref(p.name) });
+      }
+    }
     if (query.trim().length >= 2) {
       matches.push({
         key: 'ask',
@@ -50,7 +68,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose, d
       });
     }
     return matches;
-  }, [decisions, query]);
+  }, [decisions, systems, people, query]);
 
   useEffect(() => {
     if (open) {
@@ -113,9 +131,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose, d
             role="combobox"
             aria-expanded="true"
             aria-controls="palette-results"
-            aria-activedescendant={items[active] ? `palette-${items[active].key}` : undefined}
-            aria-label="Search decisions or ask a question"
-            placeholder="Search decisions or ask a question…"
+            aria-activedescendant={
+              items[active] ? `palette-${items[active].key.replace(/[^A-Za-z0-9_-]/g, '_')}` : undefined
+            }
+            aria-label="Search decisions, systems, people, or ask a question"
+            placeholder="Search decisions, systems, people…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h-8 flex-1 border-0 bg-transparent text-base text-text outline-none placeholder:text-muted"
@@ -129,13 +149,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose, d
         >
           {items.length === 0 && (
             <li role="presentation" className="px-3 py-6 text-center text-muted">
-              No decisions match.
+              Nothing matches.
             </li>
           )}
           {items.map((item, i) => (
             <li
               key={item.key}
-              id={`palette-${item.key}`}
+              id={`palette-${item.key.replace(/[^A-Za-z0-9_-]/g, '_')}`}
               role="option"
               aria-selected={i === active}
               onMouseEnter={() => setActive(i)}

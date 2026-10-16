@@ -29,3 +29,10 @@ async def get_decision_codes(dataset_name: Optional[str] = None) -> dict[str, st
     return assign_decision_codes(
         [(str(r[0]), str(r[1] or ""), str(r[2]) if r[2] else None) for r in rows if r and r[0]]
     )
+
+
+async def get_decision_codes_cached(dataset_name: Optional[str] = None) -> dict[str, str]:
+    """get_decision_codes, cached for five minutes."""
+    from app.brain.cache import cached
+
+    return await cached("codes", dataset_name or "", 300, lambda: get_decision_codes(dataset_name))

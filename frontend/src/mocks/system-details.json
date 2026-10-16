@@ -1,0 +1,1375 @@
+{
+ "Elasticsearch": {
+  "name": "Elasticsearch",
+  "system_type": "search-engine",
+  "vendor": "Elastic NV",
+  "owner": {
+   "name": "Marcus Aurelius",
+   "role": "Former Staff Architect",
+   "departed": true,
+   "leave_date": "2025-11-30"
+  },
+  "orphaned": true,
+  "decision_count": 0,
+  "ticket_count": 4,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [],
+  "people": [
+   {
+    "name": "Marcus Aurelius",
+    "role": "Former Staff Architect",
+    "departed": true,
+    "leave_date": "2025-11-30",
+    "roles": [
+     "owner"
+    ],
+    "ticket_count": 0
+   },
+   {
+    "name": "Carlos Mendez",
+    "role": "Staff Data Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 4
+   },
+   {
+    "name": "Oliver Queen",
+    "role": "CI/CD Specialist",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 4
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Elasticsearch"
+     },
+     "ms": 196.6
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Elasticsearch"
+     },
+     "ms": 107.3
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Elasticsearch"
+     },
+     "ms": 118.0
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Elasticsearch"
+     },
+     "ms": 146.3
+    }
+   ],
+   "total_ms": 568.2
+  }
+ },
+ "Keycloak": {
+  "name": "Keycloak",
+  "system_type": "iam",
+  "vendor": "Red Hat",
+  "owner": {
+   "name": "Julia Roberts",
+   "role": "Identity & Access Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 3,
+  "ticket_count": 7,
+  "teams": [
+   "Core Infrastructure",
+   "Security & IAM"
+  ],
+  "decisions": [
+   {
+    "id": "dec_f17ee7ad31a2",
+    "decision_code": "DEC-02",
+    "title": "Adopt Keycloak for company-wide single sign-on",
+    "health": "active",
+    "decided_on": "2026-02-10",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f564fcd15601",
+    "decision_code": "DEC-11",
+    "title": "Migrate session storage to embedded Keycloak cache",
+    "health": "active",
+    "decided_on": "2026-05-12",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f8a30e251e54",
+    "decision_code": "DEC-12",
+    "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "health": "active",
+    "decided_on": "2026-05-24",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Julia Roberts",
+    "role": "Identity & Access Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 6
+   },
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 1
+   },
+   {
+    "name": "Hannah Abbott",
+    "role": "Frontend Tech Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   },
+   {
+    "name": "Evan Wright",
+    "role": "Senior Backend Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Keycloak"
+     },
+     "ms": 105.4
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Keycloak"
+     },
+     "ms": 97.6
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Keycloak"
+     },
+     "ms": 80.1
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Keycloak"
+     },
+     "ms": 99.6
+    }
+   ],
+   "total_ms": 382.7
+  }
+ },
+ "ClickHouse": {
+  "name": "ClickHouse",
+  "system_type": "database",
+  "vendor": "ClickHouse Inc",
+  "owner": {
+   "name": "Carlos Mendez",
+   "role": "Staff Data Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 5,
+  "teams": [
+   "Core Infrastructure",
+   "Data Platform"
+  ],
+  "decisions": [
+   {
+    "id": "dec_d1d225a60971",
+    "decision_code": "DEC-13",
+    "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "health": "active",
+    "decided_on": "2026-06-04",
+    "deciders": [
+     "Carlos Mendez"
+    ],
+    "systems": [
+     "ClickHouse"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Carlos Mendez",
+    "role": "Staff Data Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider"
+    ],
+    "ticket_count": 0
+   },
+   {
+    "name": "Fiona Gallagher",
+    "role": "Lead Analytics Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider"
+    ],
+    "ticket_count": 0
+   },
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider"
+    ],
+    "ticket_count": 0
+   },
+   {
+    "name": "Nina Simone",
+    "role": "Data Pipeline Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 4
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "ClickHouse"
+     },
+     "ms": 93.2
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "ClickHouse"
+     },
+     "ms": 102.5
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "ClickHouse"
+     },
+     "ms": 159.6
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "ClickHouse"
+     },
+     "ms": 124.1
+    }
+   ],
+   "total_ms": 479.4
+  }
+ },
+ "Prometheus": {
+  "name": "Prometheus",
+  "system_type": "monitoring",
+  "vendor": "Cloud Native Computing Foundation",
+  "owner": {
+   "name": "Kevin Flynn",
+   "role": "Observability Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_21a4de59b886",
+    "decision_code": "DEC-08",
+    "title": "Migrate application metrics from Datadog to Prometheus Operator",
+    "health": "active",
+    "decided_on": "2026-04-12",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   },
+   {
+    "id": "dec_091c86e8e476",
+    "decision_code": "DEC-09",
+    "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+    "health": "active",
+    "decided_on": "2026-04-22",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Kevin Flynn",
+    "role": "Observability Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 1
+   },
+   {
+    "name": "George Clark",
+    "role": "DevOps Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Prometheus"
+     },
+     "ms": 206.6
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Prometheus"
+     },
+     "ms": 307.8
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Prometheus"
+     },
+     "ms": 117.5
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Prometheus"
+     },
+     "ms": 102.6
+    }
+   ],
+   "total_ms": 734.5
+  }
+ },
+ "Redis": {
+  "name": "Redis",
+  "system_type": "cache",
+  "vendor": "Redis Ltd",
+  "owner": {
+   "name": "Alice Vance",
+   "role": "Principal Platform Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 7,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_fda8c9b4e631",
+    "decision_code": "DEC-01",
+    "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+    "health": "superseded",
+    "decided_on": "2026-02-03",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   },
+   {
+    "id": "dec_2c6a03017923",
+    "decision_code": "DEC-10",
+    "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+    "health": "active",
+    "decided_on": "2026-05-05",
+    "deciders": [
+     "Ian Malcolm"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 6
+   },
+   {
+    "name": "Ian Malcolm",
+    "role": "Distributed Systems Architect",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 1
+   },
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   },
+   {
+    "name": "Evan Wright",
+    "role": "Senior Backend Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Redis"
+     },
+     "ms": 107.4
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Redis"
+     },
+     "ms": 99.4
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Redis"
+     },
+     "ms": 311.2
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Redis"
+     },
+     "ms": 359.1
+    }
+   ],
+   "total_ms": 877.1
+  }
+ },
+ "Snowflake": {
+  "name": "Snowflake",
+  "system_type": "data-warehouse",
+  "vendor": "Snowflake Inc",
+  "owner": {
+   "name": "Fiona Gallagher",
+   "role": "Lead Analytics Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 5,
+  "teams": [
+   "Core Infrastructure",
+   "Data Platform"
+  ],
+  "decisions": [
+   {
+    "id": "dec_8c7075150849",
+    "decision_code": "DEC-03",
+    "title": "Adopt Snowflake for analytics ETL queries",
+    "health": "superseded",
+    "decided_on": "2026-02-18",
+    "deciders": [
+     "Fiona Gallagher"
+    ],
+    "systems": [
+     "Snowflake"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Fiona Gallagher",
+    "role": "Lead Analytics Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider"
+    ],
+    "ticket_count": 0
+   },
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "decider"
+    ],
+    "ticket_count": 0
+   },
+   {
+    "name": "Nina Simone",
+    "role": "Data Pipeline Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Snowflake"
+     },
+     "ms": 166.0
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Snowflake"
+     },
+     "ms": 97.2
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Snowflake"
+     },
+     "ms": 101.2
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Snowflake"
+     },
+     "ms": 113.3
+    }
+   ],
+   "total_ms": 477.7
+  }
+ },
+ "Vault": {
+  "name": "Vault",
+  "system_type": "secrets-management",
+  "vendor": "HashiCorp",
+  "owner": {
+   "name": "Diana Prince",
+   "role": "Security Architect",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 5,
+  "teams": [
+   "Security & IAM"
+  ],
+  "decisions": [
+   {
+    "id": "dec_e287aa298850",
+    "decision_code": "DEC-05",
+    "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+    "health": "active",
+    "decided_on": "2026-03-14",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   },
+   {
+    "id": "dec_ecd94c860f08",
+    "decision_code": "DEC-14",
+    "title": "Rotate all database passwords into Vault dynamic secrets",
+    "health": "active",
+    "decided_on": "2026-06-08",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Diana Prince",
+    "role": "Security Architect",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Oliver Queen",
+    "role": "CI/CD Specialist",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Vault"
+     },
+     "ms": 82.5
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Vault"
+     },
+     "ms": 79.9
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Vault"
+     },
+     "ms": 79.6
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Vault"
+     },
+     "ms": 200.1
+    }
+   ],
+   "total_ms": 442.1
+  }
+ },
+ "Datadog": {
+  "name": "Datadog",
+  "system_type": "observability",
+  "vendor": "Datadog Inc",
+  "owner": {
+   "name": "Kevin Flynn",
+   "role": "Observability Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_5b196394600e",
+    "decision_code": "DEC-06",
+    "title": "Standardize application traces on Datadog APM across all production services",
+    "health": "superseded",
+    "decided_on": "2026-03-28",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Datadog"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Kevin Flynn",
+    "role": "Observability Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 6
+   },
+   {
+    "name": "Hannah Abbott",
+    "role": "Frontend Tech Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 6
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Datadog"
+     },
+     "ms": 97.7
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Datadog"
+     },
+     "ms": 460.0
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Datadog"
+     },
+     "ms": 82.5
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Datadog"
+     },
+     "ms": 309.9
+    }
+   ],
+   "total_ms": 950.1
+  }
+ },
+ "Kafka": {
+  "name": "Kafka",
+  "system_type": "event-streaming",
+  "vendor": "Apache Software Foundation",
+  "owner": {
+   "name": "Alice Vance",
+   "role": "Principal Platform Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_76772c5b323f",
+    "decision_code": "DEC-04",
+    "title": "Adopt Kafka for all event messaging across services",
+    "health": "contradicted",
+    "decided_on": "2026-03-04",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Kafka"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 1
+   },
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Carlos Mendez",
+    "role": "Staff Data Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Evan Wright",
+    "role": "Senior Backend Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Kafka"
+     },
+     "ms": 597.9
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Kafka"
+     },
+     "ms": 111.3
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Kafka"
+     },
+     "ms": 97.9
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Kafka"
+     },
+     "ms": 108.6
+    }
+   ],
+   "total_ms": 915.7
+  }
+ },
+ "Kubernetes": {
+  "name": "Kubernetes",
+  "system_type": "container-orchestration",
+  "vendor": "Cloud Native Computing Foundation",
+  "owner": {
+   "name": "Laura Croft",
+   "role": "Cloud Operations Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 18,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_04ed8d5c10ae",
+    "decision_code": "DEC-16",
+    "title": "Standardize on Kubernetes 1.30 across all production regions",
+    "health": "active",
+    "decided_on": "2026-08-20",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Kubernetes"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 9
+   },
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "George Clark",
+    "role": "DevOps Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 4
+   },
+   {
+    "name": "Oliver Queen",
+    "role": "CI/CD Specialist",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 4
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Kubernetes"
+     },
+     "ms": 117.6
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Kubernetes"
+     },
+     "ms": 142.2
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Kubernetes"
+     },
+     "ms": 92.6
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Kubernetes"
+     },
+     "ms": 166.9
+    }
+   ],
+   "total_ms": 519.3
+  }
+ },
+ "Postgres": {
+  "name": "Postgres",
+  "system_type": "database",
+  "vendor": "PostgreSQL Global Development Group",
+  "owner": {
+   "name": "Evan Wright",
+   "role": "Senior Backend Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_53d51a7d4549",
+    "decision_code": "DEC-15",
+    "title": "Upgrade all production Postgres instances to version 16",
+    "health": "active",
+    "decided_on": "2026-06-18",
+    "deciders": [
+     "Evan Wright"
+    ],
+    "systems": [
+     "Postgres"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Evan Wright",
+    "role": "Senior Backend Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 6
+   },
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "Postgres"
+     },
+     "ms": 118.2
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Postgres"
+     },
+     "ms": 95.2
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Postgres"
+     },
+     "ms": 94.6
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "Postgres"
+     },
+     "ms": 103.4
+    }
+   ],
+   "total_ms": 411.4
+  }
+ },
+ "RabbitMQ": {
+  "name": "RabbitMQ",
+  "system_type": "message-broker",
+  "vendor": "VMware",
+  "owner": {
+   "name": "Bob Martin",
+   "role": "Senior Staff SRE",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 5,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "decisions": [
+   {
+    "id": "dec_98a223fad745",
+    "decision_code": "DEC-07",
+    "title": "Adopt RabbitMQ for all event messaging across services",
+    "health": "contradicted",
+    "decided_on": "2026-04-08",
+    "deciders": [
+     "Bob Martin"
+    ],
+    "systems": [
+     "RabbitMQ"
+    ]
+   }
+  ],
+  "people": [
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "owner",
+     "decider",
+     "tickets"
+    ],
+    "ticket_count": 5
+   },
+   {
+    "name": "George Clark",
+    "role": "DevOps Engineer",
+    "departed": false,
+    "leave_date": null,
+    "roles": [
+     "tickets"
+    ],
+    "ticket_count": 1
+   }
+  ],
+  "cypher": {
+   "queries": [
+    {
+     "name": "systems",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "params": {
+      "name": "RabbitMQ"
+     },
+     "ms": 110.7
+    },
+    {
+     "name": "system_teams",
+     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "params": {
+      "name": "RabbitMQ"
+     },
+     "ms": 86.1
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "RabbitMQ"
+     },
+     "ms": 122.6
+    },
+    {
+     "name": "system_people",
+     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "params": {
+      "name": "RabbitMQ"
+     },
+     "ms": 285.0
+    }
+   ],
+   "total_ms": 604.4
+  }
+ }
+}

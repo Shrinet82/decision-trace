@@ -1,19 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Database, MessageCircle, Network, Search } from 'lucide-react';
-import { useDecisions, useGraph } from '../api/hooks';
+import { CheckCircle2, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
+import { useDecisions, useGraph, usePeople, useSystems } from '../api/hooks';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
   buildDecisionRows,
   buildGraphIndex,
   countByStatus,
-  STATUS_LABEL,
-  systemsWithDecisions,
   type StatusKind,
 } from '../utils/model';
 import { CommandPalette } from './CommandPalette';
 import { StatusIcon } from './StatusIcon';
-import { SystemSquare } from './SystemMark';
 
 const NODE_TYPES = ['Decision', 'Person', 'System', 'Ticket', 'Meeting', 'Project', 'Team'];
 
@@ -50,56 +47,35 @@ const GroupLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="px-2 pb-1 text-xs font-medium text-muted">{children}</div>
 );
 
-const Views: React.FC<{ counts: Record<StatusKind, number> | null }> = ({ counts }) => {
+const Views: React.FC<{
+  counts: Record<StatusKind, number> | null;
+  orphaned: number | null;
+}> = ({ counts, orphaned }) => {
   const [params] = useSearchParams();
   const location = useLocation();
-  const current = location.pathname === '/decisions' ? params.get('view') : null;
-  const views: { key: StatusKind; param: string }[] = [
-    { key: 'conflict', param: 'conflict' },
-    { key: 'stale', param: 'stale' },
-    { key: 'superseded', param: 'superseded' },
+  const views = [
+    { key: 'conflict', path: '/decisions', label: 'Conflicts', icon: <StatusIcon status="conflict" />, count: counts?.conflict },
+    { key: 'superseded', path: '/decisions', label: 'Superseded', icon: <StatusIcon status="superseded" />, count: counts?.superseded },
+    { key: 'orphaned', path: '/systems', label: 'Orphaned systems', icon: <StatusIcon status="stale" />, count: orphaned ?? undefined },
   ];
   return (
     <div className="flex flex-col gap-px">
       <GroupLabel>Views</GroupLabel>
-      {views.map(({ key, param }) => (
-        <Link
-          key={key}
-          to={`/decisions?view=${param}`}
-          aria-current={current === param ? 'page' : undefined}
-          className={`${rowBase} h-7 ${current === param ? 'bg-hover font-medium text-text' : ''}`}
-        >
-          <StatusIcon status={key} />
-          <span className="flex-1">{key === 'conflict' ? 'Conflicts' : STATUS_LABEL[key]}</span>
-          {counts && (
-            <span className={current === param ? 'text-text-2' : 'text-muted'}>{counts[key]}</span>
-          )}
-        </Link>
-      ))}
-    </div>
-  );
-};
-
-const Systems: React.FC<{ systems: { name: string; decisionCount: number }[] }> = ({ systems }) => {
-  const [params] = useSearchParams();
-  const location = useLocation();
-  const current = location.pathname === '/decisions' ? params.get('system') : null;
-  if (systems.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-px">
-      <GroupLabel>Systems</GroupLabel>
-      {systems.map((s) => (
-        <Link
-          key={s.name}
-          to={`/decisions?system=${encodeURIComponent(s.name)}`}
-          aria-current={current === s.name ? 'page' : undefined}
-          className={`${rowBase} h-7 ${current === s.name ? 'bg-hover font-medium text-text' : ''}`}
-        >
-          <SystemSquare system={s.name} />
-          <span className="min-w-0 flex-1 truncate">{s.name}</span>
-          <span className={current === s.name ? 'text-text-2' : 'text-muted'}>{s.decisionCount}</span>
-        </Link>
-      ))}
+      {views.map((v) => {
+        const current = location.pathname === v.path && params.get('view') === v.key;
+        return (
+          <Link
+            key={v.key}
+            to={`${v.path}?view=${v.key}`}
+            aria-current={current ? 'page' : undefined}
+            className={`${rowBase} h-7 ${current ? 'bg-hover font-medium text-text' : ''}`}
+          >
+            {v.icon}
+            <span className="flex-1">{v.label}</span>
+            {v.count !== undefined && <span className={current ? 'text-text-2' : 'text-muted'}>{v.count}</span>}
+          </Link>
+        );
+      })}
     </div>
   );
 };
@@ -155,7 +131,9 @@ export const AppShell: React.FC = () => {
     [decisionsQuery.data, index]
   );
   const counts = decisionsQuery.data ? countByStatus(rows) : null;
-  const systems = useMemo(() => (index ? systemsWithDecisions(index) : []), [index]);
+  const systemsQuery = useSystems();
+  const peopleQuery = usePeople();
+  const orphaned = systemsQuery.data ? systemsQuery.data.filter((s) => s.orphaned).length : null;
 
   const openPalette = () => {
     paletteTrigger.current = document.activeElement as HTMLElement | null;
@@ -180,13 +158,12 @@ export const AppShell: React.FC = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const onGraph = location.pathname === '/graph';
+  const onGraph = location.pathname === '/explore';
   const secondary = onGraph ? (
     <GraphTypeFilters counts={index?.countsByLabel ?? null} />
   ) : (
     <>
-      <Views counts={counts} />
-      <Systems systems={systems} />
+      <Views counts={counts} orphaned={orphaned} />
     </>
   );
 
@@ -243,8 +220,19 @@ export const AppShell: React.FC = () => {
             label="Decisions"
             count={decisionsQuery.data?.length}
           />
-          <NavItem to="/graph" icon={<Network size={15} aria-hidden="true" />} label="Graph" />
-          <NavItem to="/sources" icon={<Database size={15} aria-hidden="true" />} label="Sources" />
+          <NavItem
+            to="/systems"
+            icon={<Layers size={15} aria-hidden="true" />}
+            label="Systems"
+            count={systemsQuery.data?.length}
+          />
+          <NavItem
+            to="/people"
+            icon={<Users size={15} aria-hidden="true" />}
+            label="People"
+            count={peopleQuery.data?.length}
+          />
+          <NavItem to="/explore" icon={<Network size={15} aria-hidden="true" />} label="Explore" />
         </nav>
 
         {isDesktop ? (
@@ -252,7 +240,7 @@ export const AppShell: React.FC = () => {
         ) : (
           <details className="group">
             <summary className="flex h-7 cursor-pointer items-center rounded-control px-2 text-sm text-text-2 hover:bg-hover">
-              {onGraph ? 'Node types' : 'Views and systems'}
+              {onGraph ? 'Node types' : 'Views'}
             </summary>
             <div className="mt-2 flex flex-col gap-3">{secondary}</div>
           </details>
@@ -265,7 +253,13 @@ export const AppShell: React.FC = () => {
 
       <Outlet />
 
-      <CommandPalette open={paletteOpen} onClose={closePalette} decisions={rows} />
+      <CommandPalette
+        open={paletteOpen}
+        onClose={closePalette}
+        decisions={rows}
+        systems={systemsQuery.data ?? []}
+        people={peopleQuery.data ?? []}
+      />
     </div>
   );
 };

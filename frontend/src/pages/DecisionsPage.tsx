@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { LayoutGrid, SlidersHorizontal, X } from 'lucide-react';
-import { useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
+import { useDecisions, useGraph } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
-import { PageFrame, Property, PropertyList, SidePanel } from '../components/PageFrame';
+import { PageFrame } from '../components/PageFrame';
 import { PopoverButton } from '../components/Popover';
 import { StatusIcon } from '../components/StatusIcon';
 import { SystemChip, SystemSquare } from '../components/SystemMark';
-import { btnOutline, btnSecondary } from '../components/ui';
-import { askHref, formatLongDate, formatShortDate, questionAboutDecision } from '../utils/format';
+import { decisionHref } from '../utils/links';
+import { btnOutline } from '../components/ui';
+import { formatShortDate } from '../utils/format';
 import {
   buildDecisionRows,
   buildGraphIndex,
@@ -19,7 +20,6 @@ import {
   type GraphIndex,
   type StatusKind,
 } from '../utils/model';
-import { useMediaQuery } from '../hooks/useMediaQuery';
 
 type Tab = 'all' | 'review' | 'active';
 type GroupBy = 'status' | 'system';
@@ -65,20 +65,14 @@ const SkeletonRows: React.FC = () => (
   </div>
 );
 
-const DecisionRowButton: React.FC<{
+const DecisionRowLink: React.FC<{
   row: DecisionRow;
-  selected: boolean;
   index: GraphIndex | undefined;
-  onSelect: () => void;
-}> = ({ row, selected, index, onSelect }) => (
+}> = ({ row, index }) => (
   <li>
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-current={selected ? 'true' : undefined}
-      className={`flex h-10 w-full items-center gap-3 border-0 border-b border-row-divider px-5 text-left transition-colors hover:bg-subtle ${
-        selected ? 'bg-selected hover:bg-selected' : 'bg-transparent'
-      }`}
+    <Link
+      to={decisionHref(row.code ?? row.id)}
+      className={`flex h-10 w-full items-center gap-3 border-0 border-b border-row-divider px-5 text-left transition-colors hover:bg-subtle bg-transparent`}
     >
       <span className="hidden w-[68px] shrink-0 whitespace-nowrap text-muted sm:inline">{row.code ?? ''}</span>
       <StatusIcon status={row.status} />
@@ -114,109 +108,12 @@ const DecisionRowButton: React.FC<{
       <span className="hidden w-14 shrink-0 text-right text-muted sm:inline">
         {formatShortDate(row.decidedOn)}
       </span>
-    </button>
+    </Link>
   </li>
 );
 
-const Callout: React.FC<{ row: DecisionRow; otherTitle?: string }> = ({ row, otherTitle }) => {
-  if (row.status === 'active') return null;
-  const isConflict = row.status === 'conflict';
-  const title =
-    row.status === 'conflict'
-      ? `Conflicts with ${otherTitle ?? 'another decision'}`
-      : row.status === 'superseded'
-        ? `Superseded${otherTitle ? ` by ${otherTitle}` : ''}`
-        : 'Possibly stale';
-  return (
-    <div
-      className={`flex flex-col gap-1 rounded-panel border px-3 py-2.5 ${
-        isConflict
-          ? 'border-status-conflict-border bg-status-conflict-bg'
-          : 'border-divider bg-subtle'
-      }`}
-    >
-      <div
-        className={`font-medium ${
-          isConflict
-            ? 'text-status-conflict-text'
-            : row.status === 'stale'
-              ? 'text-status-stale-text'
-              : 'text-text-2'
-        }`}
-      >
-        {title}
-      </div>
-      <div className="text-text-2">{row.healthReason}</div>
-    </div>
-  );
-};
-
-const Peek: React.FC<{ row: DecisionRow | undefined; index: GraphIndex | undefined }> = ({
-  row,
-  index,
-}) => {
-  const detail = useDecisionDetail(row?.id);
-  if (!row) {
-    return (
-      <SidePanel label="Selected decision">
-        <p className="m-0 text-muted">Select a decision to see its details.</p>
-      </SidePanel>
-    );
-  }
-  const d = detail.data;
-  const other = row.status === 'conflict' ? d?.contradicts[0] : d?.superseded_by[0];
-  const sources = d?.sources.map((s) => (s.type === 'ticket' ? s.id : (s.title ?? s.id))) ?? [];
-  const question =
-    row.status === 'conflict' && other
-      ? `Which applies: "${row.title}" or "${other}"?`
-      : questionAboutDecision(row.title);
-
-  return (
-    <SidePanel label="Selected decision" className="min-[900px]:max-w-[320px]" >
-      <div className="flex items-center justify-between">
-        <span className="text-muted">{row.code ?? 'Decision'}</span>
-        <Link to={askHref(questionAboutDecision(row.title))} className="font-medium text-accent hover:underline">
-          Open
-        </Link>
-      </div>
-      <h2 className="m-0 text-xl font-semibold">{row.title}</h2>
-      <Callout row={row} otherTitle={other} />
-      <PropertyList labelWidth={90}>
-        {row.deciders.length > 0 && (
-          <Property label="Decided by">
-            <Avatar
-              name={row.deciders[0]}
-              size={18}
-              active={personIsActive(index, row.deciders[0])}
-            />
-            <span className="min-w-0">{row.deciders.join(', ')}</span>
-          </Property>
-        )}
-        {row.decidedOn && <Property label="Date">{formatLongDate(row.decidedOn) || row.decidedOn}</Property>}
-        {row.systems.length > 0 && (
-          <Property label="System">
-            <SystemSquare system={row.systems[0]} />
-            <span className="min-w-0">{row.systems.join(', ')}</span>
-          </Property>
-        )}
-        {detail.isLoading ? (
-          <Property label="Based on">
-            <span className="skeleton h-3.5 w-24" />
-          </Property>
-        ) : (
-          sources.length > 0 && <Property label="Based on">{sources.join(', ')}</Property>
-        )}
-      </PropertyList>
-      <Link to={askHref(question)} className={btnSecondary}>
-        {row.status === 'conflict' ? 'Ask which one applies' : 'Ask about this'}
-      </Link>
-    </SidePanel>
-  );
-};
-
 export const DecisionsPage: React.FC = () => {
   const [params, setParams] = useSearchParams();
-  const isDesktop = useMediaQuery('(min-width: 900px)');
   const decisionsQuery = useDecisions();
   const graphQuery = useGraph();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -234,7 +131,6 @@ export const DecisionsPage: React.FC = () => {
   const view = params.get('view') as StatusKind | null;
   const system = params.get('system');
   const groupBy: GroupBy = params.get('group') === 'system' ? 'system' : 'status';
-  const selectedParam = params.get('selected');
 
   const setParam = (key: string, value: string | null) => {
     const next = new URLSearchParams(params);
@@ -278,22 +174,9 @@ export const DecisionsPage: React.FC = () => {
     })).filter((g) => g.rows.length > 0);
   }, [rows, groupBy]);
 
-  const firstRow = groups[0]?.rows[0];
-  const selectedRow =
-    rows.find((r) => r.id === selectedParam) ?? firstRow;
-
   useEffect(() => {
     setExpanded(new Set());
   }, [tab, view, system, groupBy]);
-
-  const select = (row: DecisionRow) => {
-    setParam('selected', row.id);
-    if (!isDesktop) {
-      requestAnimationFrame(() =>
-        document.querySelector('[aria-label="Selected decision"]')?.scrollIntoView?.({ behavior: 'smooth' })
-      );
-    }
-  };
 
   const header = (
     <>
@@ -381,7 +264,7 @@ export const DecisionsPage: React.FC = () => {
   ].filter(Boolean) as { key: string; label: string }[];
 
   return (
-    <PageFrame header={header} actions={actions} panel={<Peek row={selectedRow} index={index} />}>
+    <PageFrame header={header} actions={actions}>
       {activeFilters.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 border-b border-row-divider px-5 py-2">
           {activeFilters.map((f) => (
@@ -428,13 +311,7 @@ export const DecisionsPage: React.FC = () => {
             </h2>
             <ul className="m-0 list-none p-0">
               {visible.map((row) => (
-                <DecisionRowButton
-                  key={row.id}
-                  row={row}
-                  index={index}
-                  selected={selectedRow?.id === row.id}
-                  onSelect={() => select(row)}
-                />
+                <DecisionRowLink key={row.id} row={row} index={index} />
               ))}
             </ul>
             {collapsible && !isExpanded && (

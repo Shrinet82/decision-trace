@@ -136,22 +136,22 @@
         }
       }
     },
-    "/decisions/{decision_id}": {
+    "/decisions/{decision_ref}": {
       "get": {
         "tags": [
           "Decisions"
         ],
         "summary": "Get Decision",
-        "description": "Retrieve detailed decision profile with full lineage, people, systems, and evidence sources.",
-        "operationId": "get_decision_decisions__decision_id__get",
+        "description": "Full decision page: health, deciders, sources, lineage chains, system timeline, impact,\nthe deduplicated subgraph, and the Cypher that produced it. Accepts a DEC code (DEC-11),\na decision id, or an exact title.",
+        "operationId": "get_decision_decisions__decision_ref__get",
         "parameters": [
           {
-            "name": "decision_id",
+            "name": "decision_ref",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Decision Id"
+              "title": "Decision Ref"
             }
           },
           {
@@ -309,6 +309,240 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GraphResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/systems": {
+      "get": {
+        "tags": [
+          "Systems"
+        ],
+        "summary": "List Systems",
+        "description": "Every system with its owner, orphaned flag, and decision/ticket counts.\nOrphaned systems first, then by number of decisions.",
+        "operationId": "list_systems_systems_get",
+        "parameters": [
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SystemSummary"
+                  },
+                  "title": "Response List Systems Systems Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/systems/{name}": {
+      "get": {
+        "tags": [
+          "Systems"
+        ],
+        "summary": "Get System",
+        "description": "A system's owner, orphaned flag, decisions (oldest first), people and teams.",
+        "operationId": "get_system_systems__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/people": {
+      "get": {
+        "tags": [
+          "People"
+        ],
+        "summary": "List People",
+        "description": "Everyone, with teams, systems owned, decision count and whether they have left.",
+        "operationId": "list_people_people_get",
+        "parameters": [
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PersonSummary"
+                  },
+                  "title": "Response List People People Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/people/{name}": {
+      "get": {
+        "tags": [
+          "People"
+        ],
+        "summary": "Get Person",
+        "description": "A person's decisions (oldest first), systems owned, teams led or joined, and activity.",
+        "operationId": "get_person_people__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          },
+          {
+            "name": "dataset_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target dataset name",
+              "title": "Dataset Name"
+            },
+            "description": "Target dataset name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonDetail"
                 }
               }
             }
@@ -556,6 +790,53 @@
         "title": "Citation",
         "description": "Evidence citation linking an answer to a graph node."
       },
+      "CypherQuery": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params"
+          },
+          "ms": {
+            "type": "number",
+            "title": "Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "query",
+          "ms"
+        ],
+        "title": "CypherQuery"
+      },
+      "CypherTraceOut": {
+        "properties": {
+          "queries": {
+            "items": {
+              "$ref": "#/components/schemas/CypherQuery"
+            },
+            "type": "array",
+            "title": "Queries"
+          },
+          "total_ms": {
+            "type": "number",
+            "title": "Total Ms",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "CypherTraceOut",
+        "description": "The exact Cypher statements that produced a response, with timings."
+      },
       "DecisionDetail": {
         "properties": {
           "id": {
@@ -661,7 +942,7 @@
           },
           "sources": {
             "items": {
-              "$ref": "#/components/schemas/SourceRef"
+              "$ref": "#/components/schemas/SourceDetail"
             },
             "type": "array",
             "title": "Sources",
@@ -690,6 +971,54 @@
             "type": "array",
             "title": "Contradicts",
             "description": "Decisions contradicted by or contradicting this decision"
+          },
+          "evidence_quote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Quote",
+            "description": "Verbatim evidence quote"
+          },
+          "deciders": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRef"
+            },
+            "type": "array",
+            "title": "Deciders",
+            "description": "Each decider"
+          },
+          "system_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "System Names",
+            "description": "Systems it is about"
+          },
+          "lineage": {
+            "$ref": "#/components/schemas/Lineage"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRef"
+            },
+            "type": "array",
+            "title": "Timeline",
+            "description": "Every decision on the same system(s), oldest first, including this one"
+          },
+          "impact": {
+            "$ref": "#/components/schemas/Impact"
+          },
+          "subgraph": {
+            "$ref": "#/components/schemas/SubgraphOut"
+          },
+          "cypher": {
+            "$ref": "#/components/schemas/CypherTraceOut"
           }
         },
         "type": "object",
@@ -702,6 +1031,72 @@
         ],
         "title": "DecisionDetail",
         "description": "Detailed decision view including graph connections and health audit."
+      },
+      "DecisionRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "decision_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Code"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "health": {
+            "type": "string",
+            "enum": [
+              "active",
+              "superseded",
+              "contradicted",
+              "possibly_stale"
+            ],
+            "title": "Health",
+            "default": "active"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On"
+          },
+          "deciders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deciders"
+          },
+          "systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "DecisionRef",
+        "description": "Compact decision reference used in lineage, timelines and entity pages."
       },
       "DecisionSummary": {
         "properties": {
@@ -955,6 +1350,444 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "Impact": {
+        "properties": {
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "projects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Projects"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRef"
+            },
+            "type": "array",
+            "title": "People"
+          }
+        },
+        "type": "object",
+        "title": "Impact",
+        "description": "Teams, projects and people within two hops of the decision's systems."
+      },
+      "Lineage": {
+        "properties": {
+          "supersedes": {
+            "items": {
+              "$ref": "#/components/schemas/LineageItem"
+            },
+            "type": "array",
+            "title": "Supersedes",
+            "description": "Older decisions this one replaces, transitively"
+          },
+          "superseded_by": {
+            "items": {
+              "$ref": "#/components/schemas/LineageItem"
+            },
+            "type": "array",
+            "title": "Superseded By",
+            "description": "Newer decisions that replace this one, transitively"
+          },
+          "contradicts": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRef"
+            },
+            "type": "array",
+            "title": "Contradicts",
+            "description": "Decisions this one contradicts (outgoing edge)"
+          },
+          "contradicted_by": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRef"
+            },
+            "type": "array",
+            "title": "Contradicted By",
+            "description": "Decisions that contradict this one (incoming edge)"
+          }
+        },
+        "type": "object",
+        "title": "Lineage",
+        "description": "Full supersedes chains (both directions) and contradiction links of a decision."
+      },
+      "LineageItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "decision_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Code"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "health": {
+            "type": "string",
+            "enum": [
+              "active",
+              "superseded",
+              "contradicted",
+              "possibly_stale"
+            ],
+            "title": "Health",
+            "default": "active"
+          },
+          "decided_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided On"
+          },
+          "deciders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deciders"
+          },
+          "systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems"
+          },
+          "depth": {
+            "type": "integer",
+            "title": "Depth",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title"
+        ],
+        "title": "LineageItem",
+        "description": "A decision in a supersedes chain; depth 1 is the direct neighbour."
+      },
+      "OwnedSystem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "orphaned": {
+            "type": "boolean",
+            "title": "Orphaned",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "OwnedSystem"
+      },
+      "PersonDetail": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "departed": {
+            "type": "boolean",
+            "title": "Departed",
+            "default": false
+          },
+          "leave_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leave Date"
+          },
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "systems_owned": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems Owned"
+          },
+          "decision_count": {
+            "type": "integer",
+            "title": "Decision Count",
+            "default": 0
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "teams_led": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams Led"
+          },
+          "projects_led": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Projects Led"
+          },
+          "owned": {
+            "items": {
+              "$ref": "#/components/schemas/OwnedSystem"
+            },
+            "type": "array",
+            "title": "Owned"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRef"
+            },
+            "type": "array",
+            "title": "Decisions",
+            "description": "Oldest first"
+          },
+          "tickets_raised": {
+            "type": "integer",
+            "title": "Tickets Raised",
+            "default": 0
+          },
+          "tickets_assigned": {
+            "type": "integer",
+            "title": "Tickets Assigned",
+            "default": 0
+          },
+          "meetings_attended": {
+            "type": "integer",
+            "title": "Meetings Attended",
+            "default": 0
+          },
+          "cypher": {
+            "$ref": "#/components/schemas/CypherTraceOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "PersonDetail"
+      },
+      "PersonInvolvement": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "departed": {
+            "type": "boolean",
+            "title": "Departed",
+            "default": false
+          },
+          "leave_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leave Date"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles",
+            "description": "owner, decider, and/or tickets (raised or assigned)"
+          },
+          "ticket_count": {
+            "type": "integer",
+            "title": "Ticket Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "PersonInvolvement",
+        "description": "A person connected to a system, and how."
+      },
+      "PersonRef": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "departed": {
+            "type": "boolean",
+            "title": "Departed",
+            "default": false
+          },
+          "leave_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leave Date"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "PersonRef",
+        "description": "A person, with whether they have left the company."
+      },
+      "PersonSummary": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "departed": {
+            "type": "boolean",
+            "title": "Departed",
+            "default": false
+          },
+          "leave_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leave Date"
+          },
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "systems_owned": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems Owned"
+          },
+          "decision_count": {
+            "type": "integer",
+            "title": "Decision Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "PersonSummary"
+      },
       "ResetResponse": {
         "properties": {
           "status": {
@@ -982,7 +1815,7 @@
         "title": "ResetResponse",
         "description": "Administrative reset response."
       },
-      "SourceRef": {
+      "SourceDetail": {
         "properties": {
           "type": {
             "type": "string",
@@ -991,13 +1824,12 @@
               "meeting",
               "document"
             ],
-            "title": "Type",
-            "description": "Source entity type"
+            "title": "Type"
           },
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "Identifier (e.g. TICK-101 or meeting title)"
+            "description": "Ticket ID or meeting title"
           },
           "title": {
             "anyOf": [
@@ -1008,8 +1840,7 @@
                 "type": "null"
               }
             ],
-            "title": "Title",
-            "description": "Title or summary"
+            "title": "Title"
           },
           "date": {
             "anyOf": [
@@ -1020,8 +1851,19 @@
                 "type": "null"
               }
             ],
-            "title": "Date",
-            "description": "Date of the source"
+            "title": "Date"
+          },
+          "quote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote",
+            "description": "Verbatim evidence quote. Quotes are stored per decision, so this is set only when the decision has a single source; otherwise see DecisionDetail.evidence_quote."
           }
         },
         "type": "object",
@@ -1029,8 +1871,184 @@
           "type",
           "id"
         ],
-        "title": "SourceRef",
-        "description": "Reference to evidence sources (Ticket or Meeting)."
+        "title": "SourceDetail",
+        "description": "An evidence source of a decision."
+      },
+      "SubgraphOut": {
+        "properties": {
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            },
+            "type": "array",
+            "title": "Nodes"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            },
+            "type": "array",
+            "title": "Edges"
+          }
+        },
+        "type": "object",
+        "title": "SubgraphOut",
+        "description": "Deduplicated nodes and edges touched by a detail response. Node ids are 'Label:key'."
+      },
+      "SystemDetail": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "system_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Type"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orphaned": {
+            "type": "boolean",
+            "title": "Orphaned",
+            "description": "True if the owner has left the company",
+            "default": false
+          },
+          "decision_count": {
+            "type": "integer",
+            "title": "Decision Count",
+            "default": 0
+          },
+          "ticket_count": {
+            "type": "integer",
+            "title": "Ticket Count",
+            "default": 0
+          },
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRef"
+            },
+            "type": "array",
+            "title": "Decisions",
+            "description": "Oldest first"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/PersonInvolvement"
+            },
+            "type": "array",
+            "title": "People"
+          },
+          "cypher": {
+            "$ref": "#/components/schemas/CypherTraceOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "SystemDetail"
+      },
+      "SystemSummary": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "system_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Type"
+          },
+          "vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor"
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "orphaned": {
+            "type": "boolean",
+            "title": "Orphaned",
+            "description": "True if the owner has left the company",
+            "default": false
+          },
+          "decision_count": {
+            "type": "integer",
+            "title": "Decision Count",
+            "default": 0
+          },
+          "ticket_count": {
+            "type": "integer",
+            "title": "Ticket Count",
+            "default": 0
+          },
+          "teams": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Teams"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "SystemSummary",
+        "description": "A system with its owner and whether it is orphaned (owner has left)."
       },
       "ValidationError": {
         "properties": {

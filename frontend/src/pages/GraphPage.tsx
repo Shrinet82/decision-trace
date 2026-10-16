@@ -8,6 +8,7 @@ import { PageFrame, Property, PropertyList, SidePanel } from '../components/Page
 import { StatusIcon } from '../components/StatusIcon';
 import { btnOutline, btnPrimary } from '../components/ui';
 import { askHref, formatLongDate, questionAboutDecision } from '../utils/format';
+import { decisionHref, personHref, systemHref } from '../utils/links';
 import {
   buildCypher,
   neighborhood,
@@ -115,6 +116,14 @@ function describeNode(
 
 const EDGE_PREVIEW = 12;
 
+/** Dedicated page for a node, when one exists. */
+function pageHref(node: GraphNode): string | null {
+  if (node.label === 'Decision') return decisionHref(decisionCode(node) ?? node.id);
+  if (node.label === 'System') return systemHref(nodeTitle(node));
+  if (node.label === 'Person') return personHref(nodeTitle(node));
+  return null;
+}
+
 const Inspector: React.FC<{
   node: GraphNode | undefined;
   index: GraphIndex;
@@ -211,6 +220,11 @@ const Inspector: React.FC<{
           </button>
         )}
       </div>
+      {pageHref(node) && (
+        <Link to={pageHref(node)!} className={`${btnOutline} h-[30px] w-full`}>
+          Open {node.label.toLowerCase()} page
+        </Link>
+      )}
       <Link to={askHref(askAbout(node))} className={`${btnPrimary} w-full`}>
         Ask about this
       </Link>
@@ -286,7 +300,7 @@ export const GraphPage: React.FC = () => {
   const atMax = hops === 'all';
   const header = (
     <>
-      <span>Graph</span>
+      <span>Explore</span>
       {focus && (
         <>
           <span aria-hidden="true">/</span>

@@ -24,14 +24,12 @@ describe('DecisionsPage', () => {
     expect(groupHeadings).toEqual(['Conflict2', 'Active12', 'Superseded3']);
   });
 
-  it('opens a red conflict callout in the peek panel for a conflicting decision', async () => {
+  it('links every row to its decision page by DEC code', async () => {
     renderPage();
     const group = await screen.findByRole('region', { name: 'Conflict, 2' });
-    const first = within(group).getAllByRole('button')[0];
-    fireEvent.click(first);
-    const peek = screen.getByRole('complementary', { name: 'Selected decision' });
-    expect(within(peek).getByText(/^Conflicts with/)).toBeInTheDocument();
-    expect(within(peek).getByRole('link', { name: 'Open' })).toHaveAttribute('href', expect.stringContaining('/?q='));
+    const links = within(group).getAllByRole('link');
+    expect(links).toHaveLength(2);
+    for (const link of links) expect(link.getAttribute('href')).toMatch(/^\/decisions\/DEC-\d{2}$/);
   });
 
   it('filters by the needs-review tab', async () => {

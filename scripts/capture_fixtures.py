@@ -1,9 +1,10 @@
 """Refresh the frontend's frozen API responses from the current backend and graph.
 
 Runs the FastAPI app in-process (no server needed) against the configured FalkorDB graph and
-writes ``frontend/src/mocks/``: ``decisions.json``, ``decision-details.json``, ``graph.json`` and
-one ``ask-*.json`` per benchmark question. Read-only against the graph; the /ask calls use the LLM
-(7 calls), so run it only when the API shape or the data changed.
+writes ``frontend/src/mocks/``: ``decisions.json``, ``decision-details.json`` (full decision pages),
+``graph.json``, ``systems.json``, ``system-details.json``, ``people.json``, ``person-details.json``
+and one ``ask-*.json`` per benchmark question. Read-only against the graph. The /ask calls use the
+LLM (7 calls); pass ``--no-ask`` to keep the existing ask fixtures.
 """
 
 import json
@@ -46,6 +47,24 @@ def main() -> None:
     }
     (MOCKS / "decision-details.json").write_text(json.dumps(details, indent=1))
     print(f"{len(decisions)} decisions, {graph['total_nodes']} nodes, {graph['total_edges']} edges")
+
+    systems = client.get("/systems").json()
+    (MOCKS / "systems.json").write_text(json.dumps(systems, indent=1))
+    system_details = {
+        s["name"]: client.get("/systems/" + urllib.parse.quote(s["name"])).json() for s in systems
+    }
+    (MOCKS / "system-details.json").write_text(json.dumps(system_details, indent=1))
+
+    people = client.get("/people").json()
+    (MOCKS / "people.json").write_text(json.dumps(people, indent=1))
+    person_details = {
+        p["name"]: client.get("/people/" + urllib.parse.quote(p["name"])).json() for p in people
+    }
+    (MOCKS / "person-details.json").write_text(json.dumps(person_details, indent=1))
+    print(f"{len(systems)} systems, {len(people)} people")
+
+    if "--no-ask" in sys.argv:
+        return
 
     mocks_ts = (ROOT / "frontend" / "src" / "api" / "mocks.ts").read_text()
     questions = re.findall(r"question: '([^']+)'", mocks_ts)

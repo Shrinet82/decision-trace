@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { decisionHref, personHref, systemHref } from '../../utils/links';
 import type { EvidencePath, EvidenceRow } from '../../utils/evidence';
 import type { StatusKind } from '../../utils/model';
 import { Avatar } from '../Avatar';
@@ -56,21 +58,47 @@ export const EvidencePathCard: React.FC<EvidencePathCardProps> = ({ path, status
               {i > 0 && <Connector label={connectorLabel} />}
               <li
                 aria-current={row.isMain ? 'true' : undefined}
-                className={`flex min-h-[34px] flex-wrap items-center gap-x-2.5 gap-y-0 px-3 ${row.isMain ? 'bg-selected' : ''}`}
+                className={`flex min-h-[34px] min-w-0 items-center gap-x-2.5 px-3 ${row.isMain ? 'bg-selected' : ''}`}
               >
                 <span className="flex w-[18px] justify-center">
                   <RowIcon row={row} status={status} />
                 </span>
                 <span className="w-16 shrink-0 text-muted">{row.kind}</span>
-                <span
-                  className={`min-w-0 break-words ${
+                {(() => {
+                  const fullName = row.code ? `${row.code} ${row.name}` : row.name;
+                  const href =
+                    row.kind === 'Decision'
+                      ? decisionHref(row.code ?? row.nodeId)
+                      : row.kind === 'System'
+                        ? systemHref(row.name)
+                        : row.kind === 'Person'
+                          ? personHref(row.name)
+                          : null;
+                  const nameClass = `min-w-0 truncate ${
                     row.isMain ? 'font-semibold' : isOld ? 'font-medium text-muted line-through' : 'font-medium'
-                  }`}
-                >
-                  {row.code && <span className="mr-1.5 font-normal text-muted">{row.code}</span>}
-                  {row.name}
-                </span>
-                {row.detail && <span className="min-w-0 break-words text-muted">{row.detail}</span>}
+                  }`;
+                  const content = (
+                    <>
+                      {row.code && <span className="mr-1.5 font-normal text-muted">{row.code}</span>}
+                      {row.name}
+                    </>
+                  );
+                  // Long titles truncate with an ellipsis; the full text is in the tooltip
+                  return href ? (
+                    <Link to={href} title={fullName} className={`${nameClass} hover:underline`}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <span title={fullName} className={nameClass}>
+                      {content}
+                    </span>
+                  );
+                })()}
+                {row.detail && (
+                  <span title={row.detail} className="min-w-0 flex-1 truncate text-muted max-sm:hidden">
+                    {row.detail}
+                  </span>
+                )}
               </li>
             </React.Fragment>
           );

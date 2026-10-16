@@ -6,8 +6,10 @@
  * 2. Strict endpoint and HTTP method whitelisting:
  *    - GET  /health
  *    - GET  /decisions
- *    - GET  /decisions/:id
+ *    - GET  /decisions/:ref   (DEC code, id)
  *    - GET  /graph
+ *    - GET  /systems, /systems/:name
+ *    - GET  /people,  /people/:name
  *    - POST /ask
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
  *    and unwhitelisted routes.
@@ -52,12 +54,18 @@ export async function onRequest(context: {
   const segments = decodedPath.split('/').filter(Boolean);
   const normalizedPath = '/' + segments.join('/');
 
+  // Entity names: letters, digits, spaces and a few punctuation marks only
+  const NAME = "[A-Za-z0-9 _.&'-]{1,80}";
+  const entityDetail = new RegExp(`^/(systems|people)/${NAME}$`);
+
   // Strict whitelist check
   const isWhitelisted =
     (method === 'GET' && normalizedPath === '/health') ||
     (method === 'GET' && normalizedPath === '/decisions') ||
     (method === 'GET' && /^\/decisions\/[a-zA-Z0-9_-]+$/.test(normalizedPath)) ||
     (method === 'GET' && normalizedPath === '/graph') ||
+    (method === 'GET' && (normalizedPath === '/systems' || normalizedPath === '/people')) ||
+    (method === 'GET' && entityDetail.test(normalizedPath)) ||
     (method === 'POST' && normalizedPath === '/ask');
 
   if (!isWhitelisted) {
@@ -67,7 +75,8 @@ export async function onRequest(context: {
     });
   }
 
-  const targetUrl = `https://decision-trace-api-production.up.railway.app${normalizedPath}${url.search}`;
+  const targetPath = segments.map((segment) => encodeURIComponent(segment)).join('/');
+  const targetUrl = `https://decision-trace-api-production.up.railway.app/${targetPath}${url.search}`;
 
   const requestHeaders = new Headers(context.request.headers);
   requestHeaders.set('Host', 'decision-trace-api-production.up.railway.app');

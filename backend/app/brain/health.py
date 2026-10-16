@@ -285,3 +285,50 @@ async def evaluate_graph_health(
         )
 
     return health_results
+
+
+
+def is_departed(is_active: Any, leave_date: Any, today: str) -> bool:
+    """A person has left if marked inactive or their leave_date is on or before today."""
+    if is_active is False or str(is_active).lower() == "false":
+        return True
+    return bool(leave_date) and str(leave_date) != "None" and str(leave_date)[:10] <= today
+
+
+class SystemOrphanInfo(BaseModel):
+    """A system whose owner (OWNS edge) has left the company."""
+
+    system: str
+    owner: str
+    leave_date: Optional[str] = None
+
+
+async def evaluate_system_orphans(
+    dataset_name: Optional[str] = None, reference_date: Optional[str] = None
+) -> dict[str, SystemOrphanInfo]:
+    """Orphaned systems: (p:Person)-[:owns]->(s:System) where p has left the company."""
+    target_dataset = dataset_name or _settings.DATASET_NAME
+    ref_dt = _parse_date(reference_date) or datetime.now(timezone.utc).replace(tzinfo=None)
+    rows = await query_graph(
+        "MATCH (p:Person)-[:owns]->(s:System) "
+        "WHERE p.is_active = false "
+        "   OR (p.leave_date IS NOT NULL AND p.leave_date <> '' AND p.leave_date <= $today) "
+        "RETURN s.name, p.name, p.leave_date",
+        dataset_name=target_dataset,
+        params={"today": ref_dt.strftime("%Y-%m-%d")},
+    )
+    return {
+        str(r[0]): SystemOrphanInfo(
+            system=str(r[0]), owner=str(r[1]), leave_date=str(r[2]) if r[2] else None
+        )
+        for r in rows
+        if r and r[0]
+    }
+
+
+async def get_health_map(dataset_name: Optional[str] = None) -> dict[str, DecisionHealthInfo]:
+    """evaluate_graph_health, cached for five minutes (it runs several whole-graph queries)."""
+    from app.brain.cache import cached
+
+    target = dataset_name or _settings.DATASET_NAME
+    return await cached("health", target, 300, lambda: evaluate_graph_health(dataset_name=target))

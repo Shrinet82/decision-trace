@@ -72,7 +72,7 @@ function svgUri(svg: string): string {
 
 const STROKE = 'fill="none" stroke="#6B6F76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 
-function iconFor(node: GraphNode, status: StatusKind): string {
+export function iconFor(node: GraphNode, status: StatusKind): string {
   switch (node.label) {
     case 'Decision':
       return svgUri(statusSvgString(status));

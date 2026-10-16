@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import cytoscape, { type Core, type ElementsDefinition } from 'cytoscape';
+import dagre from 'cytoscape-dagre';
+
+try {
+  cytoscape.use(dagre);
+} catch {
+  // Already registered
+}
 const FONT = 'Geist, system-ui, sans-serif';
 
 // Cast: the bundled typings lag behind Cytoscape 3.34 style properties (corner-radius, underlay-*).
@@ -116,6 +123,9 @@ export interface CytoscapeGraphProps {
   elements: ElementsDefinition;
   /** Node the radial layout is centred on. */
   focusId: string | null;
+  /** 'radial' rings around the focus node; 'lr' is a left-to-right dagre flow. */
+  layout?: 'radial' | 'lr';
+  className?: string;
   selectedId: string | null;
   onSelect: (id: string) => void;
   /** Increment to re-fit the viewport. */
@@ -126,6 +136,8 @@ export interface CytoscapeGraphProps {
 export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
   elements,
   focusId,
+  layout = 'radial',
+  className = 'h-full min-h-[420px]',
   selectedId,
   onSelect,
   fitSignal,
@@ -173,6 +185,17 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
       cy.add(elements);
     });
     const narrow = (containerRef.current?.clientWidth ?? 1000) < 600;
+    if (layout === 'lr') {
+      // Left to right on wide containers; top to bottom on phones, where width is scarce
+      cy.layout({
+        name: 'dagre',
+        rankDir: narrow ? 'TB' : 'LR',
+        nodeSep: narrow ? 14 : 22,
+        rankSep: narrow ? 48 : 120,
+        edgeSep: 10,
+        animate: false,
+      } as cytoscape.LayoutOptions).run();
+    } else {
     // Radial: the focus node in the middle, each hop on its own ring.
     cy.layout({
       name: 'breadthfirst',
@@ -185,17 +208,18 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
       padding: 30,
       animate: false,
     } as cytoscape.LayoutOptions).run();
+    }
     cy.fit(undefined, 40);
     // Keep labels legible: never zoom out past a floor (pan to see the rest) or in past 1.2.
     const floor = narrow ? 0.62 : 0.45;
     if (cy.zoom() < floor) {
       cy.zoom(floor);
-      cy.center(focusId ? cy.getElementById(focusId) : undefined);
+      cy.center(layout === 'radial' && focusId ? cy.getElementById(focusId) : undefined);
     } else if (cy.zoom() > 1.2) {
       cy.zoom(1.2);
       cy.center();
     }
-  }, [elements, focusId, fontsReady]);
+  }, [elements, focusId, layout, fontsReady]);
 
   useEffect(() => {
     const cy = cyRef.current;
@@ -214,7 +238,7 @@ export const CytoscapeGraph: React.FC<CytoscapeGraphProps> = ({
       role="img"
       aria-label={ariaLabel}
       data-testid="graph-canvas"
-      className="h-full min-h-[420px] w-full bg-panel"
+      className={`${className} w-full bg-panel`}
       style={{
         backgroundImage: 'radial-gradient(#E3E5E9 1px, transparent 1px)',
         backgroundSize: '20px 20px',

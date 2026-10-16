@@ -8,19 +8,44 @@ import ask7 from '../mocks/ask-7-unanswerable-oracle.json';
 import decisionsFixture from '../mocks/decisions.json';
 import decisionDetailsFixture from '../mocks/decision-details.json';
 import graphFixture from '../mocks/graph.json';
+import systemsFixture from '../mocks/systems.json';
+import systemDetailsFixture from '../mocks/system-details.json';
+import peopleFixture from '../mocks/people.json';
+import personDetailsFixture from '../mocks/person-details.json';
 import type {
   AskResponse,
   DecisionDetail,
   DecisionSummary,
   GraphResponse,
+  PersonDetail,
+  PersonSummary,
+  SystemDetail,
+  SystemSummary,
 } from './types';
 
-export const MOCK_DECISIONS = decisionsFixture as DecisionSummary[];
+export const MOCK_DECISIONS = decisionsFixture as unknown as DecisionSummary[];
 export const MOCK_DECISION_DETAILS = decisionDetailsFixture as unknown as Record<
   string,
   DecisionDetail
 >;
 export const MOCK_GRAPH = graphFixture as unknown as GraphResponse;
+export const MOCK_SYSTEMS = systemsFixture as unknown as SystemSummary[];
+export const MOCK_SYSTEM_DETAILS = systemDetailsFixture as unknown as Record<string, SystemDetail>;
+export const MOCK_PEOPLE = peopleFixture as unknown as PersonSummary[];
+export const MOCK_PERSON_DETAILS = personDetailsFixture as unknown as Record<string, PersonDetail>;
+
+/** Case-insensitive lookup in a fixture keyed by name. */
+export function findByName<T>(fixture: Record<string, T>, name: string): T | undefined {
+  const key = Object.keys(fixture).find((k) => k.toLowerCase() === name.toLowerCase());
+  return key ? fixture[key] : undefined;
+}
+
+/** A decision page by DEC code, id, or exact title. */
+export function findDecisionDetail(ref: string): DecisionDetail | undefined {
+  const all = Object.values(MOCK_DECISION_DETAILS);
+  const upper = ref.toUpperCase();
+  return all.find((d) => d.id === ref || d.decision_code?.toUpperCase() === upper || d.title === ref);
+}
 
 export interface BenchmarkQuestion {
   id: string;
