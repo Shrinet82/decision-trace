@@ -187,10 +187,10 @@ async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) ->
     Three Cypher statements: the decision with its whole lineage (one round trip), then the
     related decisions' attributes/edges/sources and the impact neighbourhood, concurrently.
     """
-    trace = CypherTrace(dataset_name)
     codes, health = await asyncio.gather(
         get_decision_codes_cached(dataset_name), get_health_map(dataset_name)
     )
+    trace = CypherTrace(dataset_name)  # times only the Cypher below
     today = _today()
 
     if _CODE.match(ref):

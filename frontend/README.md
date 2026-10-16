@@ -9,6 +9,8 @@ Web UI for Decision Trace — an interactive, evidence-grounded decision memory 
 - **Systems and People**: list and detail pages with ownership, orphaned systems and departed people flagged.
 - **Decisions**: Decisions grouped by status (Conflict, Possibly stale, Active, Superseded), each with a stable `DEC-NN` code, a relation hint, system chip, decider avatar and date. Tabs, filter, display options, and a peek panel.
 - **Explore**: A Cytoscape explorer centred on one node (radial layout) with node-type filters showing real counts, Expand / Fit / Copy Cypher, and an inspector listing properties and edges.
+- **Add source** (top bar, every page): paste a meeting, ticket or announcement and watch it ingest live (streamed steps, mini graph, diff card with DEC links). "Reset demo data" removes everything demo-ingested. Pages changed by the latest ingest show "Changed just now".
+- **View source**: decision source cards open the full verbatim text with the quote highlighted.
 - **Command palette**: `Cmd/Ctrl+K` searches decisions or asks a question.
 - **Accessible**: Keyboard-reachable controls, visible focus rings, an `axe` check on every page at desktop and mobile widths, and a screen-reader node list for the graph canvas.
 - **Standalone mock mode**: Frozen API responses (`src/mocks/`, captured from the live backend) let reviewers click through every page without any backend.
@@ -55,6 +57,8 @@ npm run preview
 # Run end-to-end Playwright tests & axe-core accessibility checks
 npm run test:e2e
 ```
+
+CI (`.github/workflows/frontend.yml`) runs lint, typecheck, unit tests, the build and Playwright + axe on every push to main, uploads the screenshots as an artifact, then deploys to Cloudflare Pages.
 
 ## Environment Configuration
 
