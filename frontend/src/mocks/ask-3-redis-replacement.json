@@ -1,10 +1,10 @@
 {
-  "answer": "Based on the provided Company Brain context, **Redis was not replaced as a general system**. However, specific decisions involving Redis were superseded or modified in the following ways:\n\n1.  **Session Storage:** The decision to \"Migrate session storage from Postgres to Redis cluster\" (TICK-101) was **superseded** by the decision to \"Migrate session storage to embedded Keycloak cache.\" This means that for the specific use case of session storage, Redis was replaced by an embedded Keycloak cache.\n2.  **Low-Volume Notifications:** Redis PubSub was adopted to replace legacy RabbitMQ clusters (TICK-110). This decision is **accepted** and not superseded in the context.\n\nTherefore, Redis itself remains the owned system (owned by Alice Vance), but its role in **session storage** was replaced by an embedded Keycloak cache. The context does not provide a specific rationale for the Keycloak cache replacement other than it superseding the previous Redis migration decision.\n\n**Citations:**\n*   Decision: 'Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention' (Status: accepted, Source Ticket: TICK-101)\n*   Superseded by: 'Migrate session storage to embedded Keycloak cache'\n*   System Ownership: 'Redis' is owned by Alice Vance (active employee).",
+  "answer": "The accepted decision was to migrate session storage to the embedded Keycloak cache, which replaced the Redis cluster (TICK-102). This decision was made by Alice Vance and superseded the earlier decision to migrate from Postgres to Redis (TICK-101).",
   "citations": [
     {
       "type": "ticket",
-      "id": "TICK-110",
-      "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
+      "id": "TICK-102",
+      "title": "Redis session cluster operational maintenance and failover complexity"
     },
     {
       "type": "ticket",
@@ -14,19 +14,39 @@
   ],
   "people": [
     "Alice Vance",
-    "Fiona Gallagher",
+    "Diana Prince",
     "Ian Malcolm",
-    "Kevin Flynn"
+    "Julia Roberts"
   ],
+  "primary_decision_id": "dec_f564fcd15601",
   "graph_path": {
     "nodes": [
       {
-        "id": "dec_21a4de59b886",
+        "id": "dec_f564fcd15601",
         "label": "Decision",
         "properties": {
-          "title": "Migrate application metrics from Datadog to Prometheus Operator",
+          "title": "Migrate session storage to embedded Keycloak cache",
           "status": "accepted",
-          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
+          "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
+          "decision_code": "DEC-11"
+        }
+      },
+      {
+        "id": "dec_fda8c9b4e631",
+        "label": "Decision",
+        "properties": {
+          "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+          "decision_code": "DEC-01"
+        }
+      },
+      {
+        "id": "dec_e287aa298850",
+        "label": "Decision",
+        "properties": {
+          "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+          "status": "accepted",
+          "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+          "decision_code": "DEC-05"
         }
       },
       {
@@ -35,39 +55,36 @@
         "properties": {
           "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
+          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
+          "decision_code": "DEC-10"
         }
       },
       {
-        "id": "dec_fda8c9b4e631",
-        "label": "Decision",
-        "properties": {
-          "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
-          "status": "accepted",
-          "rationale": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision."
-        }
-      },
-      {
-        "id": "dec_8c7075150849",
-        "label": "Decision",
-        "properties": {
-          "title": "Adopt Snowflake for analytics ETL queries",
-          "status": "accepted",
-          "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision."
-        }
-      },
-      {
-        "id": "Kevin Flynn",
+        "id": "Alice Vance",
         "label": "Person",
         "properties": {
-          "name": "Kevin Flynn"
+          "name": "Alice Vance"
         }
       },
       {
-        "id": "Prometheus",
+        "id": "Keycloak",
         "label": "System",
         "properties": {
-          "name": "Prometheus"
+          "name": "Keycloak"
+        }
+      },
+      {
+        "id": "Diana Prince",
+        "label": "Person",
+        "properties": {
+          "name": "Diana Prince"
+        }
+      },
+      {
+        "id": "Vault",
+        "label": "System",
+        "properties": {
+          "name": "Vault"
         }
       },
       {
@@ -85,34 +102,28 @@
         }
       },
       {
-        "id": "Alice Vance",
+        "id": "Julia Roberts",
         "label": "Person",
         "properties": {
-          "name": "Alice Vance",
+          "name": "Julia Roberts",
           "is_active": true,
           "leave_date": null
         }
       },
       {
-        "id": "Fiona Gallagher",
-        "label": "Person",
+        "id": "TICK-102",
+        "label": "Ticket",
         "properties": {
-          "name": "Fiona Gallagher"
+          "ticket_id": "TICK-102",
+          "title": "Redis session cluster operational maintenance and failover complexity"
         }
       },
       {
-        "id": "Snowflake",
-        "label": "System",
+        "id": "TICK-107",
+        "label": "Ticket",
         "properties": {
-          "name": "Snowflake"
-        }
-      },
-      {
-        "id": "Observability Platform Alignment",
-        "label": "Meeting",
-        "properties": {
-          "title": "Observability Platform Alignment",
-          "date": "2026-04-12"
+          "ticket_id": "TICK-107",
+          "title": "Plaintext secret leakage risk in CI/CD pipeline variables"
         }
       },
       {
@@ -130,38 +141,60 @@
           "ticket_id": "TICK-101",
           "title": "Severe latency on Postgres session store under peak load"
         }
-      },
-      {
-        "id": "TICK-103",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-103",
-          "title": "Slow analytical queries on historical clickstream datasets"
-        }
       }
     ],
     "edges": [
       {
-        "source": "dec_21a4de59b886",
-        "target": "Kevin Flynn",
+        "source": "dec_f564fcd15601",
+        "target": "Alice Vance",
         "type": "decided_by",
         "properties": {}
       },
       {
-        "source": "dec_21a4de59b886",
-        "target": "Prometheus",
+        "source": "dec_f564fcd15601",
+        "target": "Keycloak",
         "type": "about_system",
         "properties": {}
       },
       {
-        "source": "Kevin Flynn",
-        "target": "Prometheus",
+        "source": "Julia Roberts",
+        "target": "Keycloak",
         "type": "owns",
         "properties": {}
       },
       {
-        "source": "dec_21a4de59b886",
-        "target": "Observability Platform Alignment",
+        "source": "dec_f564fcd15601",
+        "target": "TICK-102",
+        "type": "based_on",
+        "properties": {}
+      },
+      {
+        "source": "dec_f564fcd15601",
+        "target": "dec_fda8c9b4e631",
+        "type": "supersedes",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "Diana Prince",
+        "type": "decided_by",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "Vault",
+        "type": "about_system",
+        "properties": {}
+      },
+      {
+        "source": "Diana Prince",
+        "target": "Vault",
+        "type": "owns",
+        "properties": {}
+      },
+      {
+        "source": "dec_e287aa298850",
+        "target": "TICK-107",
         "type": "based_on",
         "properties": {}
       },
@@ -206,32 +239,8 @@
         "target": "TICK-101",
         "type": "based_on",
         "properties": {}
-      },
-      {
-        "source": "dec_8c7075150849",
-        "target": "Fiona Gallagher",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_8c7075150849",
-        "target": "Snowflake",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Fiona Gallagher",
-        "target": "Snowflake",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_8c7075150849",
-        "target": "TICK-103",
-        "type": "based_on",
-        "properties": {}
       }
     ],
-    "omitted_count": 3
+    "omitted_count": 0
   }
 }

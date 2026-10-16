@@ -17,13 +17,13 @@ from app.config import export_cognee_env, get_settings
 # 1. Initialize settings and export required environment variables
 _settings = get_settings()
 
-from app.brain.models import CompanyBrainGraph
-
 # 2. Register FalkorDB compatibility adapter BEFORE importing cognee
 # 3. Import cognee and its engine modules
 import cognee  # noqa: E402
 from cognee import SearchType, prune  # noqa: E402
 from cognee.infrastructure.databases.graph import get_graph_engine  # noqa: E402
+
+from app.brain.models import CompanyBrainGraph
 
 # Re-export environment in case Cognee's internal dotenv loader clobbered preset env vars
 export_cognee_env(_settings)

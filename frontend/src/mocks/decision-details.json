@@ -1,6 +1,196 @@
 {
+ "dec_fda8c9b4e631": {
+  "id": "dec_fda8c9b4e631",
+  "decision_code": "DEC-01",
+  "decider_departed": false,
+  "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+  "summary": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision.",
+  "rationale": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision.",
+  "status": "accepted",
+  "health": "superseded",
+  "health_reason": "Superseded by 'Migrate session storage to embedded Keycloak cache' (date: 2026-05-12)",
+  "decided_on": "2026-02-03",
+  "decided_by": "Alice Vance",
+  "people": [
+   "Alice Vance"
+  ],
+  "systems": [
+   "Redis"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-101",
+    "title": "Severe latency on Postgres session store under peak load",
+    "date": "2026-02-03"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [
+   "Migrate session storage to embedded Keycloak cache"
+  ],
+  "contradicts": []
+ },
+ "dec_f17ee7ad31a2": {
+  "id": "dec_f17ee7ad31a2",
+  "decision_code": "DEC-02",
+  "decider_departed": false,
+  "title": "Adopt Keycloak for company-wide single sign-on",
+  "summary": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption.",
+  "rationale": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-02-10",
+  "decided_by": "Julia Roberts",
+  "people": [
+   "Julia Roberts"
+  ],
+  "systems": [
+   "Keycloak"
+  ],
+  "sources": [
+   {
+    "type": "meeting",
+    "id": "IAM Architecture Modernization",
+    "title": "IAM Architecture Modernization",
+    "date": "2026-02-10"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": []
+ },
+ "dec_8c7075150849": {
+  "id": "dec_8c7075150849",
+  "decision_code": "DEC-03",
+  "decider_departed": false,
+  "title": "Adopt Snowflake for analytics ETL queries",
+  "summary": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
+  "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
+  "status": "accepted",
+  "health": "superseded",
+  "health_reason": "Superseded by 'Migrate analytics reporting queries from Snowflake to ClickHouse cluster' (date: 2026-06-04)",
+  "decided_on": "2026-02-18",
+  "decided_by": "Fiona Gallagher",
+  "people": [
+   "Fiona Gallagher"
+  ],
+  "systems": [
+   "Snowflake"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-103",
+    "title": "Slow analytical queries on historical clickstream datasets",
+    "date": "2026-02-18"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [
+   "Migrate analytics reporting queries from Snowflake to ClickHouse cluster"
+  ],
+  "contradicts": []
+ },
+ "dec_76772c5b323f": {
+  "id": "dec_76772c5b323f",
+  "decision_code": "DEC-04",
+  "decider_departed": false,
+  "title": "Adopt Kafka for all event messaging across services",
+  "summary": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
+  "rationale": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
+  "status": "accepted",
+  "health": "contradicted",
+  "health_reason": "Contradicted by 'Adopt RabbitMQ for all event messaging across services' decided by Bob Martin",
+  "decided_on": "2026-03-04",
+  "decided_by": "Alice Vance",
+  "people": [
+   "Alice Vance"
+  ],
+  "systems": [
+   "Kafka"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-105",
+    "title": "Need enterprise event bus for asynchronous order processing",
+    "date": "2026-03-04"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": [
+   "Adopt RabbitMQ for all event messaging across services"
+  ]
+ },
+ "dec_e287aa298850": {
+  "id": "dec_e287aa298850",
+  "decision_code": "DEC-05",
+  "decider_departed": false,
+  "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+  "summary": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+  "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-03-14",
+  "decided_by": "Diana Prince",
+  "people": [
+   "Diana Prince"
+  ],
+  "systems": [
+   "Vault"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-107",
+    "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
+    "date": "2026-03-14"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": []
+ },
+ "dec_5b196394600e": {
+  "id": "dec_5b196394600e",
+  "decision_code": "DEC-06",
+  "decider_departed": false,
+  "title": "Standardize application traces on Datadog APM across all production services",
+  "summary": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
+  "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
+  "status": "accepted",
+  "health": "superseded",
+  "health_reason": "Superseded by 'Migrate application metrics from Datadog to Prometheus Operator' (date: 2026-04-12)",
+  "decided_on": "2026-03-28",
+  "decided_by": "Kevin Flynn",
+  "people": [
+   "Kevin Flynn"
+  ],
+  "systems": [
+   "Datadog"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-108",
+    "title": "Inconsistent distributed trace propagation in checkout services",
+    "date": "2026-03-28"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [
+   "Migrate application metrics from Datadog to Prometheus Operator"
+  ],
+  "contradicts": []
+ },
  "dec_98a223fad745": {
   "id": "dec_98a223fad745",
+  "decision_code": "DEC-07",
+  "decider_departed": false,
   "title": "Adopt RabbitMQ for all event messaging across services",
   "summary": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision.",
   "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision.",
@@ -35,98 +225,16 @@
    "Adopt Kafka for all event messaging across services"
   ]
  },
- "dec_d09476870168": {
-  "id": "dec_d09476870168",
-  "title": "Decommission Snowflake warehouses in favor of ClickHouse",
-  "summary": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
-  "rationale": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-10-10",
-  "decided_by": "Laura Croft, Fiona Gallagher, Bob Martin",
-  "people": [
-   "Laura Croft, Fiona Gallagher, Bob Martin"
-  ],
-  "systems": [
-   "Snowflake, ClickHouse"
-  ],
-  "sources": [
-   {
-    "type": "meeting",
-    "id": "Cloud Cost Optimization Taskforce",
-    "title": "Cloud Cost Optimization Taskforce",
-    "date": "2026-10-10"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
- "dec_04ed8d5c10ae": {
-  "id": "dec_04ed8d5c10ae",
-  "title": "Standardize on Kubernetes 1.30 across all production regions",
-  "summary": "The quote explicitly states a standardization decision on a specific version (1.30) for a concrete reason (unlocking gateway API controllers), applied across all production regions. This matches the definition of a decision to standardize on a specific technology version.",
-  "rationale": "The quote explicitly states a standardization decision on a specific version (1.30) for a concrete reason (unlocking gateway API controllers), applied across all production regions. This matches the definition of a decision to standardize on a specific technology version.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-08-20",
-  "decided_by": "Laura Croft",
-  "people": [
-   "Laura Croft"
-  ],
-  "systems": [
-   "Kubernetes"
-  ],
-  "sources": [
-   {
-    "type": "meeting",
-    "id": "Container Platform Strategy",
-    "title": "Container Platform Strategy",
-    "date": "2026-08-20"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
- "dec_f17ee7ad31a2": {
-  "id": "dec_f17ee7ad31a2",
-  "title": "Adopt Keycloak for company-wide single sign-on",
-  "summary": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption.",
-  "rationale": "The quote explicitly states a decision ('decided: Adopt') to select a specific technology (Keycloak) for a defined purpose (company-wide SSO), driven by a policy constraint (on-premise governance). This matches the definition of an engineering decision about vendor/technology adoption.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-02-10",
-  "decided_by": "Julia Roberts",
-  "people": [
-   "Julia Roberts"
-  ],
-  "systems": [
-   "Keycloak"
-  ],
-  "sources": [
-   {
-    "type": "meeting",
-    "id": "IAM Architecture Modernization",
-    "title": "IAM Architecture Modernization",
-    "date": "2026-02-10"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
  "dec_21a4de59b886": {
   "id": "dec_21a4de59b886",
+  "decision_code": "DEC-08",
+  "decider_departed": false,
   "title": "Migrate application metrics from Datadog to Prometheus Operator",
   "summary": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
   "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
   "status": "accepted",
   "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
   "decided_on": "2026-04-12",
   "decided_by": "Kevin Flynn",
   "people": [
@@ -149,98 +257,16 @@
   "superseded_by": [],
   "contradicts": []
  },
- "dec_53d51a7d4549": {
-  "id": "dec_53d51a7d4549",
-  "title": "Upgrade all production Postgres instances to version 16",
-  "summary": "The quote explicitly states a version upgrade action for a system, made by a known person.",
-  "rationale": "The quote explicitly states a version upgrade action for a system, made by a known person.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-06-18",
-  "decided_by": "Evan Wright",
-  "people": [
-   "Evan Wright"
-  ],
-  "systems": [
-   "Postgres"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-112",
-    "title": "Replication lag and connection pool contention on primary database",
-    "date": "2026-06-18"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
- "dec_f8a30e251e54": {
-  "id": "dec_f8a30e251e54",
-  "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
-  "summary": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
-  "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-05-24",
-  "decided_by": "Julia Roberts",
-  "people": [
-   "Julia Roberts"
-  ],
-  "systems": [
-   "Keycloak"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-111",
-    "title": "OAuth2 token issuance architecture for internal gateway",
-    "date": "2026-05-24"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
- "dec_2c6a03017923": {
-  "id": "dec_2c6a03017923",
-  "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
-  "summary": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
-  "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-05-05",
-  "decided_by": "Ian Malcolm",
-  "people": [
-   "Ian Malcolm"
-  ],
-  "systems": [
-   "Redis"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-110",
-    "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
-    "date": "2026-05-05"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
  "dec_091c86e8e476": {
   "id": "dec_091c86e8e476",
+  "decision_code": "DEC-09",
+  "decider_departed": false,
   "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
   "summary": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
   "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
   "status": "accepted",
   "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
   "decided_on": "2026-04-22",
   "decided_by": "Laura Croft",
   "people": [
@@ -261,136 +287,20 @@
   "superseded_by": [],
   "contradicts": []
  },
- "dec_5b196394600e": {
-  "id": "dec_5b196394600e",
-  "title": "Standardize application traces on Datadog APM across all production services",
-  "summary": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
-  "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
-  "status": "accepted",
-  "health": "superseded",
-  "health_reason": "Superseded by 'Migrate application metrics from Datadog to Prometheus Operator' (date: 2026-04-12)",
-  "decided_on": "2026-03-28",
-  "decided_by": "Kevin Flynn",
-  "people": [
-   "Kevin Flynn"
-  ],
-  "systems": [
-   "Datadog"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-108",
-    "title": "Inconsistent distributed trace propagation in checkout services",
-    "date": "2026-03-28"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [
-   "Migrate application metrics from Datadog to Prometheus Operator"
-  ],
-  "contradicts": []
- },
- "dec_e287aa298850": {
-  "id": "dec_e287aa298850",
-  "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
-  "summary": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
-  "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+ "dec_2c6a03017923": {
+  "id": "dec_2c6a03017923",
+  "decision_code": "DEC-10",
+  "decider_departed": false,
+  "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+  "summary": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
+  "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
   "status": "accepted",
   "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-03-14",
-  "decided_by": "Diana Prince",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-05-05",
+  "decided_by": "Ian Malcolm",
   "people": [
-   "Diana Prince"
-  ],
-  "systems": [
-   "Vault"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-107",
-    "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
-    "date": "2026-03-14"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": []
- },
- "dec_d1d225a60971": {
-  "id": "dec_d1d225a60971",
-  "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
-  "summary": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
-  "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
-  "status": "accepted",
-  "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
-  "decided_on": "2026-06-04",
-  "decided_by": "Carlos Mendez",
-  "people": [
-   "Carlos Mendez"
-  ],
-  "systems": [
-   "ClickHouse"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-104",
-    "title": "High compute credits on daily analytics warehouse rollups",
-    "date": "2026-06-04"
-   }
-  ],
-  "supersedes": [
-   "Adopt Snowflake for analytics ETL queries"
-  ],
-  "superseded_by": [],
-  "contradicts": []
- },
- "dec_76772c5b323f": {
-  "id": "dec_76772c5b323f",
-  "title": "Adopt Kafka for all event messaging across services",
-  "summary": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
-  "rationale": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision.",
-  "status": "accepted",
-  "health": "contradicted",
-  "health_reason": "Contradicted by 'Adopt RabbitMQ for all event messaging across services' decided by Bob Martin",
-  "decided_on": "2026-03-04",
-  "decided_by": "Alice Vance",
-  "people": [
-   "Alice Vance"
-  ],
-  "systems": [
-   "Kafka"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-105",
-    "title": "Need enterprise event bus for asynchronous order processing",
-    "date": "2026-03-04"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [],
-  "contradicts": [
-   "Adopt RabbitMQ for all event messaging across services"
-  ]
- },
- "dec_fda8c9b4e631": {
-  "id": "dec_fda8c9b4e631",
-  "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
-  "summary": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision.",
-  "rationale": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision.",
-  "status": "accepted",
-  "health": "superseded",
-  "health_reason": "Superseded by 'Migrate session storage to embedded Keycloak cache' (date: 2026-05-12)",
-  "decided_on": "2026-02-03",
-  "decided_by": "Alice Vance",
-  "people": [
-   "Alice Vance"
+   "Ian Malcolm"
   ],
   "systems": [
    "Redis"
@@ -398,55 +308,25 @@
   "sources": [
    {
     "type": "ticket",
-    "id": "TICK-101",
-    "title": "Severe latency on Postgres session store under peak load",
-    "date": "2026-02-03"
+    "id": "TICK-110",
+    "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
+    "date": "2026-05-05"
    }
   ],
   "supersedes": [],
-  "superseded_by": [
-   "Migrate session storage to embedded Keycloak cache"
-  ],
-  "contradicts": []
- },
- "dec_8c7075150849": {
-  "id": "dec_8c7075150849",
-  "title": "Adopt Snowflake for analytics ETL queries",
-  "summary": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
-  "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
-  "status": "accepted",
-  "health": "superseded",
-  "health_reason": "Superseded by 'Migrate analytics reporting queries from Snowflake to ClickHouse cluster' (date: 2026-06-04)",
-  "decided_on": "2026-02-18",
-  "decided_by": "Fiona Gallagher",
-  "people": [
-   "Fiona Gallagher"
-  ],
-  "systems": [
-   "Snowflake"
-  ],
-  "sources": [
-   {
-    "type": "ticket",
-    "id": "TICK-103",
-    "title": "Slow analytical queries on historical clickstream datasets",
-    "date": "2026-02-18"
-   }
-  ],
-  "supersedes": [],
-  "superseded_by": [
-   "Migrate analytics reporting queries from Snowflake to ClickHouse cluster"
-  ],
+  "superseded_by": [],
   "contradicts": []
  },
  "dec_f564fcd15601": {
   "id": "dec_f564fcd15601",
+  "decision_code": "DEC-11",
+  "decider_departed": false,
   "title": "Migrate session storage to embedded Keycloak cache",
   "summary": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
   "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
   "status": "accepted",
   "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
   "decided_on": "2026-05-12",
   "decided_by": "Alice Vance",
   "people": [
@@ -469,14 +349,78 @@
   "superseded_by": [],
   "contradicts": []
  },
+ "dec_f8a30e251e54": {
+  "id": "dec_f8a30e251e54",
+  "decision_code": "DEC-12",
+  "decider_departed": false,
+  "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+  "summary": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
+  "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-05-24",
+  "decided_by": "Julia Roberts",
+  "people": [
+   "Julia Roberts"
+  ],
+  "systems": [
+   "Keycloak"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-111",
+    "title": "OAuth2 token issuance architecture for internal gateway",
+    "date": "2026-05-24"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": []
+ },
+ "dec_d1d225a60971": {
+  "id": "dec_d1d225a60971",
+  "decision_code": "DEC-13",
+  "decider_departed": false,
+  "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+  "summary": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
+  "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-06-04",
+  "decided_by": "Carlos Mendez",
+  "people": [
+   "Carlos Mendez"
+  ],
+  "systems": [
+   "ClickHouse"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-104",
+    "title": "High compute credits on daily analytics warehouse rollups",
+    "date": "2026-06-04"
+   }
+  ],
+  "supersedes": [
+   "Adopt Snowflake for analytics ETL queries"
+  ],
+  "superseded_by": [],
+  "contradicts": []
+ },
  "dec_ecd94c860f08": {
   "id": "dec_ecd94c860f08",
+  "decision_code": "DEC-14",
+  "decider_departed": false,
   "title": "Rotate all database passwords into Vault dynamic secrets",
   "summary": "To eliminate static credentials",
   "rationale": "To eliminate static credentials",
   "status": "accepted",
   "health": "active",
-  "health_reason": "Active decision with active system ownership and no conflicting or superseding decisions.",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
   "decided_on": "2026-06-08",
   "decided_by": "Diana Prince",
   "people": [
@@ -491,6 +435,99 @@
     "id": "Security Architecture Review",
     "title": "Security Architecture Review",
     "date": "2026-06-08"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": []
+ },
+ "dec_53d51a7d4549": {
+  "id": "dec_53d51a7d4549",
+  "decision_code": "DEC-15",
+  "decider_departed": false,
+  "title": "Upgrade all production Postgres instances to version 16",
+  "summary": "The quote explicitly states a version upgrade action for a system, made by a known person.",
+  "rationale": "The quote explicitly states a version upgrade action for a system, made by a known person.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-06-18",
+  "decided_by": "Evan Wright",
+  "people": [
+   "Evan Wright"
+  ],
+  "systems": [
+   "Postgres"
+  ],
+  "sources": [
+   {
+    "type": "ticket",
+    "id": "TICK-112",
+    "title": "Replication lag and connection pool contention on primary database",
+    "date": "2026-06-18"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": []
+ },
+ "dec_04ed8d5c10ae": {
+  "id": "dec_04ed8d5c10ae",
+  "decision_code": "DEC-16",
+  "decider_departed": false,
+  "title": "Standardize on Kubernetes 1.30 across all production regions",
+  "summary": "The quote explicitly states a standardization decision on a specific version (1.30) for a concrete reason (unlocking gateway API controllers), applied across all production regions. This matches the definition of a decision to standardize on a specific technology version.",
+  "rationale": "The quote explicitly states a standardization decision on a specific version (1.30) for a concrete reason (unlocking gateway API controllers), applied across all production regions. This matches the definition of a decision to standardize on a specific technology version.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-08-20",
+  "decided_by": "Laura Croft",
+  "people": [
+   "Laura Croft"
+  ],
+  "systems": [
+   "Kubernetes"
+  ],
+  "sources": [
+   {
+    "type": "meeting",
+    "id": "Container Platform Strategy",
+    "title": "Container Platform Strategy",
+    "date": "2026-08-20"
+   }
+  ],
+  "supersedes": [],
+  "superseded_by": [],
+  "contradicts": []
+ },
+ "dec_d09476870168": {
+  "id": "dec_d09476870168",
+  "decision_code": "DEC-17",
+  "decider_departed": false,
+  "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+  "summary": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
+  "rationale": "The quote describes a specific technology choice (replacing Snowflake with ClickHouse) that has been implemented, as evidenced by the review of achieved cost reductions. This is a clear engineering decision about vendor and technology selection.",
+  "status": "accepted",
+  "health": "active",
+  "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+  "decided_on": "2026-10-10",
+  "decided_by": "Bob Martin",
+  "people": [
+   "Bob Martin",
+   "Fiona Gallagher",
+   "Laura Croft"
+  ],
+  "systems": [
+   "ClickHouse",
+   "Snowflake"
+  ],
+  "sources": [
+   {
+    "type": "meeting",
+    "id": "Cloud Cost Optimization Taskforce",
+    "title": "Cloud Cost Optimization Taskforce",
+    "date": "2026-10-10"
    }
   ],
   "supersedes": [],

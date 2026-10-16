@@ -139,9 +139,14 @@ export function withCitationMarks(
   return out;
 }
 
-export function isNotFoundAnswer(answer: string, citationCount: number): boolean {
+/** True when the model (or the retrieval step) says nothing relevant was found. */
+export function isNotFoundAnswer(answer: string): boolean {
   const a = answer.toLowerCase();
-  return citationCount === 0 || a.includes('not found in the company brain') || a.includes('the answer is not found');
+  return (
+    a.includes('not found in the company brain') ||
+    a.includes('the answer is not found') ||
+    a.includes('could not find any relevant')
+  );
 }
 
 /** DOM id of the source card for citation `index` (0-based) in a given thread turn. */

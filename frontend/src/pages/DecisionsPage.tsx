@@ -80,7 +80,7 @@ const DecisionRowButton: React.FC<{
         selected ? 'bg-selected hover:bg-selected' : 'bg-transparent'
       }`}
     >
-      <span className="hidden w-[68px] shrink-0 whitespace-nowrap text-muted sm:inline">{row.ticketId ?? ''}</span>
+      <span className="hidden w-[68px] shrink-0 whitespace-nowrap text-muted sm:inline">{row.code ?? ''}</span>
       <StatusIcon status={row.status} />
       <span
         className={`min-w-0 flex-1 truncate ${row.status === 'superseded' ? 'text-muted' : 'font-medium'}`}
@@ -96,9 +96,20 @@ const DecisionRowButton: React.FC<{
           {row.hint.text}
         </span>
       )}
-      {row.system && <SystemChip system={row.system} className="hidden sm:inline-flex" />}
-      {row.decidedBy && (
-        <Avatar name={row.decidedBy} size={22} active={personIsActive(index, row.decidedBy)} />
+      {row.systems[0] && (
+        <SystemChip
+          system={row.systems.length > 1 ? `${row.systems[0]} +${row.systems.length - 1}` : row.systems[0]}
+          colorFrom={row.systems[0]}
+          className="hidden sm:inline-flex"
+        />
+      )}
+      {row.deciders[0] && (
+        <Avatar
+          name={row.deciders[0]}
+          title={row.deciders.join(', ')}
+          size={22}
+          active={personIsActive(index, row.deciders[0])}
+        />
       )}
       <span className="hidden w-14 shrink-0 text-right text-muted sm:inline">
         {formatShortDate(row.decidedOn)}
@@ -163,7 +174,7 @@ const Peek: React.FC<{ row: DecisionRow | undefined; index: GraphIndex | undefin
   return (
     <SidePanel label="Selected decision" className="min-[900px]:max-w-[320px]" >
       <div className="flex items-center justify-between">
-        <span className="text-muted">{row.ticketId ?? 'Decision'}</span>
+        <span className="text-muted">{row.code ?? 'Decision'}</span>
         <Link to={askHref(questionAboutDecision(row.title))} className="font-medium text-accent hover:underline">
           Open
         </Link>
@@ -171,17 +182,21 @@ const Peek: React.FC<{ row: DecisionRow | undefined; index: GraphIndex | undefin
       <h2 className="m-0 text-xl font-semibold">{row.title}</h2>
       <Callout row={row} otherTitle={other} />
       <PropertyList labelWidth={90}>
-        {row.decidedBy && (
+        {row.deciders.length > 0 && (
           <Property label="Decided by">
-            <Avatar name={row.decidedBy} size={18} active={personIsActive(index, row.decidedBy)} />
-            {row.decidedBy}
+            <Avatar
+              name={row.deciders[0]}
+              size={18}
+              active={personIsActive(index, row.deciders[0])}
+            />
+            <span className="min-w-0">{row.deciders.join(', ')}</span>
           </Property>
         )}
         {row.decidedOn && <Property label="Date">{formatLongDate(row.decidedOn) || row.decidedOn}</Property>}
-        {row.system && (
+        {row.systems.length > 0 && (
           <Property label="System">
-            <SystemSquare system={row.system} />
-            {row.system}
+            <SystemSquare system={row.systems[0]} />
+            <span className="min-w-0">{row.systems.join(', ')}</span>
           </Property>
         )}
         {detail.isLoading ? (
@@ -229,7 +244,7 @@ export const DecisionsPage: React.FC = () => {
   };
 
   const systemOptions = useMemo(
-    () => [...new Set(allRows.map((r) => r.system).filter((s): s is string => Boolean(s)))].sort(),
+    () => [...new Set(allRows.flatMap((r) => r.systems))].sort(),
     [allRows]
   );
 
@@ -239,7 +254,7 @@ export const DecisionsPage: React.FC = () => {
         if (tab === 'review' && r.status !== 'conflict' && r.status !== 'stale') return false;
         if (tab === 'active' && r.status !== 'active') return false;
         if (view && r.status !== view) return false;
-        if (system && r.system !== system) return false;
+        if (system && !r.systems.includes(system)) return false;
         return true;
       }),
     [allRows, tab, view, system]
@@ -247,12 +262,12 @@ export const DecisionsPage: React.FC = () => {
 
   const groups = useMemo<Group[]>(() => {
     if (groupBy === 'system') {
-      const names = [...new Set(rows.map((r) => r.system ?? 'No system'))].sort();
+      const names = [...new Set(rows.map((r) => r.systems[0] ?? 'No system'))].sort();
       return names.map((name) => ({
         key: `system:${name}`,
         label: name,
         icon: <SystemSquare system={name === 'No system' ? null : name} />,
-        rows: sortRows(rows.filter((r) => (r.system ?? 'No system') === name)),
+        rows: sortRows(rows.filter((r) => (r.systems[0] ?? 'No system') === name)),
       }));
     }
     return STATUS_ORDER.map((status) => ({

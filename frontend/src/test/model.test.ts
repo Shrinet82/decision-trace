@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { countByStatus, evidenceQuoteForSource, healthToStatus, ownersWhoLeft, systemsWithDecisions, validityChecks } from '../utils/model';
-import { MOCK_DECISION_DETAILS } from '../api/mocks';
+import { buildDecisionRows, countByStatus, evidenceQuoteForSource, healthToStatus, systemsWithDecisions, validityChecks } from '../utils/model';
+import { MOCK_DECISION_DETAILS, MOCK_DECISIONS } from '../api/mocks';
 import { index, rows } from './fixtures';
 
 describe('decision model (real API fixtures)', () => {
@@ -16,22 +16,45 @@ describe('decision model (real API fixtures)', () => {
     expect(countByStatus(rows)).toEqual({ active: 12, conflict: 2, stale: 0, superseded: 3 });
   });
 
-  it('derives the source ticket id from based_on edges', () => {
-    const kafka = rows.find((r) => r.title.startsWith('Adopt Kafka'))!;
-    expect(kafka.ticketId).toBe('TICK-105');
+  it('carries the API decision code and orders codes by decision date', () => {
+    expect(rows.every((r) => /^DEC-\d{2}$/.test(r.code ?? ''))).toBe(true);
+    expect(new Set(rows.map((r) => r.code)).size).toBe(rows.length);
+    const byCode = [...rows].sort((a, b) => a.code!.localeCompare(b.code!));
+    const dates = byCode.map((r) => r.decidedOn ?? '');
+    expect(dates).toEqual([...dates].sort());
   });
 
-  it('derives relation hints from supersedes/contradicts edges', () => {
+  it('derives relation hints from supersedes/contradicts edges using DEC codes', () => {
     const kafka = rows.find((r) => r.title.startsWith('Adopt Kafka'))!;
+    const rabbit = rows.find((r) => r.title.startsWith('Adopt RabbitMQ'))!;
     expect(kafka.status).toBe('conflict');
-    expect(kafka.hint?.text).toBe('conflicts with TICK-106');
+    expect(kafka.hint?.text).toBe(`conflicts with ${rabbit.code}`);
 
     const oldSessions = rows.find((r) => r.title.startsWith('Migrate session storage from Postgres'))!;
     expect(oldSessions.status).toBe('superseded');
-    expect(oldSessions.hint?.text).toMatch(/^replaced by /);
+    expect(oldSessions.hint?.text).toMatch(/^replaced by DEC-\d{2}$/);
 
     const keycloak = rows.find((r) => r.title === 'Migrate session storage to embedded Keycloak cache')!;
-    expect(keycloak.hint?.text).toMatch(/^supersedes /);
+    expect(keycloak.hint?.text).toMatch(/^supersedes DEC-\d{2}$/);
+  });
+
+  it('splits list-valued deciders and systems into separate entries', () => {
+    const decommission = rows.find((r) => r.title.startsWith('Decommission Snowflake'))!;
+    expect(decommission.deciders.length).toBeGreaterThan(1);
+    expect(decommission.deciders.every((d) => !d.includes(','))).toBe(true);
+    expect(decommission.systems).toEqual(['ClickHouse', 'Snowflake']);
+  });
+
+  it('shows a decider-left hint only for stale decisions whose decider departed', () => {
+    const stale = buildDecisionRows(
+      [
+        { ...MOCK_DECISIONS[0], health: 'possibly_stale', decider_departed: true },
+        { ...MOCK_DECISIONS[1], health: 'possibly_stale', decider_departed: false },
+      ],
+      index
+    );
+    expect(stale[0].hint).toEqual({ text: 'decider left the company', tone: 'stale' });
+    expect(stale[1].hint).toEqual({ text: 'needs review', tone: 'stale' });
   });
 
   it('lists only systems that decisions are about', () => {
@@ -41,13 +64,6 @@ describe('decision model (real API fixtures)', () => {
     expect(systems.map((s) => s.name)).toContain('Kafka');
   });
 
-  it('finds owners who left via the owns edge on the decision system', () => {
-    // No current decision is about Elasticsearch, so nobody is flagged.
-    expect(rows.some((r) => ownersWhoLeft(index, r.id).length > 0)).toBe(false);
-    const marcus = index.find('Marcus Aurelius')!;
-    expect(marcus.properties.is_active).toBe(false);
-  });
-
   it('returns a verbatim evidence quote for a source via based_on', () => {
     const ticket = index.find('TICK-105')!;
     expect(evidenceQuoteForSource(index, ticket.id)).toContain('Kafka');
@@ -55,9 +71,12 @@ describe('decision model (real API fixtures)', () => {
 
   it('builds validity checks from detail and graph', () => {
     const kafka = rows.find((r) => r.title.startsWith('Adopt Kafka'))!;
-    const checks = validityChecks(MOCK_DECISION_DETAILS[kafka.id], index);
+    const checks = validityChecks(MOCK_DECISION_DETAILS[kafka.id]);
     expect(checks.find((c) => c.label.startsWith('Conflicts with'))?.ok).toBe(false);
     expect(checks.find((c) => c.label === 'No newer decision')?.ok).toBe(true);
-    expect(checks.find((c) => c.label === 'Owner still on team')?.ok).toBe(true);
+    expect(checks.find((c) => c.label === 'Decider still on team')?.ok).toBe(true);
+
+    const departed = validityChecks({ ...MOCK_DECISION_DETAILS[kafka.id], decider_departed: true });
+    expect(departed.find((c) => c.label === 'Decider left the company')?.ok).toBe(false);
   });
 });

@@ -1,45 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import { getMockAskResponse } from '../api/mocks';
 import type { AskResponse } from '../api/types';
-import { buildEvidencePath, pickMainDecision } from '../utils/evidence';
+import { buildEvidencePath } from '../utils/evidence';
 
 describe('evidence path', () => {
   const redis = getMockAskResponse('What replaced Redis for session storage?');
 
-  it('prefers the decision whose title is quoted in the answer and that has a cited source', () => {
-    const main = pickMainDecision(redis)!;
-    expect(String(main.properties.title)).toMatch(/^Migrate session storage from Postgres to Redis cluster/);
-  });
-
-  it('demotes a superseded decision when status is known', () => {
-    const node = (id: string, label: string, properties = {}) => ({ id, label, properties });
-    const response: AskResponse = {
-      answer: 'Both are described.',
-      citations: [
-        { type: 'ticket', id: 'TICK-1', title: 'A' },
-        { type: 'ticket', id: 'TICK-2', title: 'B' },
-      ],
-      people: [],
-      graph_path: {
-        omitted_count: 0,
-        nodes: [
-          node('d_old', 'Decision', { title: 'Old thing' }),
-          node('d_new', 'Decision', { title: 'New thing' }),
-          node('t1', 'Ticket', { ticket_id: 'TICK-1' }),
-          node('t2', 'Ticket', { ticket_id: 'TICK-2' }),
-        ],
-        edges: [
-          { source: 'd_old', target: 't1', type: 'based_on', properties: {} },
-          { source: 'd_new', target: 't2', type: 'based_on', properties: {} },
-        ],
-      },
-    };
-    expect(pickMainDecision(response)!.id).toBe('d_old');
-    expect(pickMainDecision(response, new Map([['d_old', 'superseded' as const]]))!.id).toBe('d_new');
+  it('uses the server-chosen primary decision for the evidence path', () => {
+    const mainId = redis.primary_decision_id!;
+    expect(mainId).toBeTruthy();
+    const path = buildEvidencePath(redis, mainId);
+    expect(path.rows.filter((r) => r.isMain)).toHaveLength(1);
+    expect(path.rows.find((r) => r.isMain)!.nodeId).toBe(mainId);
+    expect(path.rows.find((r) => r.isMain)!.code).toMatch(/^DEC-\d{2}$/);
   });
 
   it('puts sources above the decision and related nodes below, only via real edges', () => {
-    const main = pickMainDecision(redis)!;
+    const main = { id: redis.primary_decision_id! };
     const path = buildEvidencePath(redis, main.id);
     const kinds = path.rows.map((r) => r.kind);
     const mainAt = path.rows.findIndex((r) => r.isMain);
@@ -62,6 +39,7 @@ describe('evidence path', () => {
       answer: 'Keycloak replaced Redis.',
       citations: [{ type: 'ticket', id: 'TICK-1', title: 'T' }],
       people: [],
+      primary_decision_id: 'd_new',
       graph_path: {
         omitted_count: 0,
         nodes: [
@@ -82,8 +60,9 @@ describe('evidence path', () => {
     expect(path.rows[0].name).toBe('TICK-1');
   });
 
-  it('has no cited decision for an unanswerable question', () => {
+  it('has no primary decision or citations for an unanswerable question', () => {
     const res = getMockAskResponse('Why did we choose quantum encryption for database backups?');
     expect(res.citations).toHaveLength(0);
+    expect(res.primary_decision_id).toBeNull();
   });
 });

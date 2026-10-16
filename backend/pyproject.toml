@@ -37,6 +37,12 @@ target-version = "py312"
 select = ["E", "F", "I", "W"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# Environment and the FalkorDB compatibility adapter must be configured before cognee/litellm import
+"app/brain/memory.py" = ["E402"]
+"app/brain/models.py" = ["E402"]
+"app/ingest/decisions_extractor.py" = ["E402"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"

@@ -37,6 +37,19 @@ describe('AskPage', () => {
     expect(screen.queryByText(/Still valid/)).not.toBeInTheDocument();
   });
 
+  it('shows an ownership answer without evidence or sources when no decision is primary', async () => {
+    renderAsk();
+    fireEvent.change(screen.getByPlaceholderText(PLACEHOLDER), {
+      target: { value: 'Who owns Elasticsearch?' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
+
+    expect(await screen.findByText(/Marcus Aurelius/)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'No decision found' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Evidence path' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Sources' })).not.toBeInTheDocument();
+  });
+
   it('renders answer, evidence path, sources and properties for an answerable question', async () => {
     renderAsk();
     fireEvent.change(screen.getByPlaceholderText(PLACEHOLDER), {
@@ -47,7 +60,7 @@ describe('AskPage', () => {
     expect(await screen.findByRole('region', { name: 'Evidence path' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('Validity checks')).toBeInTheDocument());
-    // The Redis session-storage decision was superseded, so the verdict must say so.
-    expect((await screen.findAllByText('Superseded')).length).toBeGreaterThan(0);
+    // The server marks the Keycloak decision as primary; it is active, so the verdict says so.
+    expect((await screen.findAllByText('Still valid')).length).toBeGreaterThan(0);
   });
 });

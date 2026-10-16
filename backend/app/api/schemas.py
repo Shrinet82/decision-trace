@@ -15,8 +15,20 @@ class DecisionSummary(BaseModel):
     status: str = Field(..., description="Lifecycle status (e.g. accepted, reverted)")
     health: HealthStatus = Field(..., description="Computed health status")
     health_reason: str = Field(..., description="Explanation of computed health status")
-    system: Optional[str] = Field(default=None, description="System name this decision governs")
-    decided_by: Optional[str] = Field(default=None, description="Person who made the decision")
+    decision_code: Optional[str] = Field(
+        default=None, description="Stable human-readable code, e.g. DEC-07 (by decision date, then title)"
+    )
+    system: Optional[str] = Field(
+        default=None, description="System name(s) this decision governs, comma-joined"
+    )
+    systems: list[str] = Field(default_factory=list, description="Each governed system")
+    decided_by: Optional[str] = Field(
+        default=None, description="Person(s) who made the decision, comma-joined"
+    )
+    deciders: list[str] = Field(default_factory=list, description="Each person who decided")
+    decider_departed: bool = Field(
+        default=False, description="True if any decider has left the company"
+    )
     decided_on: Optional[str] = Field(default=None, description="Date decision was made")
 
 
@@ -33,6 +45,10 @@ class DecisionDetail(BaseModel):
     """Detailed decision view including graph connections and health audit."""
 
     id: str = Field(..., description="Unique decision ID")
+    decision_code: Optional[str] = Field(default=None, description="Stable code, e.g. DEC-07")
+    decider_departed: bool = Field(
+        default=False, description="True if any decider has left the company"
+    )
     title: str = Field(..., description="Decision title")
     summary: str = Field(default="", description="Summary of the decision")
     rationale: str = Field(default="", description="Trade-offs, constraints, and why it was made")
@@ -120,6 +136,10 @@ class AskResponse(BaseModel):
         default_factory=list, description="Sources cited in the answer"
     )
     people: list[str] = Field(default_factory=list, description="People referenced in the subgraph")
+    primary_decision_id: Optional[str] = Field(
+        default=None,
+        description="ID of the decision the answer is mainly about (null when nothing was found)",
+    )
     graph_path: GraphPath = Field(
         default_factory=GraphPath, description="Exact subgraph used to answer"
     )

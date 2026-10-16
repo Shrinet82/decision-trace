@@ -7,7 +7,6 @@ integration tests, and benchmarks without requiring any LLM API calls.
 import asyncio
 import json
 import logging
-import os
 import sys
 import time
 from pathlib import Path
@@ -21,7 +20,6 @@ from app.brain.memory import (
     query_graph,
     reset,
 )
-from app.config import get_settings
 
 logger = logging.getLogger("restore_snapshot")
 logging.basicConfig(
@@ -120,8 +118,7 @@ async def restore_graph_snapshot(
 
     start_time = time.perf_counter()
 
-    with open(snap_file, mode="r", encoding="utf-8") as f:
-        data = json.load(f)
+    data = json.loads(snap_file.read_text(encoding="utf-8"))
 
     # 1. Reset dataset and recreate graph
     print("[1/4] Resetting dataset graph...")

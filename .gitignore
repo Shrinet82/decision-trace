@@ -37,3 +37,26 @@ data_storage/
 # Logs & Scratch
 *.log
 scratch/
+
+# Test, lint and build output
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+frontend/test-results/
+frontend/playwright-report/
+*.tsbuildinfo
+
+# Scratch, temp and debug output
+tmp/
+temp/
+*.tmp
+*.bak
+*.out
+nohup.out
+debug_*.py
+*_debug.py
+
+# Local design handoff copies (the committed ones live in frontend/design-ref/)
+/*.dc.html

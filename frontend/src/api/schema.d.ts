@@ -155,7 +155,7 @@ export interface components {
         AskRequest: {
             /**
              * Question
-             * @description Natural language question to query the Company Brain
+             * @description Natural language question to query the Company Brain (max 500 characters)
              */
             question: string;
             /**
@@ -184,6 +184,11 @@ export interface components {
              * @description People referenced in the subgraph
              */
             people?: string[];
+            /**
+             * Primary Decision Id
+             * @description ID of the decision the answer is mainly about (null when nothing was found)
+             */
+            primary_decision_id?: string | null;
             /** @description Exact subgraph used to answer */
             graph_path?: components["schemas"]["GraphPath"];
         };
@@ -219,6 +224,17 @@ export interface components {
              * @description Unique decision ID
              */
             id: string;
+            /**
+             * Decision Code
+             * @description Stable code, e.g. DEC-07
+             */
+            decision_code?: string | null;
+            /**
+             * Decider Departed
+             * @description True if any decider has left the company
+             * @default false
+             */
+            decider_departed: boolean;
             /**
              * Title
              * @description Decision title
@@ -325,15 +341,36 @@ export interface components {
              */
             health_reason: string;
             /**
+             * Decision Code
+             * @description Stable human-readable code, e.g. DEC-07 (by decision date, then title)
+             */
+            decision_code?: string | null;
+            /**
              * System
-             * @description System name this decision governs
+             * @description System name(s) this decision governs, comma-joined
              */
             system?: string | null;
             /**
+             * Systems
+             * @description Each governed system
+             */
+            systems?: string[];
+            /**
              * Decided By
-             * @description Person who made the decision
+             * @description Person(s) who made the decision, comma-joined
              */
             decided_by?: string | null;
+            /**
+             * Deciders
+             * @description Each person who decided
+             */
+            deciders?: string[];
+            /**
+             * Decider Departed
+             * @description True if any decider has left the company
+             * @default false
+             */
+            decider_departed: boolean;
             /**
              * Decided On
              * @description Date decision was made

@@ -99,6 +99,7 @@ export function getMockAskResponse(question: string): AskResponse {
     answer: 'The answer is not found in the Company Brain.',
     citations: [],
     people: [],
+    primary_decision_id: null,
     graph_path: {
       nodes: [],
       edges: [],

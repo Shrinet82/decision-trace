@@ -67,6 +67,7 @@ export const EvidencePathCard: React.FC<EvidencePathCardProps> = ({ path, status
                     row.isMain ? 'font-semibold' : isOld ? 'font-medium text-muted line-through' : 'font-medium'
                   }`}
                 >
+                  {row.code && <span className="mr-1.5 font-normal text-muted">{row.code}</span>}
                   {row.name}
                 </span>
                 {row.detail && <span className="min-w-0 break-words text-muted">{row.detail}</span>}

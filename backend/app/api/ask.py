@@ -1,13 +1,16 @@
 """Grounded Question Answering API with Subgraph Traversal and Citations."""
 
 import logging
+import re
 from typing import Any, Optional
 
 import litellm
 from fastapi import APIRouter, Request
 
+from app.api.primary import pick_primary_decision
 from app.api.rate_limiter import check_rate_limits, record_llm_call
 from app.api.schemas import AskRequest, AskResponse, Citation, GraphEdge, GraphNode, GraphPath
+from app.brain.codes import get_decision_codes
 from app.brain.memory import get_entity_roster, query_graph
 from app.brain.reconciliation import compute_embedding_similarities
 from app.config import get_settings
@@ -110,6 +113,8 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
                 GraphEdge(source=src, target=tgt, type=rel_type, properties=props or {})
             )
 
+    codes = await get_decision_codes(target_dataset)
+
     # Subgraph Query A: Decisions matching decision IDs or systems
     d_rows: list[list[Any]] = []
     if decision_id_matches:
@@ -151,6 +156,8 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
         )
         d_rows.extend(rows_by_sys)
 
+    main_decisions: dict[str, str] = {}
+    superseded_ids: set[str] = set()
     for row in d_rows:
         if not row or not row[0]:
             continue
@@ -176,8 +183,18 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
         owner_leave_date = str(row[19]) if row[19] else None
 
         _add_node(
-            d_id, "Decision", {"title": d_title, "status": d_status, "rationale": d_rationale}, weight=10.0
+            d_id,
+            "Decision",
+            {
+                "title": d_title,
+                "status": d_status,
+                "rationale": d_rationale,
+                "decision_code": codes.get(d_id),
+            },
+            weight=10.0,
         )
+        if d_id not in main_decisions:
+            main_decisions[d_id] = d_title
 
         text_block = [f"Decision: '{d_title}' (Status: {d_status})"]
         if d_summary:
@@ -220,17 +237,33 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
             text_block.append(f"  Source Meeting: {m_title} (Date: {m_date})")
 
         if sup_id and sup_title:
-            _add_node(sup_id, "Decision", {"title": sup_title}, weight=5.0)
+            _add_node(
+                sup_id,
+                "Decision",
+                {"title": sup_title, "decision_code": codes.get(sup_id)},
+                weight=5.0,
+            )
             _add_edge(d_id, sup_id, "supersedes")
             text_block.append(f"  Supersedes: '{sup_title}'")
 
         if supby_id and supby_title:
-            _add_node(supby_id, "Decision", {"title": supby_title}, weight=5.0)
+            superseded_ids.add(d_id)
+            _add_node(
+                supby_id,
+                "Decision",
+                {"title": supby_title, "decision_code": codes.get(supby_id)},
+                weight=5.0,
+            )
             _add_edge(supby_id, d_id, "supersedes")
             text_block.append(f"  Superseded by: '{supby_title}'")
 
         if con_id and con_title:
-            _add_node(con_id, "Decision", {"title": con_title}, weight=5.0)
+            _add_node(
+                con_id,
+                "Decision",
+                {"title": con_title, "decision_code": codes.get(con_id)},
+                weight=5.0,
+            )
             _add_edge(d_id, con_id, "contradicts")
             text_block.append(f"  Contradicts: '{con_title}'")
 
@@ -290,33 +323,24 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
         f"CONTEXT SUBGRAPH:\n{context_text}"
     )
 
-    answer_text = ""
-    for attempt in range(3):
-        try:
-            from app.brain.memory import apply_groq_key
-            apply_groq_key()
-            record_llm_call()
-            response = await litellm.acompletion(
-                model=_settings.LLM_MODEL,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": question},
-                ],
-                temperature=0.0,
-                max_tokens=400,
-            )
-            answer_text = response.choices[0].message.content.strip()
-            break
-        except Exception as exc:
-            logger.warning("LLM attempt %d failed in /ask: %s", attempt + 1, exc)
-            if attempt < 2:
-                await asyncio.sleep(2.0)
-            else:
-                logger.error("LLM generation failed after 3 attempts in /ask: %s", exc)
-                answer_text = "The answer is not found in the Company Brain."
+    # Single LLM call. On failure fall back to the safe "not found" answer rather than guessing.
+    try:
+        record_llm_call()
+        response = await litellm.acompletion(
+            model=_settings.LLM_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": question},
+            ],
+            temperature=0.0,
+            max_tokens=400,
+        )
+        answer_text = response.choices[0].message.content.strip()
+    except Exception as exc:
+        logger.error("LLM generation failed in /ask: %s", exc)
+        answer_text = "The answer is not found in the Company Brain."
 
     # Programmatic verification: never allow 'decided' or 'adopted' for proposed/rejected decisions
-    import re
     for row in d_rows:
         if not row or not row[0]:
             continue
@@ -351,25 +375,15 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
         weight = node_weights.get(c.id, 0.0)
         return (in_answer, weight)
 
-    ranked_citations = sorted(verified_citations, key=_rank_citation, reverse=True)[:5]
-
-    has_explicit_evidence = any(
-        c.id.lower() in answer_text.lower() or (len(c.title) > 5 and c.title.lower() in answer_text.lower())
+    # Only cite sources the answer actually references. An answer that mentions none (for example a
+    # pure ownership answer) carries no citations, rather than unrelated top-weighted ones.
+    in_text_citations = [
+        c
         for c in verified_citations
-    )
-    if not has_explicit_evidence and (
-        "not found" in answer_text.lower()
-        or "could not find" in answer_text.lower()
-        or "no information" in answer_text.lower()
-    ):
-        ranked_citations = []
-    elif has_explicit_evidence:
-        in_text_citations = [
-            c for c in verified_citations
-            if c.id.lower() in answer_text.lower() or (len(c.title) > 5 and c.title.lower() in answer_text.lower())
-        ]
-        if in_text_citations:
-            ranked_citations = in_text_citations[:5]
+        if c.id.lower() in answer_text.lower()
+        or (len(c.title) > 5 and c.title.lower() in answer_text.lower())
+    ]
+    ranked_citations = sorted(in_text_citations, key=_rank_citation, reverse=True)[:5]
 
     # Step 5: Rank and cap graph_path nodes at ~15, ordered by relevance
     sorted_nodes = sorted(
@@ -391,9 +405,25 @@ async def ask_question(request: AskRequest, http_request: Request) -> AskRespons
         ]
     )
 
+    # Which decision the answer is mainly about (none when the answer found nothing)
+    cited_ids = {c.id: i for i, c in enumerate(ranked_citations)}
+    first_citation_index: dict[str, int] = {}
+    for edge in edges_list:
+        if edge.type == "based_on" and edge.target in cited_ids and edge.source in main_decisions:
+            idx = cited_ids[edge.target]
+            first_citation_index[edge.source] = min(idx, first_citation_index.get(edge.source, idx))
+    primary_decision_id = (
+        pick_primary_decision(
+            answer_text, list(main_decisions.items()), first_citation_index, superseded_ids
+        )
+        if ranked_citations
+        else None
+    )
+
     return AskResponse(
         answer=answer_text,
         citations=ranked_citations,
         people=subgraph_people,
+        primary_decision_id=primary_decision_id,
         graph_path=GraphPath(nodes=capped_nodes, edges=capped_edges, omitted_count=omitted_count),
     )

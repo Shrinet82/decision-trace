@@ -5,7 +5,6 @@ import {
   healthToStatus,
   STATUS_LABEL,
   validityChecks,
-  type GraphIndex,
 } from '../../utils/model';
 import { Avatar } from '../Avatar';
 import { PropertyList, Property, SidePanel } from '../PageFrame';
@@ -15,13 +14,11 @@ import { SystemSquare } from '../SystemMark';
 export interface AskPropertiesProps {
   detail: DecisionDetail | undefined;
   loading: boolean;
-  ticketId: string | null;
-  index: GraphIndex | undefined;
 }
 
 const None = () => <span className="text-muted">None</span>;
 
-export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading, ticketId, index }) => {
+export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading }) => {
   if (loading) {
     return (
       <SidePanel label="Decision properties">
@@ -46,12 +43,12 @@ export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading, t
   }
 
   const status = healthToStatus(detail.health);
-  const checks = validityChecks(detail, index);
+  const checks = validityChecks(detail);
 
   return (
     <SidePanel label="Decision properties">
       <div className="flex flex-col gap-1">
-        {ticketId && <div className="text-xs text-muted">{ticketId}</div>}
+        {detail.decision_code && <div className="text-xs text-muted">{detail.decision_code}</div>}
         <div className="font-semibold">{detail.title}</div>
       </div>
       <PropertyList>

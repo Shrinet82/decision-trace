@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Query
 
 from app.api.schemas import GraphEdge, GraphNode, GraphResponse
+from app.brain.codes import get_decision_codes
 from app.brain.memory import query_graph
 from app.config import get_settings
 
@@ -35,6 +36,7 @@ async def get_graph(
         n_query = "MATCH (n) RETURN id(n), labels(n), properties(n) LIMIT $limit"
 
     n_rows = await query_graph(n_query, dataset_name=target_dataset, params={"limit": limit})
+    codes = await get_decision_codes(target_dataset)
 
     nodes: list[GraphNode] = []
     node_ids: set[str] = set()
@@ -58,6 +60,8 @@ async def get_graph(
         if n_id in node_ids:
             continue
         node_ids.add(n_id)
+        if label == "Decision" and n_id in codes:
+            props = {**props, "decision_code": codes[n_id]}
         nodes.append(GraphNode(id=n_id, label=label, properties=props))
 
     # 2. Fetch edges connecting returned nodes

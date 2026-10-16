@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.api.schemas import DecisionDetail, DecisionSummary, HealthStatus, SourceRef
+from app.brain.codes import get_decision_codes
 from app.brain.health import evaluate_graph_health
 from app.brain.memory import query_graph
 from app.config import get_settings
@@ -32,17 +33,18 @@ async def list_decisions(
     health_map = await evaluate_graph_health(dataset_name=target_dataset)
 
     # 2. Query basic decision attributes from FalkorDB
+    codes = await get_decision_codes(target_dataset)
     query = (
         "MATCH (d:Decision) "
         "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
         "OPTIONAL MATCH (d)-[:decided_by]->(p:Person) "
         "OPTIONAL MATCH (d)-[:based_on]->(t:Ticket) "
         "OPTIONAL MATCH (d)-[:based_on]->(m:Meeting) "
-        "RETURN d.id, d.title, coalesce(d.status, 'accepted'), s.name, p.name, "
-        "coalesce(d.decided_on, m.date, t.closed, t.opened, d.created_at) "
-        "LIMIT $limit"
+        "RETURN d.id, d.title, coalesce(d.status, 'accepted'), collect(DISTINCT s.name), "
+        "collect(DISTINCT p.name), d.decided_on, collect(DISTINCT m.date), "
+        "collect(DISTINCT t.closed), collect(DISTINCT t.opened), d.created_at"
     )
-    rows = await query_graph(query, dataset_name=target_dataset, params={"limit": limit * 2})
+    rows = await query_graph(query, dataset_name=target_dataset)
 
     summaries: list[DecisionSummary] = []
     seen_ids: set[str] = set()
@@ -57,22 +59,23 @@ async def list_decisions(
 
         title = str(row[1]) if row[1] else "Untitled"
         d_status = str(row[2]) if row[2] else "accepted"
-        sys_name = str(row[3]) if row[3] else None
-        p_name = str(row[4]) if row[4] else None
-        dec_on = str(row[5]) if row[5] else None
+        systems = sorted({str(x) for x in (row[3] or []) if x})
+        deciders = sorted({str(x) for x in (row[4] or []) if x})
+        dates = [row[5], *(row[6] or []), *(row[7] or []), *(row[8] or []), row[9]]
+        dec_on = next((str(x) for x in dates if x), None)
 
         # Filter by system if provided
-        if system and (not sys_name or system.lower() not in sys_name.lower()):
+        if system and not any(system.lower() in name.lower() for name in systems):
             continue
 
         # Filter by person if provided
-        if person and (not p_name or person.lower() not in p_name.lower()):
+        if person and not any(person.lower() in name.lower() for name in deciders):
             continue
 
         h_info = health_map.get(d_id)
         computed_health: HealthStatus = h_info.status if h_info else "active"
         computed_reason: str = (
-            h_info.reason if h_info else "Active decision with valid system ownership."
+            h_info.reason if h_info else "Active decision; no conflicting or superseding decisions."
         )
 
         # Filter by health status if provided
@@ -82,19 +85,22 @@ async def list_decisions(
         summaries.append(
             DecisionSummary(
                 id=d_id,
+                decision_code=codes.get(d_id),
                 title=title,
                 status=d_status,
                 health=computed_health,
                 health_reason=computed_reason,
-                system=sys_name,
-                decided_by=p_name,
+                system=", ".join(systems) or None,
+                systems=systems,
+                decided_by=", ".join(deciders) or None,
+                deciders=deciders,
+                decider_departed=h_info.decider_departed if h_info else False,
                 decided_on=dec_on,
             )
         )
-        if len(summaries) >= limit:
-            break
 
-    return summaries
+    summaries.sort(key=lambda d: d.decision_code or "~")
+    return summaries[:limit]
 
 
 @router.get("/{decision_id}", response_model=DecisionDetail)
@@ -226,8 +232,11 @@ async def get_decision(
         h_info.reason if h_info else "Active decision with valid system ownership."
     )
 
+    codes = await get_decision_codes(target_dataset)
     return DecisionDetail(
         id=canonical_id,
+        decision_code=codes.get(canonical_id),
+        decider_departed=h_info.decider_departed if h_info else False,
         title=title,
         summary=summary,
         rationale=rationale,

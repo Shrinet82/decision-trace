@@ -22,12 +22,6 @@ export function formatLongDate(value?: string | null): string {
   return p ? `${MONTHS[p.m - 1]} ${p.d}, ${p.y}` : '';
 }
 
-/** "Feb 2026" */
-export function formatMonthYear(value?: string | null): string {
-  const p = parseIsoDate(value);
-  return p ? `${MONTHS[p.m - 1]} ${p.y}` : '';
-}
-
 /**
  * Initials of the first person in a possibly composite name such as
  * "Laura Croft, Fiona Gallagher, Bob Martin".

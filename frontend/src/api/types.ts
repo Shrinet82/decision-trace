@@ -1,10 +1,18 @@
-import type { components, paths } from './schema';
+import type { components } from './schema';
 
 type Schemas = components['schemas'];
 
 export type AskRequest = Schemas['AskRequest'];
 export type Citation = Schemas['Citation'];
-export type DecisionSummary = Schemas['DecisionSummary'];
+export type DecisionSummary = Omit<
+  Schemas['DecisionSummary'],
+  'decision_code' | 'systems' | 'deciders' | 'decider_departed'
+> & {
+  decision_code: string | null;
+  systems: string[];
+  deciders: string[];
+  decider_departed: boolean;
+};
 
 /**
  * The generated OpenAPI types mark every field with a server-side default as
@@ -32,12 +40,15 @@ export type AskResponse = {
   citations: Citation[];
   people: string[];
   graph_path: GraphPath;
+  /** The decision the answer is mainly about, chosen by the server; null when none applies. */
+  primary_decision_id: string | null;
 };
 export type SourceRef = Schemas['SourceRef'];
 export type DecisionDetail = Omit<
   Schemas['DecisionDetail'],
-  'people' | 'systems' | 'sources' | 'supersedes' | 'superseded_by' | 'contradicts'
+  'people' | 'systems' | 'sources' | 'supersedes' | 'superseded_by' | 'contradicts' | 'decision_code'
 > & {
+  decision_code: string | null;
   people: string[];
   systems: string[];
   sources: SourceRef[];
@@ -47,5 +58,3 @@ export type DecisionDetail = Omit<
 };
 
 export type HealthStatus = 'active' | 'superseded' | 'contradicted' | 'possibly_stale';
-
-export type Paths = paths;
