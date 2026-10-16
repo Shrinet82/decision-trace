@@ -525,6 +525,9 @@ async def run_ingest(req: IngestRequest, dataset: str) -> AsyncIterator[dict[str
         yield _step("health", "running")
         cache.invalidate()
         after = await _snapshot_state(dataset)
+        # Store the fresh results so the pages refetched next do not recompute them
+        cache.put("health", dataset, after["health"])
+        cache.put("codes", dataset or "", after["codes"])
         diff = build_diff(ingest_id, ingested_at, req, src_key, created, overrides, links, before, after)
         changed_nodes = [
             {"id": f"Decision:{s['id']}", "label": "Decision", "name": s["title"], "decision_code": s["decision_code"], "change": "changed"}
@@ -719,6 +722,9 @@ async def reset_demo(dataset: str) -> dict[str, Any]:
             "MATCH (c:Change {kind: 'ingest', reverted: false}) SET c.reverted = true", dataset_name=graph
         )
     cache.invalidate()
+    health, codes = await asyncio.gather(evaluate_graph_health(dataset_name=dataset), get_decision_codes(dataset))
+    cache.put("health", dataset, health)
+    cache.put("codes", dataset or "", codes)
     totals = await asyncio.gather(
         query_graph("MATCH (n) RETURN count(n)", dataset_name=dataset),
         query_graph("MATCH ()-[r]->() RETURN count(r)", dataset_name=dataset),
