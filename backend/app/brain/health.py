@@ -9,13 +9,14 @@ Computes decision health deterministically from graph edges and properties:
 - active: none of the above
 """
 
+import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from app.brain.memory import query_graph
+from app.brain.memory import query_graph, query_graph_threaded
 from app.config import get_settings
 
 logger = logging.getLogger("decision_trace.brain.health")
@@ -73,18 +74,49 @@ async def evaluate_graph_health(
     ref_dt = _parse_date(reference_date) or datetime.now(timezone.utc).replace(tzinfo=None)
     ref_date_str = ref_dt.strftime("%Y-%m-%d")
 
-    # 1. Fetch all decisions with their systems, deciders, and dates
-    decisions_raw = await query_graph(
-        "MATCH (d:Decision) "
-        "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
-        "OPTIONAL MATCH (d)-[:decided_by]->(p:Person) "
-        "OPTIONAL MATCH (d)-[:based_on]->(t:Ticket) "
-        "OPTIONAL MATCH (d)-[:based_on]->(m:Meeting) "
-        "RETURN d.id, d.title, collect(DISTINCT s.name), collect(DISTINCT p.name), "
-        "d.decided_on, collect(DISTINCT m.date), collect(DISTINCT t.closed), "
-        "collect(DISTINCT t.opened), d.created_at",
-        dataset_name=target_dataset,
+    # The four whole-graph queries are independent: issue them together
+    (
+        decisions_raw,
+        superseded_raw,
+        contradicts_raw,
+        departed_deciders_raw,
+    ) = await asyncio.gather(
+        query_graph_threaded(
+            "MATCH (d:Decision) "
+            "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
+            "OPTIONAL MATCH (d)-[:decided_by]->(p:Person) "
+            "OPTIONAL MATCH (d)-[:based_on]->(t:Ticket) "
+            "OPTIONAL MATCH (d)-[:based_on]->(m:Meeting) "
+            "RETURN d.id, d.title, collect(DISTINCT s.name), collect(DISTINCT p.name), "
+            "d.decided_on, collect(DISTINCT m.date), collect(DISTINCT t.closed), "
+            "collect(DISTINCT t.opened), d.created_at",
+            dataset_name=target_dataset,
+        ),
+        query_graph_threaded(
+            "MATCH (d2:Decision)-[:supersedes]->(d:Decision) "
+            "OPTIONAL MATCH (d2)-[:based_on]->(t:Ticket) "
+            "OPTIONAL MATCH (d2)-[:based_on]->(m:Meeting) "
+            "RETURN d.id, d2.id, d2.title, "
+            "coalesce(d2.decided_on, m.date, t.closed, t.opened, d2.created_at, 'unknown')",
+            dataset_name=target_dataset,
+        ),
+        query_graph_threaded(
+            "MATCH (d:Decision)-[:contradicts]-(d2:Decision) "
+            "OPTIONAL MATCH (d2)-[:decided_by]->(p2:Person) "
+            "RETURN d.id, d2.id, d2.title, p2.name",
+            dataset_name=target_dataset,
+        ),
+        query_graph_threaded(
+            "MATCH (d:Decision)-[:decided_by]->(p:Person) "
+            "WHERE p.is_active = false "
+            "   OR (p.leave_date IS NOT NULL AND p.leave_date <> '' AND p.leave_date <= $today) "
+            "RETURN d.id, p.name, p.leave_date",
+            dataset_name=target_dataset,
+            params={"today": ref_date_str},
+        ),
     )
+
+    # 1. Fetch all decisions with their systems, deciders, and dates
 
     decisions: dict[str, dict[str, Any]] = {}
     for row in decisions_raw:
@@ -110,14 +142,6 @@ async def evaluate_graph_health(
 
     # 2. Check SUPERSEDED decisions via incoming supersedes edges
     # (d2)-[:supersedes]->(d)
-    superseded_raw = await query_graph(
-        "MATCH (d2:Decision)-[:supersedes]->(d:Decision) "
-        "OPTIONAL MATCH (d2)-[:based_on]->(t:Ticket) "
-        "OPTIONAL MATCH (d2)-[:based_on]->(m:Meeting) "
-        "RETURN d.id, d2.id, d2.title, "
-        "coalesce(d2.decided_on, m.date, t.closed, t.opened, d2.created_at, 'unknown')",
-        dataset_name=target_dataset,
-    )
     superseded_map: dict[str, list[dict[str, Any]]] = {}
     superseding_decision_ids: set[str] = set()
     for row in superseded_raw:
@@ -134,12 +158,6 @@ async def evaluate_graph_health(
 
     # 3. Check CONTRADICTED decisions
     # (d)-[:contradicts]-(d2) where d2 is NOT itself superseded
-    contradicts_raw = await query_graph(
-        "MATCH (d:Decision)-[:contradicts]-(d2:Decision) "
-        "OPTIONAL MATCH (d2)-[:decided_by]->(p2:Person) "
-        "RETURN d.id, d2.id, d2.title, p2.name",
-        dataset_name=target_dataset,
-    )
     contradicted_map: dict[str, list[dict[str, Any]]] = {}
     for row in contradicts_raw:
         if not row or not row[0]:
@@ -160,14 +178,6 @@ async def evaluate_graph_health(
     # 4. Check POSSIBLY STALE
     # A. A person who decided it has left the company:
     # (d)-[:decided_by]->(p:Person) where p.is_active = false or leave_date in the past
-    departed_deciders_raw = await query_graph(
-        "MATCH (d:Decision)-[:decided_by]->(p:Person) "
-        "WHERE p.is_active = false "
-        "   OR (p.leave_date IS NOT NULL AND p.leave_date <> '' AND p.leave_date <= $today) "
-        "RETURN d.id, p.name, p.leave_date",
-        dataset_name=target_dataset,
-        params={"today": ref_date_str},
-    )
     departed_deciders: dict[str, list[dict[str, str]]] = {}
     for row in departed_deciders_raw:
         if not row or not row[0]:

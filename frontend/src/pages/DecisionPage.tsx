@@ -1,18 +1,21 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDecisionDetail } from '../api/hooks';
-import type { DecisionDetail, DecisionRef } from '../api/types';
+import type { DecisionDetail, DecisionRef, SourceRef } from '../api/types';
 import { Avatar } from '../components/Avatar';
 import { CytoscapeGraph } from '../components/CytoscapeGraph';
-import { Badge, LeftBadge } from '../components/entity/Badge';
+import { Badge, ChangedBadge, LeftBadge } from '../components/entity/Badge';
 import { CypherBlock } from '../components/entity/CypherBlock';
 import { DecisionTimeline } from '../components/entity/DecisionTimeline';
 import { Section } from '../components/entity/Section';
 import { PageFrame, Property, PropertyList, SidePanel } from '../components/PageFrame';
+import { useLatestDiff } from '../components/ingest/ingestContext';
+import { SourceDrawer } from '../components/SourceDrawer';
 import { StatusIcon } from '../components/StatusIcon';
 import { SystemChip } from '../components/SystemMark';
 import { btnOutline, btnPrimary } from '../components/ui';
 import { askHref, formatLongDate, questionAboutDecision } from '../utils/format';
+import { isDecisionChanged } from '../utils/changes';
 import { buildLineageGraph } from '../utils/lineage';
 import { decisionHref, exploreHref, personHref, systemHref } from '../utils/links';
 import { healthToStatus, STATUS_LABEL } from '../utils/model';
@@ -34,6 +37,9 @@ const DecisionLinks: React.FC<{ items: DecisionRef[] }> = ({ items }) =>
       ))}
     </span>
   );
+
+const sourceTypeLabel = (type: string) =>
+  type === 'ticket' ? 'Ticket' : type === 'meeting' ? 'Meeting notes' : 'Document';
 
 const Skeleton: React.FC = () => (
   <div role="status" aria-label="Loading decision" className="flex flex-col gap-3 px-5 py-6 min-[900px]:px-8">
@@ -108,6 +114,8 @@ export const DecisionPage: React.FC = () => {
   const { code = '' } = useParams();
   const query = useDecisionDetail(code);
   const d = query.data;
+  const latestDiff = useLatestDiff();
+  const [openSource, setOpenSource] = useState<SourceRef | null>(null);
 
   const header = (
     <>
@@ -207,7 +215,10 @@ export const DecisionPage: React.FC = () => {
     <PageFrame header={header} actions={actions} panel={panel}>
       <div className="flex flex-col gap-6 px-5 py-6 min-[900px]:px-8">
         <header className="flex flex-col gap-2">
-          <span className="text-muted">{d.decision_code}</span>
+          <span className="flex items-center gap-2 text-muted">
+            {d.decision_code}
+            {isDecisionChanged(latestDiff, d.decision_code) && <ChangedBadge />}
+          </span>
           <h1 className="m-0 text-[20px] font-semibold leading-tight">{d.title}</h1>
           <p className="m-0 flex items-start gap-2 text-text-2">
             <StatusIcon status={status} className="mt-[3px] shrink-0" />
@@ -248,13 +259,26 @@ export const DecisionPage: React.FC = () => {
             {d.sources.length === 0 && <p className="m-0 text-muted">No sources recorded.</p>}
             {d.sources.map((s) => (
               <div key={s.id} className="flex flex-col gap-1 rounded-panel border border-divider px-3 py-2.5">
-                <div>
-                  <span className="font-medium">{s.id}</span>
-                  <span className="text-muted">
-                    {' '}
-                    · {s.type === 'ticket' ? 'Ticket' : 'Meeting notes'}
-                    {s.date && ` · ${formatLongDate(s.date) || s.date}`}
-                  </span>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="font-medium">{s.id}</span>
+                    <span className="text-muted">
+                      {' '}
+                      · {sourceTypeLabel(s.type)}
+                      {s.date && ` · ${formatLongDate(s.date) || s.date}`}
+                    </span>
+                  </div>
+                  {s.text && (
+                    <button
+                      type="button"
+                      className={btnOutline}
+                      aria-haspopup="dialog"
+                      aria-label={`View source ${s.id}`}
+                      onClick={() => setOpenSource(s)}
+                    >
+                      View source
+                    </button>
+                  )}
                 </div>
                 {s.title && s.title !== s.id && <div className="text-muted">{s.title}</div>}
                 {s.quote && <blockquote className="m-0 text-text-2">“{s.quote}”</blockquote>}
@@ -268,6 +292,7 @@ export const DecisionPage: React.FC = () => {
             )}
           </div>
         </Section>
+        <SourceDrawer source={openSource} onClose={() => setOpenSource(null)} />
 
         <Section title="Impact" meta="Within two hops of its systems">
           <div className="flex flex-col gap-4 p-3">

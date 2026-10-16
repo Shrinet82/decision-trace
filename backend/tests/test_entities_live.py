@@ -29,10 +29,20 @@ def test_keycloak_session_decision_lineage():
     assert [x["id"] for x in d["lineage"]["supersedes"]] == [redis["id"]]
     assert keycloak["id"] in [x["id"] for x in d["timeline"]]
     assert d["sources"] and d["sources"][0]["id"] == "TICK-102"
-    assert len(d["cypher"]["queries"]) >= 8
+    assert len(d["cypher"]["queries"]) == 3  # merged and concurrent
+    source = d["sources"][0]
+    assert source["text"] and source["quote"] and source["quote"].lower() in source["text"].lower()
 
     back = client.get(f"/decisions/{redis['decision_code']}").json()
     assert [x["id"] for x in back["lineage"]["superseded_by"]] == [keycloak["id"]]
+
+
+def test_every_source_of_a_two_source_decision_has_its_own_quote():
+    rabbit = _by_title("Adopt RabbitMQ")
+    d = client.get(f"/decisions/{rabbit['decision_code']}").json()
+    assert len(d["sources"]) == 2
+    for source in d["sources"]:
+        assert source["quote"] and source["quote"].lower() in source["text"].lower()
 
 
 def test_kafka_is_contradicted_by_rabbitmq():

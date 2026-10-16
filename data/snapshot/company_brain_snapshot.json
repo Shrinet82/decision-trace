@@ -1,9 +1,9 @@
 {
   "dataset_name": "company_brain",
-  "exported_at": "2026-10-16T15:36:44Z",
+  "exported_at": "2026-10-16T18:59:14Z",
   "falkordb_memory": {
-    "used_memory": 4189616,
-    "used_memory_human": "4.00M",
+    "used_memory": 4909528,
+    "used_memory_human": "4.68M",
     "used_memory_peak_human": "6.79M"
   },
   "nodes_count": 146,
@@ -518,7 +518,8 @@
         "status": "closed",
         "opened": "2026-02-01",
         "closed": "2026-02-03",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "After profiling connection exhaustion on Postgres under peak user load, Alice Vance decided: Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention. System: Redis."
       }
     },
     {
@@ -533,7 +534,8 @@
         "status": "closed",
         "opened": "2026-05-10",
         "closed": "2026-05-12",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "Given recurring operational failover complexity of standalone Redis clusters, Alice Vance decided: Migrate session storage to embedded Keycloak cache. This decision supersedes Migrate session storage from Postgres to Redis cluster. System: Keycloak."
       }
     },
     {
@@ -548,7 +550,8 @@
         "status": "closed",
         "opened": "2026-02-15",
         "closed": "2026-02-18",
-        "system": "Snowflake"
+        "system": "Snowflake",
+        "body": "After evaluating data warehouse capacity for ad-hoc aggregations, Fiona Gallagher decided: Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems. System: Snowflake."
       }
     },
     {
@@ -563,7 +566,8 @@
         "status": "closed",
         "opened": "2026-06-01",
         "closed": "2026-06-04",
-        "system": "ClickHouse"
+        "system": "ClickHouse",
+        "body": "Due to soaring cloud warehouse compute costs and 10x slower p95 reporting queries, Carlos Mendez decided: Migrate analytics reporting queries from Snowflake to ClickHouse cluster. This decision supersedes Adopt Snowflake for analytics ETL queries. System: ClickHouse."
       }
     },
     {
@@ -578,7 +582,8 @@
         "status": "closed",
         "opened": "2026-03-01",
         "closed": "2026-03-04",
-        "system": "Kafka"
+        "system": "Kafka",
+        "body": "To guarantee strictly-ordered replayable message streams across our microservices, Alice Vance decided: Use Kafka for all event messaging across services. System: Kafka."
       }
     },
     {
@@ -593,7 +598,8 @@
         "status": "closed",
         "opened": "2026-04-05",
         "closed": "2026-04-08",
-        "system": "RabbitMQ"
+        "system": "RabbitMQ",
+        "body": "To avoid heavy JVM JVM operational overhead and complex partition management for simple workers, Bob Martin decided: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: Kafka."
       }
     },
     {
@@ -608,7 +614,8 @@
         "status": "closed",
         "opened": "2026-03-12",
         "closed": "2026-03-14",
-        "system": "Vault"
+        "system": "Vault",
+        "body": "Following an internal audit of credentials stored in build configurations, Diana Prince decided: Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets. System: Vault."
       }
     },
     {
@@ -623,7 +630,8 @@
         "status": "closed",
         "opened": "2026-03-25",
         "closed": "2026-03-28",
-        "system": "Datadog"
+        "system": "Datadog",
+        "body": "To enable end-to-end distributed transaction tracing with minimal agent configuration, Kevin Flynn decided: Standardize application traces on Datadog APM across all production services. System: Datadog."
       }
     },
     {
@@ -638,7 +646,8 @@
         "status": "closed",
         "opened": "2026-04-20",
         "closed": "2026-04-22",
-        "system": "Prometheus"
+        "system": "Prometheus",
+        "body": "To achieve standardized Kubernetes metrics collection and alerting, Laura Croft decided: Deploy Prometheus Operator on all Kubernetes staging clusters. System: Prometheus."
       }
     },
     {
@@ -653,7 +662,8 @@
         "status": "closed",
         "opened": "2026-05-02",
         "closed": "2026-05-05",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "After profiling message broker RAM usage during customer broadcast spikes, Ian Malcolm decided: Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications. System: Redis."
       }
     },
     {
@@ -668,7 +678,8 @@
         "status": "closed",
         "opened": "2026-05-22",
         "closed": "2026-05-24",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "To streamline microservice token validation and role-based access control, Julia Roberts decided: Use Keycloak OAuth2 tokens for internal API gateway authentication. System: Keycloak."
       }
     },
     {
@@ -683,7 +694,8 @@
         "status": "closed",
         "opened": "2026-06-15",
         "closed": "2026-06-18",
-        "system": "Postgres"
+        "system": "Postgres",
+        "body": "To leverage native logical replication performance and query pipeline improvements, Evan Wright decided: Upgrade all production Postgres instances to version 16. System: Postgres."
       }
     },
     {
@@ -698,7 +710,8 @@
         "status": "open",
         "opened": "2026-002-14",
         "closed": "2026-002-16",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -713,7 +726,8 @@
         "status": "closed",
         "opened": "2026-003-15",
         "closed": "2026-003-17",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -728,7 +742,8 @@
         "status": "closed",
         "opened": "2026-004-16",
         "closed": "2026-004-18",
-        "system": "Postgres"
+        "system": "Postgres",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -743,7 +758,8 @@
         "status": "closed",
         "opened": "2026-005-17",
         "closed": "2026-005-19",
-        "system": "Prometheus"
+        "system": "Prometheus",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -758,7 +774,8 @@
         "status": "closed",
         "opened": "2026-006-18",
         "closed": "2026-006-20",
-        "system": "Datadog"
+        "system": "Datadog",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -773,7 +790,8 @@
         "status": "closed",
         "opened": "2026-007-19",
         "closed": "2026-007-21",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -788,7 +806,8 @@
         "status": "closed",
         "opened": "2026-008-20",
         "closed": "2026-008-22",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -803,7 +822,8 @@
         "status": "closed",
         "opened": "2026-001-21",
         "closed": "2026-001-23",
-        "system": "Kafka"
+        "system": "Kafka",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -818,7 +838,8 @@
         "status": "closed",
         "opened": "2026-002-22",
         "closed": "2026-002-24",
-        "system": "RabbitMQ"
+        "system": "RabbitMQ",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -833,7 +854,8 @@
         "status": "closed",
         "opened": "2026-003-23",
         "closed": "2026-003-25",
-        "system": "Elasticsearch"
+        "system": "Elasticsearch",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -848,7 +870,8 @@
         "status": "closed",
         "opened": "2026-004-24",
         "closed": "2026-004-26",
-        "system": "Snowflake"
+        "system": "Snowflake",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -863,7 +886,8 @@
         "status": "closed",
         "opened": "2026-005-25",
         "closed": "2026-005-27",
-        "system": "Vault"
+        "system": "Vault",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -878,7 +902,8 @@
         "status": "closed",
         "opened": "2026-006-01",
         "closed": "2026-006-03",
-        "system": "ClickHouse"
+        "system": "ClickHouse",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -893,7 +918,8 @@
         "status": "closed",
         "opened": "2026-007-02",
         "closed": "2026-007-04",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -908,7 +934,8 @@
         "status": "open",
         "opened": "2026-008-03",
         "closed": "2026-008-05",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -923,7 +950,8 @@
         "status": "open",
         "opened": "2026-001-04",
         "closed": "2026-001-06",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -938,7 +966,8 @@
         "status": "closed",
         "opened": "2026-002-05",
         "closed": "2026-002-07",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -953,7 +982,8 @@
         "status": "closed",
         "opened": "2026-003-06",
         "closed": "2026-003-08",
-        "system": "Postgres"
+        "system": "Postgres",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -968,7 +998,8 @@
         "status": "closed",
         "opened": "2026-004-07",
         "closed": "2026-004-09",
-        "system": "Prometheus"
+        "system": "Prometheus",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -983,7 +1014,8 @@
         "status": "closed",
         "opened": "2026-005-08",
         "closed": "2026-005-10",
-        "system": "Datadog"
+        "system": "Datadog",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -998,7 +1030,8 @@
         "status": "closed",
         "opened": "2026-006-09",
         "closed": "2026-006-11",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1013,7 +1046,8 @@
         "status": "closed",
         "opened": "2026-007-10",
         "closed": "2026-007-12",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1028,7 +1062,8 @@
         "status": "closed",
         "opened": "2026-008-11",
         "closed": "2026-008-13",
-        "system": "Kafka"
+        "system": "Kafka",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1043,7 +1078,8 @@
         "status": "closed",
         "opened": "2026-001-12",
         "closed": "2026-001-14",
-        "system": "RabbitMQ"
+        "system": "RabbitMQ",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1058,7 +1094,8 @@
         "status": "closed",
         "opened": "2026-002-13",
         "closed": "2026-002-15",
-        "system": "Elasticsearch"
+        "system": "Elasticsearch",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1073,7 +1110,8 @@
         "status": "closed",
         "opened": "2026-003-14",
         "closed": "2026-003-16",
-        "system": "Snowflake"
+        "system": "Snowflake",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1088,7 +1126,8 @@
         "status": "closed",
         "opened": "2026-004-15",
         "closed": "2026-004-17",
-        "system": "Vault"
+        "system": "Vault",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1103,7 +1142,8 @@
         "status": "closed",
         "opened": "2026-005-16",
         "closed": "2026-005-18",
-        "system": "ClickHouse"
+        "system": "ClickHouse",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1118,7 +1158,8 @@
         "status": "closed",
         "opened": "2026-006-17",
         "closed": "2026-006-19",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1133,7 +1174,8 @@
         "status": "open",
         "opened": "2026-007-18",
         "closed": "2026-007-20",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1148,7 +1190,8 @@
         "status": "open",
         "opened": "2026-008-19",
         "closed": "2026-008-21",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1163,7 +1206,8 @@
         "status": "closed",
         "opened": "2026-001-20",
         "closed": "2026-001-22",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1178,7 +1222,8 @@
         "status": "closed",
         "opened": "2026-002-21",
         "closed": "2026-002-23",
-        "system": "Postgres"
+        "system": "Postgres",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1193,7 +1238,8 @@
         "status": "closed",
         "opened": "2026-003-22",
         "closed": "2026-003-24",
-        "system": "Prometheus"
+        "system": "Prometheus",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1208,7 +1254,8 @@
         "status": "closed",
         "opened": "2026-004-23",
         "closed": "2026-004-25",
-        "system": "Datadog"
+        "system": "Datadog",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1223,7 +1270,8 @@
         "status": "closed",
         "opened": "2026-005-24",
         "closed": "2026-005-26",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1238,7 +1286,8 @@
         "status": "closed",
         "opened": "2026-006-25",
         "closed": "2026-006-27",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1253,7 +1302,8 @@
         "status": "closed",
         "opened": "2026-007-01",
         "closed": "2026-007-03",
-        "system": "Kafka"
+        "system": "Kafka",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1268,7 +1318,8 @@
         "status": "closed",
         "opened": "2026-008-02",
         "closed": "2026-008-04",
-        "system": "RabbitMQ"
+        "system": "RabbitMQ",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1283,7 +1334,8 @@
         "status": "closed",
         "opened": "2026-001-03",
         "closed": "2026-001-05",
-        "system": "Elasticsearch"
+        "system": "Elasticsearch",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1298,7 +1350,8 @@
         "status": "closed",
         "opened": "2026-002-04",
         "closed": "2026-002-06",
-        "system": "Snowflake"
+        "system": "Snowflake",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1313,7 +1366,8 @@
         "status": "closed",
         "opened": "2026-003-05",
         "closed": "2026-003-07",
-        "system": "Vault"
+        "system": "Vault",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1328,7 +1382,8 @@
         "status": "closed",
         "opened": "2026-004-06",
         "closed": "2026-004-08",
-        "system": "ClickHouse"
+        "system": "ClickHouse",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1343,7 +1398,8 @@
         "status": "closed",
         "opened": "2026-005-07",
         "closed": "2026-005-09",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1358,7 +1414,8 @@
         "status": "open",
         "opened": "2026-006-08",
         "closed": "2026-006-10",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1373,7 +1430,8 @@
         "status": "open",
         "opened": "2026-007-09",
         "closed": "2026-007-11",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1388,7 +1446,8 @@
         "status": "closed",
         "opened": "2026-008-10",
         "closed": "2026-008-12",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1403,7 +1462,8 @@
         "status": "closed",
         "opened": "2026-001-11",
         "closed": "2026-001-13",
-        "system": "Postgres"
+        "system": "Postgres",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1418,7 +1478,8 @@
         "status": "closed",
         "opened": "2026-002-12",
         "closed": "2026-002-14",
-        "system": "Prometheus"
+        "system": "Prometheus",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1433,7 +1494,8 @@
         "status": "closed",
         "opened": "2026-003-13",
         "closed": "2026-003-15",
-        "system": "Datadog"
+        "system": "Datadog",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1448,7 +1510,8 @@
         "status": "closed",
         "opened": "2026-004-14",
         "closed": "2026-004-16",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1463,7 +1526,8 @@
         "status": "closed",
         "opened": "2026-005-15",
         "closed": "2026-005-17",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1478,7 +1542,8 @@
         "status": "closed",
         "opened": "2026-006-16",
         "closed": "2026-006-18",
-        "system": "Kafka"
+        "system": "Kafka",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1493,7 +1558,8 @@
         "status": "closed",
         "opened": "2026-007-17",
         "closed": "2026-007-19",
-        "system": "RabbitMQ"
+        "system": "RabbitMQ",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1508,7 +1574,8 @@
         "status": "closed",
         "opened": "2026-008-18",
         "closed": "2026-008-20",
-        "system": "Elasticsearch"
+        "system": "Elasticsearch",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1523,7 +1590,8 @@
         "status": "closed",
         "opened": "2026-001-19",
         "closed": "2026-001-21",
-        "system": "Snowflake"
+        "system": "Snowflake",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1538,7 +1606,8 @@
         "status": "closed",
         "opened": "2026-002-20",
         "closed": "2026-002-22",
-        "system": "Vault"
+        "system": "Vault",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1553,7 +1622,8 @@
         "status": "closed",
         "opened": "2026-003-21",
         "closed": "2026-003-23",
-        "system": "ClickHouse"
+        "system": "ClickHouse",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1568,7 +1638,8 @@
         "status": "closed",
         "opened": "2026-004-22",
         "closed": "2026-004-24",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1583,7 +1654,8 @@
         "status": "open",
         "opened": "2026-005-23",
         "closed": "2026-005-25",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1598,7 +1670,8 @@
         "status": "open",
         "opened": "2026-006-24",
         "closed": "2026-006-26",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1613,7 +1686,8 @@
         "status": "closed",
         "opened": "2026-007-25",
         "closed": "2026-007-27",
-        "system": "Kubernetes"
+        "system": "Kubernetes",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1628,7 +1702,8 @@
         "status": "closed",
         "opened": "2026-008-01",
         "closed": "2026-008-03",
-        "system": "Postgres"
+        "system": "Postgres",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1643,7 +1718,8 @@
         "status": "closed",
         "opened": "2026-001-02",
         "closed": "2026-001-04",
-        "system": "Prometheus"
+        "system": "Prometheus",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1658,7 +1734,8 @@
         "status": "closed",
         "opened": "2026-002-03",
         "closed": "2026-002-05",
-        "system": "Datadog"
+        "system": "Datadog",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1673,7 +1750,8 @@
         "status": "closed",
         "opened": "2026-003-04",
         "closed": "2026-003-06",
-        "system": "Keycloak"
+        "system": "Keycloak",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1688,7 +1766,8 @@
         "status": "closed",
         "opened": "2026-004-05",
         "closed": "2026-004-07",
-        "system": "Redis"
+        "system": "Redis",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1703,7 +1782,8 @@
         "status": "closed",
         "opened": "2026-005-06",
         "closed": "2026-005-08",
-        "system": "Kafka"
+        "system": "Kafka",
+        "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
     },
     {
@@ -1716,7 +1796,8 @@
         "title": "Q1 Infrastructure Kickoff",
         "date": "2026-01-15",
         "meeting_date": "2026-01-15",
-        "file_name": "2026-01-15_infrastructure_kickoff.md"
+        "file_name": "2026-01-15_infrastructure_kickoff.md",
+        "body": "Meeting: Q1 Infrastructure Kickoff\nDate: 2026-01-15\nAttended by: Alice Vance, Bob Martin, Laura Croft, Kevin Flynn\nNotes: Reviewed OKRs for Q1. Focus will be on database connection stability and zero-trust auth groundwork."
       }
     },
     {
@@ -1729,7 +1810,8 @@
         "title": "IAM Architecture Modernization",
         "date": "2026-02-10",
         "meeting_date": "2026-02-10",
-        "file_name": "2026-02-10_iam_modernization.md"
+        "file_name": "2026-02-10_iam_modernization.md",
+        "body": "Meeting: IAM Architecture Modernization\nDate: 2026-02-10\nAttended by: Julia Roberts, Diana Prince, Alice Vance\nNotes: Evaluated Okta, Auth0, and self-hosted Keycloak. Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints. System: Keycloak."
       }
     },
     {
@@ -1742,7 +1824,8 @@
         "title": "Data Platform Quarterly Review",
         "date": "2026-03-05",
         "meeting_date": "2026-03-05",
-        "file_name": "2026-03-05_data_platform_review.md"
+        "file_name": "2026-03-05_data_platform_review.md",
+        "body": "Meeting: Data Platform Quarterly Review\nDate: 2026-03-05\nAttended by: Carlos Mendez, Fiona Gallagher, Nina Simone\nNotes: Discussed expanding ETL streaming jobs and real-time dashboard latency requirements."
       }
     },
     {
@@ -1755,7 +1838,8 @@
         "title": "Observability Platform Alignment",
         "date": "2026-04-12",
         "meeting_date": "2026-04-12",
-        "file_name": "2026-04-12_observability_sync.md"
+        "file_name": "2026-04-12_observability_sync.md",
+        "body": "Meeting: Observability Platform Alignment\nDate: 2026-04-12\nAttended by: Kevin Flynn, Laura Croft, Diana Prince\nNotes: Given escalating vendor licensing costs of proprietary APM tools, Kevin Flynn decided: Migrate application metrics from Datadog to Prometheus Operator. This decision supersedes Standardize application traces on Datadog APM across all production services. System: Prometheus."
       }
     },
     {
@@ -1768,7 +1852,8 @@
         "title": "Core Messaging Architecture Sync",
         "date": "2026-05-18",
         "meeting_date": "2026-05-18",
-        "file_name": "2026-05-18_messaging_strategy.md"
+        "file_name": "2026-05-18_messaging_strategy.md",
+        "body": "Meeting: Core Messaging Architecture Sync\nDate: 2026-05-18\nAttended by: Bob Martin, Alice Vance, Ian Malcolm\nNotes: Re-evaluated messaging brokers for backend services. Bob Martin reiterated: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: RabbitMQ."
       }
     },
     {
@@ -1781,7 +1866,8 @@
         "title": "Security Architecture Review",
         "date": "2026-06-08",
         "meeting_date": "2026-06-08",
-        "file_name": "2026-06-08_secrets_management.md"
+        "file_name": "2026-06-08_secrets_management.md",
+        "body": "Meeting: Security Architecture Review\nDate: 2026-06-08\nAttended by: Diana Prince, Julia Roberts, Evan Wright\nNotes: Evaluated database credential rotation. Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials. System: Vault."
       }
     },
     {
@@ -1794,7 +1880,8 @@
         "title": "Search Infrastructure Review",
         "date": "2026-07-14",
         "meeting_date": "2026-07-14",
-        "file_name": "2026-07-14_search_infrastructure_review.md"
+        "file_name": "2026-07-14_search_infrastructure_review.md",
+        "body": "Meeting: Search Infrastructure Review\nDate: 2026-07-14\nAttended by: Alice Vance, Laura Croft, Carlos Mendez\nNotes: Discussed orphaned Elasticsearch cluster. The original system owner, Marcus Aurelius, left the company on 2025-11-30. System ownership needs reassignment to Core Infrastructure."
       }
     },
     {
@@ -1807,7 +1894,8 @@
         "title": "Container Platform Strategy",
         "date": "2026-08-20",
         "meeting_date": "2026-08-20",
-        "file_name": "2026-08-20_container_platform_upgrade.md"
+        "file_name": "2026-08-20_container_platform_upgrade.md",
+        "body": "Meeting: Container Platform Strategy\nDate: 2026-08-20\nAttended by: Laura Croft, George Clark, Oliver Queen\nNotes: Evaluated Kubernetes version lifecycle. Laura Croft decided: Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers. System: Kubernetes."
       }
     },
     {
@@ -1820,7 +1908,8 @@
         "title": "Developer Experience Sync",
         "date": "2026-09-10",
         "meeting_date": "2026-09-10",
-        "file_name": "2026-09-10_dev_experience_sync.md"
+        "file_name": "2026-09-10_dev_experience_sync.md",
+        "body": "Meeting: Developer Experience Sync\nDate: 2026-09-10\nAttended by: Hannah Abbott, George Clark, Oliver Queen\nNotes: Evaluated monorepo build caches and automated PR previews."
       }
     },
     {
@@ -1833,7 +1922,8 @@
         "title": "Database Reliability Working Group",
         "date": "2026-09-28",
         "meeting_date": "2026-09-28",
-        "file_name": "2026-09-28_database_reliability.md"
+        "file_name": "2026-09-28_database_reliability.md",
+        "body": "Meeting: Database Reliability Working Group\nDate: 2026-09-28\nAttended by: Evan Wright, Alice Vance, Carlos Mendez\nNotes: Reviewed Postgres 16 upgrade progress and autovacuum tuning metrics."
       }
     },
     {
@@ -1846,7 +1936,8 @@
         "title": "Q4 Engineering Roadmapping",
         "date": "2026-10-02",
         "meeting_date": "2026-10-02",
-        "file_name": "2026-10-02_q4_planning.md"
+        "file_name": "2026-10-02_q4_planning.md",
+        "body": "Meeting: Q4 Engineering Roadmapping\nDate: 2026-10-02\nAttended by: Alice Vance, Carlos Mendez, Diana Prince, Hannah Abbott\nNotes: Finalized high-priority initiatives for Q4: ClickHouse analytics migration and Vault dynamic database secrets."
       }
     },
     {
@@ -1859,7 +1950,8 @@
         "title": "Cloud Cost Optimization Taskforce",
         "date": "2026-10-10",
         "meeting_date": "2026-10-10",
-        "file_name": "2026-10-10_cloud_cost_optimization.md"
+        "file_name": "2026-10-10_cloud_cost_optimization.md",
+        "body": "Meeting: Cloud Cost Optimization Taskforce\nDate: 2026-10-10\nAttended by: Laura Croft, Fiona Gallagher, Bob Martin\nNotes: Reviewed monthly cloud spend reductions achieved by decommissioning Snowflake warehouses in favor of ClickHouse."
       }
     },
     {
@@ -4041,7 +4133,9 @@
     {
       "src_export_id": 129,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache."
+      },
       "tgt_export_id": 38
     },
     {
@@ -4065,7 +4159,9 @@
     {
       "src_export_id": 130,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems."
+      },
       "tgt_export_id": 39
     },
     {
@@ -4083,7 +4179,9 @@
     {
       "src_export_id": 131,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention."
+      },
       "tgt_export_id": 37
     },
     {
@@ -4101,7 +4199,9 @@
     {
       "src_export_id": 132,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Use Kafka for all event messaging across services."
+      },
       "tgt_export_id": 41
     },
     {
@@ -4119,7 +4219,9 @@
     {
       "src_export_id": 133,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster."
+      },
       "tgt_export_id": 40
     },
     {
@@ -4143,7 +4245,9 @@
     {
       "src_export_id": 134,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets."
+      },
       "tgt_export_id": 43
     },
     {
@@ -4161,13 +4265,17 @@
     {
       "src_export_id": 135,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "To avoid heavy JVM JVM operational overhead and complex partition management for simple workers, Bob Martin decided: Use RabbitMQ for all event messaging across services."
+      },
       "tgt_export_id": 42
     },
     {
       "src_export_id": 135,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Bob Martin reiterated: Use RabbitMQ for all event messaging across services."
+      },
       "tgt_export_id": 121
     },
     {
@@ -4191,7 +4299,9 @@
     {
       "src_export_id": 136,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Standardize application traces on Datadog APM across all production services."
+      },
       "tgt_export_id": 44
     },
     {
@@ -4209,7 +4319,9 @@
     {
       "src_export_id": 137,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Deploy Prometheus Operator on all Kubernetes staging clusters."
+      },
       "tgt_export_id": 45
     },
     {
@@ -4227,7 +4339,9 @@
     {
       "src_export_id": 138,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications."
+      },
       "tgt_export_id": 46
     },
     {
@@ -4245,7 +4359,9 @@
     {
       "src_export_id": 139,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication."
+      },
       "tgt_export_id": 47
     },
     {
@@ -4263,7 +4379,9 @@
     {
       "src_export_id": 140,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Upgrade all production Postgres instances to version 16."
+      },
       "tgt_export_id": 48
     },
     {
@@ -4281,7 +4399,9 @@
     {
       "src_export_id": 141,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Migrate application metrics from Datadog to Prometheus Operator."
+      },
       "tgt_export_id": 120
     },
     {
@@ -4305,7 +4425,9 @@
     {
       "src_export_id": 142,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints."
+      },
       "tgt_export_id": 118
     },
     {
@@ -4323,7 +4445,9 @@
     {
       "src_export_id": 143,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers."
+      },
       "tgt_export_id": 124
     },
     {
@@ -4359,7 +4483,9 @@
     {
       "src_export_id": 144,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "decommissioning Snowflake warehouses in favor of ClickHouse."
+      },
       "tgt_export_id": 128
     },
     {
@@ -4377,7 +4503,9 @@
     {
       "src_export_id": 145,
       "type": "based_on",
-      "properties": {},
+      "properties": {
+        "quote": "Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials."
+      },
       "tgt_export_id": 122
     }
   ]

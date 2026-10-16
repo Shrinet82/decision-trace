@@ -4,6 +4,7 @@ const TONES = {
   neutral: 'border-border text-text-2',
   stale: 'border-[#EBD3A6] bg-[#FDF8EE] text-status-stale-text',
   conflict: 'border-status-conflict-border bg-status-conflict-bg text-status-conflict-text',
+  accent: 'border-[#C9CDF3] bg-selected text-accent',
 } as const;
 
 export const Badge: React.FC<{
@@ -23,5 +24,12 @@ export const Badge: React.FC<{
 export const LeftBadge: React.FC<{ leaveDate?: string | null }> = ({ leaveDate }) => (
   <Badge tone="stale" title={leaveDate ? `Left on ${leaveDate}` : 'Has left the company'}>
     Left company
+  </Badge>
+);
+
+/** Marks an entity touched by the latest ingest. */
+export const ChangedBadge: React.FC = () => (
+  <Badge tone="accent" title="Changed by the latest ingested source">
+    Changed just now
   </Badge>
 );

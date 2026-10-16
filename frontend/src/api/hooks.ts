@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type QueryClient } from '@tanstack/react-query';
 import {
   ApiError,
   askQuestion,
@@ -6,12 +6,14 @@ import {
   getGraph,
   getPerson,
   getSystem,
+  listChanges,
   listDecisions,
   listPeople,
   listSystems,
 } from './client';
 import type {
   AskResponse,
+  ChangeEntry,
   DecisionDetail,
   DecisionSummary,
   GraphResponse,
@@ -92,5 +94,35 @@ export function usePerson(name: string | undefined) {
     enabled: Boolean(name),
     staleTime: FIVE_MINUTES,
     retry: (count, error) => error.status !== 404 && count < 1,
+  });
+}
+
+/** The change log (ingests and resets), newest first. */
+export function useChanges(limit = 20) {
+  return useQuery<ChangeEntry[], ApiError>({
+    queryKey: ['changes', limit],
+    queryFn: () => listChanges(limit),
+    staleTime: 30_000,
+    retry: false,
+  });
+}
+
+/** First query-key segments whose data an ingest or a reset can change. */
+export const GRAPH_QUERY_KEYS = [
+  'decisions',
+  'decision',
+  'systems',
+  'system',
+  'people',
+  'person',
+  'graph',
+  'changes',
+] as const;
+
+/** Refetch everything derived from the graph after an ingest or reset. */
+export function invalidateGraphQueries(queryClient: QueryClient): Promise<void> {
+  const keys = new Set<string>(GRAPH_QUERY_KEYS);
+  return queryClient.invalidateQueries({
+    predicate: (query) => keys.has(String(query.queryKey[0])),
   });
 }

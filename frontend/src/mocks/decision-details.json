@@ -1217,7 +1217,8 @@
     "id": "TICK-105",
     "title": "Need enterprise event bus for asynchronous order processing",
     "date": "2026-03-04",
-    "quote": "Use Kafka for all event messaging across services."
+    "quote": "Use Kafka for all event messaging across services.",
+    "text": "Need enterprise event bus for asynchronous order processing.\n\nOrder processing fans out to billing, fulfilment and notifications. Point-to-point HTTP calls are timing out under peak load and retries create duplicate orders.\n\nProposal from Alice Vance: use Kafka for all event messaging across services. Kafka gives us durable, replayable topics and consumer groups per downstream team."
    }
   ],
   "supersedes": [],
@@ -2231,7 +2232,8 @@
     "id": "Core Messaging Architecture Sync",
     "title": "Core Messaging Architecture Sync",
     "date": "2026-05-18",
-    "quote": null
+    "quote": "Use RabbitMQ for all event messaging across services.",
+    "text": "Core Messaging Architecture Sync, 2026-05-18.\nAttendees: Bob Martin, Alice Vance, Ian Malcolm.\n\nBob Martin reiterated: Use RabbitMQ for all event messaging across services. The team already runs RabbitMQ for background jobs and its routing covers the current pub/sub needs.\nAlice Vance noted this conflicts with the earlier Kafka decision for order events. No resolution recorded."
    }
   ],
   "supersedes": [],
@@ -3670,7 +3672,8 @@
     "id": "TICK-102",
     "title": "Redis session cluster operational maintenance and failover complexity",
     "date": "2026-05-12",
-    "quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache."
+    "quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache.",
+    "text": "Redis session cluster operational maintenance and failover complexity.\n\nThe Redis session cluster needs manual failover during every maintenance window, and two incidents this quarter came from replica lag after a failover. Keeping a separate cluster only for sessions doubles the on-call surface.\n\nAlice Vance decided: Migrate session storage to embedded Keycloak cache. Sessions already originate in Keycloak, so the embedded Infinispan cache removes the extra hop and the separate cluster."
    }
   ],
   "supersedes": [

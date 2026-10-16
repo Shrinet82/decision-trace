@@ -112,9 +112,12 @@ class SourceDetail(BaseModel):
     quote: Optional[str] = Field(
         default=None,
         description=(
-            "Verbatim evidence quote. Quotes are stored per decision, so this is set only when the "
-            "decision has a single source; otherwise see DecisionDetail.evidence_quote."
+            "Verbatim quote from this source, stored on the BASED_ON edge. Falls back to the "
+            "decision-level quote only when it is found in this source's text or there is one source."
         ),
+    )
+    text: Optional[str] = Field(
+        default=None, description="Verbatim body of the ticket or meeting note (first 1,500 chars)"
     )
 
 

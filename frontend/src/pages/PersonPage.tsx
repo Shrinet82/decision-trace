@@ -2,14 +2,16 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { usePerson } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
-import { Badge, LeftBadge } from '../components/entity/Badge';
+import { Badge, ChangedBadge, LeftBadge } from '../components/entity/Badge';
 import { CypherBlock } from '../components/entity/CypherBlock';
 import { DecisionTimeline } from '../components/entity/DecisionTimeline';
 import { DetailSkeleton, LoadError } from '../components/entity/EntityStates';
 import { Section } from '../components/entity/Section';
 import { PageFrame, Property, PropertyList, SidePanel } from '../components/PageFrame';
+import { useLatestDiff } from '../components/ingest/ingestContext';
 import { SystemSquare } from '../components/SystemMark';
 import { btnPrimary } from '../components/ui';
+import { isPersonChanged } from '../utils/changes';
 import { askHref, formatLongDate } from '../utils/format';
 import { systemHref } from '../utils/links';
 
@@ -17,6 +19,7 @@ export const PersonPage: React.FC = () => {
   const { name = '' } = useParams();
   const query = usePerson(name);
   const p = query.data;
+  const latestDiff = useLatestDiff();
 
   const header = (
     <>
@@ -68,6 +71,7 @@ export const PersonPage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="m-0 text-[20px] font-semibold">{p.name}</h1>
               {p.departed && <LeftBadge leaveDate={p.leave_date} />}
+              {isPersonChanged(latestDiff, p.name) && <ChangedBadge />}
             </div>
             <span className="text-muted">{[p.role, ...p.teams].filter(Boolean).join(' · ')}</span>
           </div>

@@ -288,22 +288,24 @@ async def _save_verified_decision(
             params={"title": title, "system": system},
         )
 
-    # 4. Link based_on Ticket or Meeting
+    # 4. Link based_on Ticket or Meeting; the quote came from this source, so store it on the edge
     if item["type"] == "ticket":
         await query_graph(
             "MATCH (d:Decision {title: $title}) "
             "MERGE (t:Ticket {ticket_id: $ticket_id}) "
-            "MERGE (d)-[:based_on]->(t)",
+            "MERGE (d)-[r:based_on]->(t) "
+            "SET r.quote = $quote",
             dataset_name=dataset_name,
-            params={"title": title, "ticket_id": item["id"]},
+            params={"title": title, "ticket_id": item["id"], "quote": evidence_quote},
         )
     elif item["type"] == "meeting":
         await query_graph(
             "MATCH (d:Decision {title: $title}) "
             "MERGE (m:Meeting {title: $meeting_title}) "
-            "MERGE (d)-[:based_on]->(m)",
+            "MERGE (d)-[r:based_on]->(m) "
+            "SET r.quote = $quote",
             dataset_name=dataset_name,
-            params={"title": title, "meeting_title": item["id"]},
+            params={"title": title, "meeting_title": item["id"], "quote": evidence_quote},
         )
 
     return title

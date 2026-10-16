@@ -1,5 +1,6 @@
 """People: decisions made, systems owned (orphaned when they have left), teams and projects."""
 
+import asyncio
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -20,6 +21,30 @@ _PEOPLE_QUERY = (
     "OPTIONAL MATCH (p)-[:owns]->(s:System) "
     "OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) "
     "RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)"
+)
+
+
+_PERSON_DECISIONS_QUERY = (
+    "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) "
+    "OPTIONAL MATCH (d)-[:decided_by]->(co:Person) "
+    "WITH d, collect(DISTINCT co.name) AS deciders "
+    "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
+    "RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) "
+    "ORDER BY d.decided_on"
+)
+
+_PERSON_ACTIVITY_QUERY = (
+    "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) "
+    "OPTIONAL MATCH (p)-[:leads]->(lt:Team) "
+    "WITH p, collect(DISTINCT lt.name) AS teams_led "
+    "OPTIONAL MATCH (p)-[:leads]->(lp:Project) "
+    "WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led "
+    "OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) "
+    "WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised "
+    "OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) "
+    "WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned "
+    "OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) "
+    "RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)"
 )
 
 
@@ -64,10 +89,15 @@ async def get_person(
     """A person's decisions (oldest first), systems owned, teams led or joined, and activity."""
     dataset = dataset_name or _settings.DATASET_NAME
     trace = CypherTrace(dataset)
-    rows = await trace.run(
-        "person",
-        _PEOPLE_QUERY.format(where="WHERE toLower(p.name) = toLower($name) "),
-        {"name": name},
+    params = {"name": name}
+    (rows, decision_rows, activity), codes, health = await asyncio.gather(
+        trace.gather(
+            ("person", _PEOPLE_QUERY.format(where="WHERE toLower(p.name) = toLower($name) "), params),
+            ("person_decisions", _PERSON_DECISIONS_QUERY, params),
+            ("person_activity", _PERSON_ACTIVITY_QUERY, params),
+        ),
+        get_decision_codes_cached(dataset),
+        get_health_map(dataset),
     )
     today = _today()
     found = [s for s in (_summary(r, today) for r in rows if r) if s]
@@ -75,19 +105,7 @@ async def get_person(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Person '{name}' not found.")
     person = found[0]
     props = person.pop("_props")
-    person_name = person["name"]
 
-    codes = await get_decision_codes_cached(dataset)
-    health = await get_health_map(dataset)
-    decision_rows = await trace.run(
-        "person_decisions",
-        "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) "
-        "OPTIONAL MATCH (d)-[:decided_by]->(co:Person) "
-        "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
-        "RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) "
-        "ORDER BY d.decided_on",
-        {"name": person_name},
-    )
     decisions = []
     for r in decision_rows:
         if not r or not r[0]:
@@ -105,18 +123,6 @@ async def get_person(
             }
         )
 
-    activity = await trace.run(
-        "person_activity",
-        "MATCH (p:Person {name: $name}) "
-        "OPTIONAL MATCH (p)-[:leads]->(lt:Team) "
-        "OPTIONAL MATCH (p)-[:leads]->(lp:Project) "
-        "OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) "
-        "OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) "
-        "OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) "
-        "RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), "
-        "count(DISTINCT assigned), count(DISTINCT m)",
-        {"name": person_name},
-    )
     act = activity[0] if activity and activity[0] else [[], [], 0, 0, 0]
 
     return PersonDetail(

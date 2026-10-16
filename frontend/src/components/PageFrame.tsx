@@ -1,4 +1,19 @@
 import React from 'react';
+import { Plus } from 'lucide-react';
+import { useIngest } from './ingest/ingestContext';
+import { btnOutline } from './ui';
+
+/** Opens the global "Add source" drawer. Hidden outside the app shell (no ingest context). */
+const AddSourceButton: React.FC = () => {
+  const ingest = useIngest();
+  if (!ingest) return null;
+  return (
+    <button type="button" className={btnOutline} aria-haspopup="dialog" onClick={ingest.openDrawer}>
+      <Plus size={13} aria-hidden="true" />
+      Add source
+    </button>
+  );
+};
 
 export interface PageFrameProps {
   /** Breadcrumb or tab strip shown at the left of the 44px top bar. */
@@ -10,18 +25,26 @@ export interface PageFrameProps {
   children: React.ReactNode;
 }
 
-export const PageFrame: React.FC<PageFrameProps> = ({ header, actions, panel, children }) => (
-  <main id="main-content" tabIndex={-1} className="flex min-w-0 flex-1 flex-col bg-surface">
-    <header className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-divider px-5 py-1">
-      <div className="flex min-w-0 items-center gap-1.5 text-muted">{header}</div>
-      {actions && <div className="flex flex-wrap gap-1.5">{actions}</div>}
-    </header>
-    <div className="flex flex-1 flex-wrap">
-      <div className="min-w-0 flex-[999_1_480px]">{children}</div>
-      {panel}
-    </div>
-  </main>
-);
+export const PageFrame: React.FC<PageFrameProps> = ({ header, actions, panel, children }) => {
+  const ingest = useIngest();
+  return (
+    <main id="main-content" tabIndex={-1} className="flex min-w-0 flex-1 flex-col bg-surface">
+      <header className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-divider px-5 py-1">
+        <div className="flex min-w-0 items-center gap-1.5 text-muted">{header}</div>
+        {(actions || ingest) && (
+          <div className="flex flex-wrap gap-1.5">
+            {actions}
+            <AddSourceButton />
+          </div>
+        )}
+      </header>
+      <div className="flex flex-1 flex-wrap">
+        <div className="min-w-0 flex-[999_1_480px]">{children}</div>
+        {panel}
+      </div>
+    </main>
+  );
+};
 
 export interface SidePanelProps {
   label: string;

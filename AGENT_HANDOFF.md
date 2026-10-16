@@ -51,7 +51,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 | :--- | :--- | :--- | :--- | :--- |
 | **Frontend Web App** | Production | Cloudflare Pages | `https://decision-trace.pages.dev` | React SPA dashboard with graph explorer |
 | **Edge API Proxy** | Production | Cloudflare Pages Functions | `https://decision-trace.pages.dev/api/*` | Hardened reverse proxy to Railway backend |
-| **Backend REST API** | Production | Railway Cloud | `https://decision-trace-api-production.up.railway.app` | FastAPI application (`/health`, `/ask`, `/decisions`, `/decisions/{code}`, `/graph`, `/systems`, `/people`) |
+| **Backend REST API** | Production | Railway Cloud | `https://decision-trace-api-production.up.railway.app` | FastAPI application (`/health`, `/ask`, `/decisions`, `/decisions/{code}`, `/graph`, `/systems`, `/people`, `POST /ingest` (SSE), `POST /ingest/reset`, `/changes`) |
 | **Primary Graph DB** | Production | FalkorDB Cloud | Host: port 62360 (TCP) | FalkorDB instance housing graph topology |
 | **Keepalive Cron** | Automation | GitHub Actions | Scheduled every 6 hours | Pings FalkorDB to prevent cloud free-tier idle sleeping |
 
@@ -70,9 +70,20 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
   * Edges: `assigned_to` 80, `raised_by` 80, `mentions` 80, `attended_by` 38, `based_on` 18, `about_system` 18, `decided_by` 19, `member_of` 15, `owns` 12, `leads` 10, `supersedes` 3, `contradicts` 1.
 * `decided_by` and `about_system` are one edge per person/system. List-valued names such as "A, B and C" are split at extraction (`app/brain/names.py`), and `split_composite_nodes` (`app/brain/reconciliation.py`, CLI `scripts/split_composites.py`) repairs existing graphs. It is idempotent.
 
+### A2. Live ingest and the change log
+* `POST /ingest` streams Server-Sent Events: `step` (reading, extracting_decisions, extracting_people, matching, linking, writing, health), `graph` (mini-graph updates), then `diff` or `error`. Pipeline in `backend/app/ingest/live.py`; it reuses the two-pass extractor prompts, verifies every quote is verbatim in the text, matches names to existing Person/System nodes (no duplicates; phrases like "Kafka for all event messaging" map to Kafka; long non-name phrases never become systems), and asks an LLM judge per (new decision, existing decision on a mentioned system) for supersedes / contradicts / reaffirms / none.
+* Every node and edge it creates has `{demo_ingest_id, ingested_at}`. A person leaving updates `is_active`/`leave_date` on the existing node and records the previous values; this propagates to `decider_departed`, possibly_stale and orphaned systems.
+* `POST /ingest/reset` deletes only tagged items, restores recorded values, and leaves the graph byte-identical to its frozen state (verified by `tests/test_ingest_live.py` with a content hash).
+* The activity log (`GET /changes`) is stored in a separate graph, `<graph>__changes`, so reset never leaves residue in the main graph.
+* Guardrails: 3 ingest/reset requests per minute per IP, one at a time (409 when busy), text 1-5,000 chars, 45 s timeout per LLM call, rollback of tagged data if a run fails mid-write.
+
+### A3. Performance
+* Detail endpoints use at most 3 Cypher statements, run concurrently in worker threads (`query_graph_threaded`, `CypherTrace.gather`). The health map and decision codes are cached for 5 minutes and refreshed in the background every 4 minutes (`_keep_caches_warm` in `main.py`), so requests never pay for them. Responses carry `Server-Timing: app;dur=<ms>`.
+
 ### B. Backup Snapshot
 * **Committed Snapshot File**: `data/snapshot/company_brain_snapshot.json` (146 nodes, 374 edges, 17 decisions; Person 15 and System 12 match `data/GROUND_TRUTH.md`).
 * Re-freeze with `PYTHONPATH=backend python scripts/restore_snapshot.py export company_brain` (read-only).
+* Ticket and Meeting nodes carry `body` (verbatim, first 1,500 chars) and every BASED_ON edge carries its own verbatim `quote`. For an existing graph, `scripts/backfill_source_text.py` adds them in place (idempotent, never deletes).
 * **DANGER**: `scripts/seed.py` and `scripts/restore_snapshot.py restore` call `reset(delete_all_graphs=True)`, which deletes EVERY graph on the instance, including production. Never run them against the live instance without a fresh snapshot and an explicit decision to rebuild.
 * The legacy 49-node test graph `company_brain` and all eval/test graphs have been deleted; the production graph is the only one left.
 
@@ -175,6 +186,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   │   ├── ask.py                # POST /ask endpoint (graph retrieval, one LLM call, citations, primary decision)
 │   │   │   ├── systems.py            # GET /systems, /systems/{name} (owner, orphaned, timeline, people)
 │   │   │   ├── people.py             # GET /people, /people/{name} (decisions, systems owned, teams)
+│   │   │   ├── ingest.py             # POST /ingest (SSE), POST /ingest/reset, GET /changes
 │   │   │   ├── primary.py            # Server-side choice of the answer's primary decision
 │   │   │   ├── decisions.py          # GET /decisions and GET /decisions/{id}
 │   │   │   ├── graph.py              # GET /graph full topology extraction
@@ -192,6 +204,8 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   │   └── models.py             # Graph Node & Relationship Pydantic definitions
 │   │   └── ingest/
 │   │       ├── decisions_extractor.py# Decision extraction & verb-based status derivation
+│   │       ├── live.py               # Live ingest pipeline, diff, reset, change log
+│   │       ├── source_text.py        # Source bodies, quote matching
 │   │       ├── notes_source.py       # Meeting notes ingestion parser
 │   │       ├── tickets_source.py     # Tickets ingestion parser
 │   │       └── sql_source.py         # Relational entities ingestion parser
@@ -223,6 +237,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
     ├── evaluate_holdout.py           # Cold extraction on data/holdout (own dataset)
     ├── evaluate_holdout2.py          # Cold extraction on data/holdout2 (own dataset)
     ├── split_composites.py           # Splits list-valued Person/System nodes (idempotent)
+    ├── backfill_source_text.py       # Adds source bodies + per-source quotes in place (idempotent)
     ├── capture_fixtures.py           # Refreshes frontend/src/mocks from the current backend + graph
     ├── restore_snapshot.py           # export (safe) / restore (DELETES ALL GRAPHS)
     ├── seed.py                       # Full pipeline (DELETES ALL GRAPHS first)

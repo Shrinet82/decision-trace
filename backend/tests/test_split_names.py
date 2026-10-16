@@ -127,3 +127,16 @@ async def test_split_composite_nodes_is_idempotent(monkeypatch):
 
     assert result == {"split": [], "created": []}
     assert (g.nodes, g.edges) == before
+
+
+def test_source_quote_helpers():
+    from app.ingest.source_text import excerpt, quote_in, sentence_stating
+
+    body = "To avoid overhead, Bob Martin decided: Use RabbitMQ for all event messaging across services. System: Kafka."
+    assert quote_in("bob martin DECIDED: use rabbitmq", body)
+    assert not quote_in("Bob Martin reiterated: Use RabbitMQ", body)
+    assert sentence_stating("Adopt RabbitMQ for all event messaging across services", body) == (
+        "To avoid overhead, Bob Martin decided: Use RabbitMQ for all event messaging across services."
+    )
+    assert sentence_stating("Adopt Kafka for all event messaging", body) is None
+    assert excerpt("x" * 2000) == "x" * 1500

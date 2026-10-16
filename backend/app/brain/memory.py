@@ -583,6 +583,27 @@ async def query_graph(
     return await engine.query(query, params or {})
 
 
+async def query_graph_threaded(
+    query: str,
+    dataset_name: Optional[str] = None,
+    params: Optional[dict[str, Any]] = None,
+) -> list[Any]:
+    """query_graph, with the blocking driver call run in a worker thread.
+
+    The FalkorDB client is synchronous, so plain query_graph blocks the event loop and
+    concurrent queries would still run one after another. Use this for queries meant to
+    overlap (asyncio.gather).
+    """
+    engine = await get_graph_engine()
+    target_graph = await resolve_active_graph_name(dataset_name)
+    driver = getattr(engine, "driver", None)
+    if driver and target_graph:
+        graph = driver.select_graph(target_graph)
+        res = await asyncio.to_thread(graph.query, query, params or {})
+        return res.result_set if res.result_set else []
+    return await engine.query(query, params or {})
+
+
 async def get_graph(
     dataset_name: Optional[str] = None, limit: int = 150
 ) -> dict[str, list[dict[str, Any]]]:

@@ -76,3 +76,29 @@ def check_rate_limits(request: Request) -> str:
 def record_llm_call() -> None:
     """Record a completed LLM invocation against the global daily cap."""
     _global_llm_calls.append(time.time())
+
+
+# Live ingest is LLM-heavy and mutates demo data: 3 requests per minute per IP
+_ip_ingest_requests: dict[str, list[float]] = defaultdict(list)
+MAX_INGEST_PER_MIN = 3
+
+
+def check_ingest_rate_limit(request: Request) -> str:
+    """3 ingest/reset requests per minute per IP, plus the global daily LLM cap."""
+    now = time.time()
+    ip = get_client_ip(request)
+    _ip_ingest_requests[ip] = [t for t in _ip_ingest_requests[ip] if now - t < 60.0]
+    if len(_ip_ingest_requests[ip]) >= MAX_INGEST_PER_MIN:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Ingest rate limit: at most {MAX_INGEST_PER_MIN} per minute. Try again shortly.",
+        )
+    global _global_llm_calls
+    _global_llm_calls = [t for t in _global_llm_calls if now - t < 86400.0]
+    if len(_global_llm_calls) >= MAX_GLOBAL_LLM_PER_DAY:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Global daily LLM request quota reached. Please try again tomorrow.",
+        )
+    _ip_ingest_requests[ip].append(now)
+    return ip

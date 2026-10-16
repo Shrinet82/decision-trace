@@ -5,6 +5,7 @@ multi-type 2-hop patterns for impact). Python only merges the result rows into a
 records each query in a CypherTrace so the UI can show exactly what ran.
 """
 
+import asyncio
 import re
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -64,21 +65,6 @@ class _Subgraph:
         return {"nodes": list(self.nodes.values()), "edges": list(self.edges.values())}
 
 
-async def resolve_decision_id(
-    ref: str, trace: CypherTrace, codes: dict[str, str]
-) -> Optional[str]:
-    """Accept a DEC code, a decision id, or an exact title."""
-    if _CODE.match(ref):
-        wanted = ref.upper()
-        return next((d_id for d_id, code in codes.items() if code.upper() == wanted), None)
-    rows = await trace.run(
-        "resolve",
-        "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-        {"ref": ref},
-    )
-    return str(rows[0][0]) if rows and rows[0] and rows[0][0] else None
-
-
 def _ref(
     d_id: str,
     info: dict[str, Any],
@@ -99,85 +85,150 @@ def _ref(
     }
 
 
+_DECISION_QUERY = (
+    "MATCH (d:Decision) WHERE d.id = $id "
+    "OPTIONAL MATCH (d)-[:decided_by]->(p:Person) "
+    "WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders "
+    "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
+    "WITH d, deciders, collect(DISTINCT s.name) AS systems "
+    "OPTIONAL MATCH down = (d)-[:supersedes*1..%(depth)d]->(older:Decision) "
+    "WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes "
+    "OPTIONAL MATCH up = (d)<-[:supersedes*1..%(depth)d]-(newer:Decision) "
+    "WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by "
+    "OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) "
+    "WITH d, deciders, systems, supersedes, superseded_by, "
+    "collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts "
+    "OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) "
+    "RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, "
+    "collect(DISTINCT peer.id)"
+) % {"depth": MAX_CHAIN_DEPTH}
+
+_RELATED_QUERY = (
+    "MATCH (x:Decision) WHERE x.id IN $ids "
+    "OPTIONAL MATCH (x)-[:decided_by]->(p:Person) "
+    "WITH x, collect(DISTINCT p.name) AS deciders "
+    "OPTIONAL MATCH (x)-[:about_system]->(s:System) "
+    "WITH x, deciders, collect(DISTINCT s.name) AS systems "
+    "OPTIONAL MATCH (x)-[r:supersedes|contradicts]->(y:Decision) WHERE y.id IN $lineage "
+    "WITH x, deciders, systems, collect(DISTINCT [type(r), y.id]) AS links "
+    "OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN $lineage "
+    "RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, "
+    "collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])"
+)
+
+_IMPACT_QUERY = (
+    "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) "
+    "WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) "
+    "UNWIND relationships(path) AS r "
+    "RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), "
+    "labels(endNode(r))[0], properties(endNode(r))"
+)
+
+_SOURCE_TEXT_LIMIT = 1500
+
+
+def _pairs(rows: Any) -> list[list[Any]]:
+    """collect([a, b]) yields [null, null] when the OPTIONAL MATCH found nothing; drop those."""
+    return [r for r in (rows or []) if r and r[0] is not None]
+
+
+def _norm(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
+def _source_entry(label: str, props: dict[str, Any], edge: dict[str, Any]) -> dict[str, Any]:
+    is_ticket = label == "Ticket"
+    text = props.get("body") or None
+    return {
+        "type": "ticket" if is_ticket else ("meeting" if label == "Meeting" else "document"),
+        "id": str(props.get("ticket_id") if is_ticket else props.get("title")),
+        "title": props.get("title"),
+        "date": props.get("closed") or props.get("opened") or props.get("date"),
+        "quote": edge.get("quote") or None,
+        "text": text[:_SOURCE_TEXT_LIMIT] if text else None,
+    }
+
+
+def attribute_quotes(sources: list[dict[str, Any]], evidence_quote: Optional[str]) -> None:
+    """Fill missing per-source quotes from the decision-level quote, only where that is safe.
+
+    Per-source quotes come from the BASED_ON edge. If an edge has none, the decision's quote is
+    used for a source whose text contains it, or for the only source. Otherwise it stays unset.
+    """
+    if not evidence_quote:
+        return
+    missing = [s for s in sources if not s.get("quote")]
+    if not missing:
+        return
+    needle = _norm(evidence_quote)
+    containing = [s for s in missing if s.get("text") and needle and needle in _norm(s["text"])]
+    if containing:
+        for s in containing:
+            s["quote"] = evidence_quote
+    elif len(sources) == 1:
+        sources[0]["quote"] = evidence_quote
+
+
 async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) -> Optional[dict]:
-    """Assemble the full decision page payload, or None if the decision does not exist."""
+    """Assemble the full decision page payload, or None if the decision does not exist.
+
+    Three Cypher statements: the decision with its whole lineage (one round trip), then the
+    related decisions' attributes/edges/sources and the impact neighbourhood, concurrently.
+    """
     trace = CypherTrace(dataset_name)
-    codes = await get_decision_codes_cached(dataset_name)
-    health = await get_health_map(dataset_name)
+    codes, health = await asyncio.gather(
+        get_decision_codes_cached(dataset_name), get_health_map(dataset_name)
+    )
     today = _today()
 
-    d_id = await resolve_decision_id(ref, trace, codes)
+    if _CODE.match(ref):
+        wanted = ref.upper()
+        d_id = next((i for i, code in codes.items() if code.upper() == wanted), None)
+    else:
+        by_title = {
+            info.title: i for i, info in health.items() if getattr(info, "title", None)
+        }
+        d_id = ref if ref in codes else by_title.get(ref)
     if not d_id:
         return None
 
     sub = _Subgraph()
 
-    # 1. The decision, its deciders and its systems
-    core = await trace.run(
-        "decision",
-        "MATCH (d:Decision {id: $id}) "
-        "OPTIONAL MATCH (d)-[:decided_by]->(p:Person) "
-        "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
-        "RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), "
-        "collect(DISTINCT s.name)",
-        {"id": d_id},
-    )
+    # 1. The decision, deciders, systems, both supersedes chains, conflicts and timeline
+    core = await trace.run("decision_and_lineage", _DECISION_QUERY, {"id": d_id})
     if not core or not core[0] or not core[0][0]:
         return None
-    d_props: dict[str, Any] = dict(core[0][0])
-    deciders = [
-        {
-            "name": str(p["name"]),
-            "role": p.get("role") or None,
-            "departed": is_departed(p.get("is_active"), p.get("leave_date"), today),
-            "leave_date": p.get("leave_date") or None,
-        }
-        for p in (core[0][1] or [])
-        if p and p.get("name")
-    ]
-    deciders.sort(key=lambda p: p["name"])
-    system_names = sorted({str(s) for s in (core[0][2] or []) if s})
+    d_props, decider_rows, system_rows, down, up, conflict_rows, peers = core[0]
+    d_props = dict(d_props)
+    deciders = sorted(
+        (
+            {
+                "name": str(p["name"]),
+                "role": p.get("role") or None,
+                "departed": is_departed(p.get("is_active"), p.get("leave_date"), today),
+                "leave_date": p.get("leave_date") or None,
+            }
+            for p in (decider_rows or [])
+            if p and p.get("name")
+        ),
+        key=lambda p: p["name"],
+    )
+    system_names = sorted({str(s) for s in (system_rows or []) if s})
+    supersedes_depth: dict[str, int] = {}
+    for x_id, depth in _pairs(down):
+        supersedes_depth[str(x_id)] = min(int(depth), supersedes_depth.get(str(x_id), 99))
+    superseded_by_depth: dict[str, int] = {}
+    for x_id, depth in _pairs(up):
+        superseded_by_depth[str(x_id)] = min(int(depth), superseded_by_depth.get(str(x_id), 99))
+    contradicts_ids = sorted({str(x) for x, outgoing in _pairs(conflict_rows) if outgoing})
+    contradicted_by_ids = sorted({str(x) for x, outgoing in _pairs(conflict_rows) if not outgoing})
+    timeline_ids = {str(x) for x in (peers or []) if x} | {d_id}
 
     focus_key = sub.node("Decision", d_props)
     for p in deciders:
         sub.edge(focus_key, "decided_by", sub.node("Person", {"name": p["name"]}))
     for s in system_names:
         sub.edge(focus_key, "about_system", sub.node("System", {"name": s}))
-
-    # 2. Supersedes chains, followed fully in both directions
-    down = await trace.run(
-        "supersedes_chain",
-        "MATCH path = (d:Decision {id: $id})-[:supersedes*1..%d]->(x:Decision) "
-        "RETURN x.id, min(length(path))" % MAX_CHAIN_DEPTH,
-        {"id": d_id},
-    )
-    up = await trace.run(
-        "superseded_by_chain",
-        "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..%d]-(x:Decision) "
-        "RETURN x.id, min(length(path))" % MAX_CHAIN_DEPTH,
-        {"id": d_id},
-    )
-    supersedes_depth = {str(r[0]): int(r[1]) for r in down if r and r[0]}
-    superseded_by_depth = {str(r[0]): int(r[1]) for r in up if r and r[0]}
-
-    # 3. Contradictions, keeping edge direction
-    conflict_rows = await trace.run(
-        "contradictions",
-        "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) "
-        "RETURN x.id, startNode(r).id = d.id",
-        {"id": d_id},
-    )
-    contradicts_ids = [str(r[0]) for r in conflict_rows if r and r[0] and r[1]]
-    contradicted_by_ids = [str(r[0]) for r in conflict_rows if r and r[0] and not r[1]]
-
-    # 4. Other decisions on the same system(s)
-    timeline_rows = await trace.run(
-        "system_timeline",
-        "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) "
-        "RETURN DISTINCT o.id",
-        {"id": d_id},
-    )
-    timeline_ids = {str(r[0]) for r in timeline_rows if r and r[0]} | {d_id}
 
     lineage_ids = (
         {d_id}
@@ -188,80 +239,44 @@ async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) ->
     )
     all_ids = sorted(lineage_ids | timeline_ids)
 
-    # 5. Attributes of every referenced decision, in one query
-    info_rows = await trace.run(
-        "decision_attributes",
-        "MATCH (x:Decision) WHERE x.id IN $ids "
-        "OPTIONAL MATCH (x)-[:decided_by]->(p:Person) "
-        "OPTIONAL MATCH (x)-[:about_system]->(s:System) "
-        "RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-        {"ids": all_ids},
-    )
+    # 2 + 3. Related decisions (attributes, links, sources) and impact, concurrently
+    calls = [("related_decisions", _RELATED_QUERY, {"ids": all_ids, "lineage": sorted(lineage_ids)})]
+    if system_names:
+        calls.append(("impact", _IMPACT_QUERY, {"systems": system_names}))
+    results = await trace.gather(*calls)
+    related_rows = results[0]
+    impact_rows = results[1] if len(results) > 1 else []
+
     info: dict[str, dict[str, Any]] = {}
-    for r in info_rows:
-        if not r or not r[0]:
+    focus_sources: list[dict[str, Any]] = []
+    for row in related_rows:
+        if not row or not row[0]:
             continue
-        info[str(r[0])] = {
-            "title": r[1],
-            "decided_on": r[2],
-            "deciders": sorted({str(x) for x in (r[3] or []) if x}),
-            "systems": sorted({str(x) for x in (r[4] or []) if x}),
+        x_id, title, decided_on, quote, x_deciders, x_systems, links, sources = row
+        x_id = str(x_id)
+        info[x_id] = {
+            "title": title,
+            "decided_on": decided_on,
+            "deciders": sorted({str(n) for n in (x_deciders or []) if n}),
+            "systems": sorted({str(n) for n in (x_systems or []) if n}),
         }
-        key = sub.node("Decision", {"id": str(r[0]), "title": r[1], "decided_on": r[2]})
-        if str(r[0]) in timeline_ids:
-            for s in info[str(r[0])]["systems"]:
+        key = sub.node("Decision", {"id": x_id, "title": title, "decided_on": decided_on})
+        if x_id in timeline_ids:
+            for s in info[x_id]["systems"]:
                 if s in system_names:
                     sub.edge(key, "about_system", sub.node("System", {"name": s}))
+        for rel, target in _pairs(links):
+            sub.edge(key, str(rel), f"Decision:{target}")
+        for label, props, edge in _pairs(sources):
+            props, edge = dict(props or {}), dict(edge or {})
+            sub.edge(key, "based_on", sub.node(str(label), props))
+            if x_id == d_id and label in ("Ticket", "Meeting", "Document"):
+                focus_sources.append(_source_entry(str(label), props, edge))
 
-    # 6. Supersedes / contradicts edges among the lineage decisions
-    chain_edges = await trace.run(
-        "lineage_edges",
-        "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) "
-        "WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-        {"ids": sorted(lineage_ids)},
-    )
-    for a, rel, b in (r for r in chain_edges if r and len(r) >= 3):
-        sub.edge(f"Decision:{a}", str(rel), f"Decision:{b}")
-
-    # 7. Sources of every lineage decision
-    source_rows = await trace.run(
-        "sources",
-        "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids "
-        "RETURN x.id, labels(src)[0], properties(src)",
-        {"ids": sorted(lineage_ids)},
-    )
-    focus_sources: list[dict[str, Any]] = []
-    for x_id, label, props in (r for r in source_rows if r and len(r) >= 3):
-        props = dict(props or {})
-        label = str(label)
-        sub.edge(f"Decision:{x_id}", "based_on", sub.node(label, props))
-        if str(x_id) == d_id and label in ("Ticket", "Meeting"):
-            focus_sources.append(
-                {
-                    "type": "ticket" if label == "Ticket" else "meeting",
-                    "id": str(props.get("ticket_id") if label == "Ticket" else props.get("title")),
-                    "title": props.get("title"),
-                    "date": props.get("closed") or props.get("opened") or props.get("date"),
-                }
-            )
     evidence_quote = d_props.get("evidence_quote") or None
     focus_sources.sort(key=lambda s: (s["type"] != "ticket", s["id"]))
-    for src in focus_sources:
-        # Quotes are stored per decision; only attribute one when there is a single source
-        src["quote"] = evidence_quote if len(focus_sources) == 1 else None
+    attribute_quotes(focus_sources, evidence_quote)
 
-    # 8. Impact: teams, projects and people within 2 hops of its systems
-    impact_rows: list[Any] = []
-    if system_names:
-        impact_rows = await trace.run(
-            "impact",
-            "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) "
-            "WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) "
-            "UNWIND relationships(path) AS r "
-            "RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), "
-            "labels(endNode(r))[0], properties(endNode(r))",
-            {"systems": system_names},
-        )
     teams: set[str] = set()
     projects: set[str] = set()
     people: dict[str, dict[str, Any]] = {}
