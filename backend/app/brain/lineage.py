@@ -103,22 +103,34 @@ _DECISION_QUERY = (
     "collect(DISTINCT peer.id)"
 ) % {"depth": MAX_CHAIN_DEPTH}
 
-_RELATED_QUERY = (
-    "MATCH (x:Decision) WHERE x.id IN $ids "
-    "OPTIONAL MATCH (x)-[:decided_by]->(p:Person) "
-    "WITH x, collect(DISTINCT p.name) AS deciders "
+# Finds the same decisions as the lineage query on its own (supersedes walk in either direction,
+# conflicts, same-system peers), so all three statements can run in one round trip.
+_RELATED_INDEPENDENT_QUERY = (
+    "MATCH (d:Decision {id: $id}) "
+    "OPTIONAL MATCH (d)-[:supersedes*0..%(depth)d]-(c:Decision) "
+    "WITH d, collect(DISTINCT c) AS chain "
+    "OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) "
+    "WITH d, chain, collect(DISTINCT r) AS rivals "
+    "WITH d, chain + rivals AS lineage "
+    "OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) "
+    "WITH lineage, collect(DISTINCT p) AS peers "
+    "UNWIND (lineage + peers) AS x "
+    "WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids "
+    "OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) "
+    "WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders "
     "OPTIONAL MATCH (x)-[:about_system]->(s:System) "
-    "WITH x, deciders, collect(DISTINCT s.name) AS systems "
-    "OPTIONAL MATCH (x)-[r:supersedes|contradicts]->(y:Decision) WHERE y.id IN $lineage "
-    "WITH x, deciders, systems, collect(DISTINCT [type(r), y.id]) AS links "
-    "OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN $lineage "
+    "WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems "
+    "OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids "
+    "WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links "
+    "OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids "
     "RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, "
     "collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])"
-)
+) % {"depth": MAX_CHAIN_DEPTH}
 
-_IMPACT_QUERY = (
-    "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) "
-    "WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) "
+_IMPACT_BY_DECISION_QUERY = (
+    "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) "
+    "MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) "
+    "WHERE x:Person OR x:Team OR x:Project "
     "UNWIND relationships(path) AS r "
     "RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), "
     "labels(endNode(r))[0], properties(endNode(r))"
@@ -194,8 +206,13 @@ async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) ->
 
     sub = _Subgraph()
 
-    # 1. The decision, deciders, systems, both supersedes chains, conflicts and timeline
-    core = await trace.run("decision_and_lineage", _DECISION_QUERY, {"id": d_id})
+    # One round trip: the decision with its lineage, every related decision (attributes, links,
+    # sources) and the impact neighbourhood, issued concurrently
+    core, related_rows, impact_rows = await trace.gather(
+        ("decision_and_lineage", _DECISION_QUERY, {"id": d_id}),
+        ("related_decisions", _RELATED_INDEPENDENT_QUERY, {"id": d_id}),
+        ("impact", _IMPACT_BY_DECISION_QUERY, {"id": d_id}),
+    )
     if not core or not core[0] or not core[0][0]:
         return None
     d_props, decider_rows, system_rows, down, up, conflict_rows, peers = core[0]
@@ -237,15 +254,6 @@ async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) ->
         | set(contradicts_ids)
         | set(contradicted_by_ids)
     )
-    all_ids = sorted(lineage_ids | timeline_ids)
-
-    # 2 + 3. Related decisions (attributes, links, sources) and impact, concurrently
-    calls = [("related_decisions", _RELATED_QUERY, {"ids": all_ids, "lineage": sorted(lineage_ids)})]
-    if system_names:
-        calls.append(("impact", _IMPACT_QUERY, {"systems": system_names}))
-    results = await trace.gather(*calls)
-    related_rows = results[0]
-    impact_rows = results[1] if len(results) > 1 else []
 
     info: dict[str, dict[str, Any]] = {}
     focus_sources: list[dict[str, Any]] = []
@@ -254,6 +262,9 @@ async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) ->
             continue
         x_id, title, decided_on, quote, x_deciders, x_systems, links, sources = row
         x_id = str(x_id)
+        # The undirected supersedes walk can reach chain siblings; keep only real members
+        if x_id not in lineage_ids and x_id not in timeline_ids:
+            continue
         info[x_id] = {
             "title": title,
             "decided_on": decided_on,
@@ -266,8 +277,9 @@ async def build_decision_detail(ref: str, dataset_name: Optional[str] = None) ->
                 if s in system_names:
                     sub.edge(key, "about_system", sub.node("System", {"name": s}))
         for rel, target in _pairs(links):
-            sub.edge(key, str(rel), f"Decision:{target}")
-        for label, props, edge in _pairs(sources):
+            if str(target) in lineage_ids:
+                sub.edge(key, str(rel), f"Decision:{target}")
+        for label, props, edge in _pairs(sources) if x_id in lineage_ids else []:
             props, edge = dict(props or {}), dict(edge or {})
             sub.edge(key, "based_on", sub.node(str(label), props))
             if x_id == d_id and label in ("Ticket", "Meeting", "Document"):
