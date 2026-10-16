@@ -100,12 +100,15 @@ async def test_custom_extraction_and_reset_deletion():
         assert res["status"] == "success"
 
         # 2. Verify Decision and Person nodes exist in FalkorDB Cloud
-        engine = await get_graph_engine()
-        decisions = await engine.query("MATCH (d:Decision) RETURN d.title")
+        # Query the dataset's own graph, never the engine default (which is the production graph)
+        decisions = await query_graph(
+            "MATCH (d:Decision) RETURN d.title", dataset_name=isolated_dataset
+        )
         assert len(decisions) >= 1
 
-        decided_by = await engine.query(
-            "MATCH (d:Decision)-[:decided_by]->(p:Person) RETURN d.title, p.name"
+        decided_by = await query_graph(
+            "MATCH (d:Decision)-[:decided_by]->(p:Person) RETURN d.title, p.name",
+            dataset_name=isolated_dataset,
         )
         assert len(decided_by) >= 1
         assert any("Dave Miller" in str(row) for row in decided_by)

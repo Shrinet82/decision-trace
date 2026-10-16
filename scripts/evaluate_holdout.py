@@ -113,18 +113,25 @@ async def run_holdout_evaluation(
         dataset_name=dataset_name,
     )
 
-    extracted_decisions: list[dict[str, Any]] = []
+    # One record per decision (the query returns a row per decider x system x source combination)
+    grouped: dict[str, dict[str, Any]] = {}
     for r in d_rows:
-        if r and r[0]:
-            extracted_decisions.append(
-                {
-                    "id": str(r[0]),
-                    "title": str(r[1]) if r[1] else "",
-                    "system": str(r[2]) if r[2] else "",
-                    "decided_by": str(r[3]) if r[3] else "",
-                    "source": str(r[4]) if r[4] else "",
-                }
-            )
+        if not (r and r[0]):
+            continue
+        rec = grouped.setdefault(
+            str(r[0]),
+            {"id": str(r[0]), "title": str(r[1]) if r[1] else "", "systems": [], "deciders": [], "source": ""},
+        )
+        if r[2] and str(r[2]) not in rec["systems"]:
+            rec["systems"].append(str(r[2]))
+        if r[3] and str(r[3]) not in rec["deciders"]:
+            rec["deciders"].append(str(r[3]))
+        if r[4] and not rec["source"]:
+            rec["source"] = str(r[4])
+    extracted_decisions: list[dict[str, Any]] = [
+        {**rec, "system": ", ".join(rec["systems"]), "decided_by": ", ".join(rec["deciders"])}
+        for rec in grouped.values()
+    ]
 
     # 4. Score match using embedding similarity (threshold 0.70)
     expected_titles = [e["title"] for e in EXPECTED_HOLDOUT]
@@ -148,8 +155,7 @@ async def run_holdout_evaluation(
             true_positives += 1
             # Check decider
             if (
-                ext["decided_by"]
-                and ext["decided_by"].lower() in best_gt["decider"].lower()
+                any(d.lower() in best_gt["decider"].lower() for d in ext["deciders"])
             ):
                 decider_correct += 1
             status_str = f"MATCH (sim={best_sim:.2f}) -> [{best_gt['id']}]"

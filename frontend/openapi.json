@@ -451,9 +451,10 @@
         "properties": {
           "question": {
             "type": "string",
+            "maxLength": 500,
             "minLength": 2,
             "title": "Question",
-            "description": "Natural language question to query the Company Brain"
+            "description": "Natural language question to query the Company Brain (max 500 characters)"
           },
           "dataset_name": {
             "anyOf": [
@@ -497,6 +498,18 @@
             "type": "array",
             "title": "People",
             "description": "People referenced in the subgraph"
+          },
+          "primary_decision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Decision Id",
+            "description": "ID of the decision the answer is mainly about (null when nothing was found)"
           },
           "graph_path": {
             "$ref": "#/components/schemas/GraphPath",
@@ -549,6 +562,24 @@
             "type": "string",
             "title": "Id",
             "description": "Unique decision ID"
+          },
+          "decision_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Code",
+            "description": "Stable code, e.g. DEC-07"
+          },
+          "decider_departed": {
+            "type": "boolean",
+            "title": "Decider Departed",
+            "description": "True if any decider has left the company",
+            "default": false
           },
           "title": {
             "type": "string",
@@ -705,6 +736,18 @@
             "title": "Health Reason",
             "description": "Explanation of computed health status"
           },
+          "decision_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Code",
+            "description": "Stable human-readable code, e.g. DEC-07 (by decision date, then title)"
+          },
           "system": {
             "anyOf": [
               {
@@ -715,7 +758,15 @@
               }
             ],
             "title": "System",
-            "description": "System name this decision governs"
+            "description": "System name(s) this decision governs, comma-joined"
+          },
+          "systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems",
+            "description": "Each governed system"
           },
           "decided_by": {
             "anyOf": [
@@ -727,7 +778,21 @@
               }
             ],
             "title": "Decided By",
-            "description": "Person who made the decision"
+            "description": "Person(s) who made the decision, comma-joined"
+          },
+          "deciders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Deciders",
+            "description": "Each person who decided"
+          },
+          "decider_departed": {
+            "type": "boolean",
+            "title": "Decider Departed",
+            "description": "True if any decider has left the company",
+            "default": false
           },
           "decided_on": {
             "anyOf": [

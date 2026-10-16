@@ -3,8 +3,9 @@
 Computes decision health deterministically from graph edges and properties:
 - superseded: incoming supersedes edge (reason: which decision, when)
 - contradicted: contradicts edge with another decision that is not itself superseded (reason: which one, decided by whom)
-- possibly_stale: system owner has left the company (leave_date in past or inactive),
-  or decision older than configurable days with no newer decision about that system
+- possibly_stale: a person who DECIDED it has left the company (leave_date in past or inactive),
+  or the decision is older than a configurable number of days with no newer decision about its
+  system. Superseded and contradicted decisions are never reported as stale.
 - active: none of the above
 """
 
@@ -30,8 +31,12 @@ class DecisionHealthInfo(BaseModel):
     title: str = Field(..., description="Decision title")
     status: HealthStatus = Field(..., description="Computed health status")
     reason: str = Field(..., description="Human-readable justification for the health status")
-    system: Optional[str] = Field(default=None, description="Associated system name")
-    decided_by: Optional[str] = Field(default=None, description="Decider name")
+    system: Optional[str] = Field(default=None, description="Associated system name(s)")
+    decided_by: Optional[str] = Field(default=None, description="Decider name(s)")
+    decider_departed: bool = Field(
+        default=False,
+        description="True if any person who decided this has left the company, whatever its health",
+    )
     details: dict[str, Any] = Field(
         default_factory=dict, description="Structured metadata supporting the health evaluation"
     )
@@ -68,15 +73,16 @@ async def evaluate_graph_health(
     ref_dt = _parse_date(reference_date) or datetime.now(timezone.utc).replace(tzinfo=None)
     ref_date_str = ref_dt.strftime("%Y-%m-%d")
 
-    # 1. Fetch all decisions with their basic attributes, systems, deciders, and dates
+    # 1. Fetch all decisions with their systems, deciders, and dates
     decisions_raw = await query_graph(
         "MATCH (d:Decision) "
         "OPTIONAL MATCH (d)-[:about_system]->(s:System) "
         "OPTIONAL MATCH (d)-[:decided_by]->(p:Person) "
         "OPTIONAL MATCH (d)-[:based_on]->(t:Ticket) "
         "OPTIONAL MATCH (d)-[:based_on]->(m:Meeting) "
-        "RETURN d.id, d.title, s.name, p.name, "
-        "coalesce(d.decided_on, m.date, t.closed, t.opened, d.created_at, '2026-01-01')",
+        "RETURN d.id, d.title, collect(DISTINCT s.name), collect(DISTINCT p.name), "
+        "d.decided_on, collect(DISTINCT m.date), collect(DISTINCT t.closed), "
+        "collect(DISTINCT t.opened), d.created_at",
         dataset_name=target_dataset,
     )
 
@@ -86,16 +92,18 @@ async def evaluate_graph_health(
             continue
         d_id = str(row[0])
         d_title = str(row[1]) if row[1] else "Untitled"
-        s_name = str(row[2]) if row[2] else None
-        p_name = str(row[3]) if row[3] else None
-        d_date_str = str(row[4]) if row[4] else "2026-01-01"
+        systems = sorted({str(x) for x in (row[2] or []) if x})
+        deciders = sorted({str(x) for x in (row[3] or []) if x})
+        candidates = [row[4], *(row[5] or []), *(row[6] or []), *(row[7] or []), row[8]]
+        d_date_str = next((str(c) for c in candidates if c), "2026-01-01")
         d_dt = _parse_date(d_date_str) or datetime(2026, 1, 1)
 
         decisions[d_id] = {
             "id": d_id,
             "title": d_title,
-            "system": s_name,
-            "decided_by": p_name,
+            "systems": systems,
+            "system": ", ".join(systems) or None,
+            "decided_by": ", ".join(deciders) or None,
             "date": d_date_str,
             "datetime": d_dt,
         }
@@ -149,37 +157,33 @@ async def evaluate_graph_health(
             {"id": d2_id, "title": d2_title, "decided_by": d2_decider}
         )
 
-    # 4. Check POSSIBLY STALE:
-    # A. System owner has left the company
-    # (d)-[:about_system]->(s:System)<-[:owns]-(p:Person) where p.is_active = false or leave_date in past
-    departed_owners_raw = await query_graph(
-        "MATCH (d:Decision)-[:about_system]->(s:System)<-[:owns]-(p:Person) "
+    # 4. Check POSSIBLY STALE
+    # A. A person who decided it has left the company:
+    # (d)-[:decided_by]->(p:Person) where p.is_active = false or leave_date in the past
+    departed_deciders_raw = await query_graph(
+        "MATCH (d:Decision)-[:decided_by]->(p:Person) "
         "WHERE p.is_active = false "
         "   OR (p.leave_date IS NOT NULL AND p.leave_date <> '' AND p.leave_date <= $today) "
-        "RETURN d.id, s.name, p.name, p.leave_date",
+        "RETURN d.id, p.name, p.leave_date",
         dataset_name=target_dataset,
         params={"today": ref_date_str},
     )
-    departed_system_owners: dict[str, dict[str, Any]] = {}
-    for row in departed_owners_raw:
+    departed_deciders: dict[str, list[dict[str, str]]] = {}
+    for row in departed_deciders_raw:
         if not row or not row[0]:
             continue
-        d_id = str(row[0])
-        departed_system_owners[d_id] = {
-            "system": str(row[1]),
-            "owner": str(row[2]),
-            "leave_date": str(row[3]) if row[3] else "past",
-        }
+        departed_deciders.setdefault(str(row[0]), []).append(
+            {"person": str(row[1]), "leave_date": str(row[2]) if row[2] else "past"}
+        )
 
     # B. Decision age & system update recency
-    # Group decisions by system to find latest decision date per system
+    # Latest decision date per system, to tell whether a newer decision exists
     system_latest_date: dict[str, datetime] = {}
     for d in decisions.values():
-        sys = d["system"]
-        if sys:
+        for sys_name in d["systems"]:
             dt = d["datetime"]
-            if sys not in system_latest_date or dt > system_latest_date[sys]:
-                system_latest_date[sys] = dt
+            if sys_name not in system_latest_date or dt > system_latest_date[sys_name]:
+                system_latest_date[sys_name] = dt
 
     # 5. Classify each decision with precedence: superseded -> contradicted -> possibly_stale -> active
     health_results: dict[str, DecisionHealthInfo] = {}
@@ -189,6 +193,8 @@ async def evaluate_graph_health(
         sys = d["system"]
         decider = d["decided_by"]
         d_dt = d["datetime"]
+        departed = departed_deciders.get(d_id, [])
+        decider_departed = bool(departed)
 
         # Rule 1: Superseded
         if d_id in superseded_map:
@@ -201,6 +207,7 @@ async def evaluate_graph_health(
                 reason=reason,
                 system=sys,
                 decided_by=decider,
+                decider_departed=decider_departed,
                 details={"superseded_by": superseded_map[d_id]},
             )
             continue
@@ -216,17 +223,18 @@ async def evaluate_graph_health(
                 reason=reason,
                 system=sys,
                 decided_by=decider,
+                decider_departed=decider_departed,
                 details={"contradicted_by": contradicted_map[d_id]},
             )
             continue
 
         # Rule 3: Possibly Stale
-        # Sub-rule 3a: System owner departed
-        if d_id in departed_system_owners:
-            dep_info = departed_system_owners[d_id]
+        # Sub-rule 3a: a decider has left the company
+        if departed:
+            first = departed[0]
             reason = (
-                f"System owner '{dep_info['owner']}' has left the company "
-                f"(leave_date: {dep_info['leave_date']}) for system '{dep_info['system']}'"
+                f"Decider '{first['person']}' has left the company "
+                f"(leave_date: {first['leave_date']})"
             )
             health_results[d_id] = DecisionHealthInfo(
                 id=d_id,
@@ -235,15 +243,18 @@ async def evaluate_graph_health(
                 reason=reason,
                 system=sys,
                 decided_by=decider,
-                details={"owner_departed": dep_info},
+                decider_departed=True,
+                details={"deciders_departed": departed},
             )
             continue
 
         # Sub-rule 3b: Decision older than stale_days with no newer decision for that system
         days_old = (ref_dt - d_dt).days
         if days_old > stale_days:
-            # Check if there is a newer decision for the same system
-            latest_sys_dt = system_latest_date.get(sys or "", d_dt)
+            # Stale only if no newer decision exists for any of its systems
+            latest_sys_dt = max(
+                (system_latest_date.get(name, d_dt) for name in d["systems"]), default=d_dt
+            )
             if latest_sys_dt <= d_dt:
                 reason = (
                     f"Decision is {days_old} days old (older than {stale_days} days) "
@@ -256,6 +267,7 @@ async def evaluate_graph_health(
                     reason=reason,
                     system=sys,
                     decided_by=decider,
+                    decider_departed=False,
                     details={"days_old": days_old, "stale_threshold_days": stale_days},
                 )
                 continue
@@ -265,20 +277,11 @@ async def evaluate_graph_health(
             id=d_id,
             title=title,
             status="active",
-            reason="Active decision with active system ownership and no conflicting or superseding decisions.",
+            reason="Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
             system=sys,
             decided_by=decider,
+            decider_departed=False,
             details={"days_old": max(0, (ref_dt - d_dt).days)},
         )
 
     return health_results
-
-
-async def get_decision_health(
-    decision_id: str,
-    dataset_name: Optional[str] = None,
-    stale_days: int = 180,
-) -> Optional[DecisionHealthInfo]:
-    """Get health status for a specific decision by ID."""
-    all_health = await evaluate_graph_health(dataset_name=dataset_name, stale_days=stale_days)
-    return all_health.get(decision_id)

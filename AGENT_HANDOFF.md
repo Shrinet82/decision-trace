@@ -25,7 +25,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
        ▼ (HTTPS)
 [ Cloudflare Pages: decision-trace.pages.dev ]
        │
-       ├─► Static SPA: React 18 + TypeScript + Vite + Tailwind CSS + Cytoscape.js
+       ├─► Static SPA: React 18 + TypeScript + Vite + Tailwind CSS + Cytoscape.js (Linear-style, light only)
        │
        └─► Cloudflare Pages Functions: Reverse Proxy (`frontend/functions/api/[[path]].ts`)
               │ (Strict path normalization, directory traversal blocking, endpoint whitelist)
@@ -60,41 +60,29 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 ## 3. Database State & Canonical Graph Management
 
 ### A. Active Graph Topology
-* **Active Graph Name**: `c87aa0cf-1c09-5296-8518-a3e8b9a1e744`
+* **Active Graph Name**: `c87aa0cf-1c09-5296-8518-a3e8b9a1e744` (the only graph on the FalkorDB instance).
 * **Configuration Sources**:
-  * Local `.env`: `FALKORDB_GRAPH_NAME="c87aa0cf-1c09-5296-8518-a3e8b9a1e744"` and `DATASET_NAME="c87aa0cf-1c09-5296-8518-a3e8b9a1e744"`
-  * Railway Environment: Configured in service variables for `decision-trace-api`
-  * Backend routing: `backend/app/brain/memory.py` (`resolve_active_graph_name`) explicitly prioritizes `settings.FALKORDB_GRAPH_NAME` over legacy SQLite lookup tables.
-* **Exact Node & Edge Counts**:
-  * **148 Nodes Total**: 17 Decisions, 8 People, 8 Systems, 10 Teams, 10 Projects, 12 Tickets, 12 Meetings, 71 Documents.
-  * **371 Edges Total**: `decided_by`, `about_system`, `based_on`, `supersedes`, `contradicts`, `owns`, `member_of`, etc.
+  * Local `.env`: `FALKORDB_GRAPH_NAME` and `DATASET_NAME` are both the UUID above.
+  * Railway Environment: set by `.github/workflows/deploy-backend.yml`.
+  * Backend routing: `backend/app/brain/memory.py` (`resolve_active_graph_name`) maps the default dataset names (`company_brain`, `DATASET_NAME`) to `FALKORDB_GRAPH_NAME`.
+* **Exact Node & Edge Counts**: **146 nodes, 374 edges**.
+  * Nodes: 17 Decision, 15 Person, 12 System, 4 Team, 6 Project, 80 Ticket, 12 Meeting. (There are no Document nodes.)
+  * Edges: `assigned_to` 80, `raised_by` 80, `mentions` 80, `attended_by` 38, `based_on` 18, `about_system` 18, `decided_by` 19, `member_of` 15, `owns` 12, `leads` 10, `supersedes` 3, `contradicts` 1.
+* `decided_by` and `about_system` are one edge per person/system. List-valued names such as "A, B and C" are split at extraction (`app/brain/names.py`), and `split_composite_nodes` (`app/brain/reconciliation.py`, CLI `scripts/split_composites.py`) repairs existing graphs. It is idempotent.
 
 ### B. Backup Snapshot
-* **Committed Snapshot File**: `data/snapshot/company_brain_snapshot.json`
-* **Rule**: This committed snapshot is the canonical ground-truth backup. Any graph restore must reproduce exactly 148 nodes, 371 edges, and 17 decisions.
-* **49-Node Test Graph Note**: A legacy test graph (`company_brain`, 49 nodes) exists on FalkorDB Cloud. Per instructions, **it must NOT be deleted without explicit confirmation from the user**. Once confirmed, `GRAPH.DELETE company_brain` can be executed, or `GRAPH.COPY` can be used if renaming is desired.
+* **Committed Snapshot File**: `data/snapshot/company_brain_snapshot.json` (146 nodes, 374 edges, 17 decisions; Person 15 and System 12 match `data/GROUND_TRUTH.md`).
+* Re-freeze with `PYTHONPATH=backend python scripts/restore_snapshot.py export company_brain` (read-only).
+* **DANGER**: `scripts/seed.py` and `scripts/restore_snapshot.py restore` call `reset(delete_all_graphs=True)`, which deletes EVERY graph on the instance, including production. Never run them against the live instance without a fresh snapshot and an explicit decision to rebuild.
+* The legacy 49-node test graph `company_brain` and all eval/test graphs have been deleted; the production graph is the only one left.
 
-### C. Decision Status Integrity
-All 17 decisions have been audited against evidence quotes and `data/GROUND_TRUTH.md`:
-* 7 previous mismatches were fixed so that status is derived from quote verbs (`decided`, `adopted`, `standardize`, `migrated` -> `accepted`).
-* Decision statuses in the active graph:
-  1. `TICK-105`: Adopt Kafka for all event messaging (`accepted`)
-  2. `TICK-106`: Adopt RabbitMQ for all event messaging (`accepted`) - *Explicitly contradicts Kafka*
-  3. `TICK-101`: Migrate session storage to Redis (`accepted`) - *Superseded by Keycloak embedded cache*
-  4. `TICK-102`: Migrate session storage to embedded Keycloak cache (`accepted`) - *Supersedes TICK-101*
-  5. `TICK-109`: Deploy Prometheus Operator (`accepted`)
-  6. `2026-04-12 Meeting`: Migrate application metrics to Prometheus Operator (`accepted`)
-  7. `TICK-107`: Adopt HashiCorp Vault (`accepted`)
-  8. `2026-06-08 Meeting`: Rotate database passwords to Vault dynamic secrets (`accepted`)
-  9. `TICK-104`: Migrate analytics reporting to ClickHouse (`accepted`)
-  10. `TICK-103`: Adopt Snowflake for analytics ETL (`accepted`)
-  11. `TICK-110`: Deprecate RabbitMQ in favor of Redis PubSub for notifications (`accepted`)
-  12. `TICK-111`: Standardize on Keycloak OAuth2 / OIDC (`accepted`)
-  13. `2026-10-10 Meeting`: Decommission Snowflake warehouse in favor of ClickHouse (`accepted`)
-  14. `dec_5b196394600e`: Standardize application traces on Datadog APM (`accepted`)
-  15. Plus 3 foundational architectural decisions (`accepted`).
-
----
+### C. Decision Health (live counts)
+* **12 active, 3 superseded, 2 contradicted, 0 possibly stale.**
+* Rules (`backend/app/brain/health.py`), in precedence order: superseded, contradicted, possibly stale, active.
+  * **Possibly stale**: a person who DECIDED it has left (`is_active = false` or a past `leave_date`), or it is older than 180 days with no newer decision about its systems. Superseded and contradicted decisions are never stale.
+  * Every decision also exposes `decider_departed` (true if any decider left), whatever its health. The UI's "decider still on team" check and "decider left the company" hint use it.
+* **Why 0 stale:** no Elasticsearch decision exists in the corpus. The 2026-07-14 meeting note only says ownership "needs reassignment"; it names no decider and no decision verb, and the quote in `data/GROUND_TRUTH_ADDENDUM.md` ("Alice Vance decided: ...") does not appear in the file, so the verified extractor correctly does not emit it. Marcus Aurelius (left 2025-11-30) owns Elasticsearch but decided nothing. The orphaned-system fact is still visible: `evaluate.py` reports it and `/ask "Who owns Elasticsearch?"` states he departed.
+* **Decision codes:** `/decisions`, `/ask` (graph_path Decision nodes) and `/graph` (Decision node properties) carry `decision_code` (`DEC-01`..`DEC-17`), numbered by decision date, then title (`backend/app/brain/codes.py`, computed on read). `/ask` also returns `primary_decision_id`, chosen server-side (`backend/app/api/primary.py`), or null if the answer found nothing.
 
 ## 4. Citation Integrity & Contradiction Resolution
 
@@ -114,19 +102,19 @@ The system prompt in `backend/app/api/ask.py` instructs:
 
 ---
 
-## 5. Live 7 Benchmark Questions Performance
+## 5. Benchmark Questions (frozen in `frontend/src/mocks/ask-*.json`)
 
-All 7 benchmark queries run through `POST https://decision-trace.pages.dev/api/ask` and are mirrored in `frontend/src/mocks/ask-*.json`:
+| # | Question | Result | Citations | Primary decision |
+| :-: | :--- | :--- | :--- | :---: |
+| Q1 | *Why did we choose Kafka over RabbitMQ?* | Surfaces the conflict: both decisions accepted, no one-sided choice. | `TICK-106`, `TICK-105` | DEC-07 |
+| Q2 | *Who owns Elasticsearch?* | Marcus Aurelius, departed 2025-11-30. A pure ownership answer: no citations, no primary decision. | none | none |
+| Q3 | *What replaced Redis for session storage?* | Embedded Keycloak cache replaced Redis for sessions. | `TICK-102`, `TICK-101` | DEC-11 |
+| Q4 | *Who decided to adopt Prometheus?* | Kevin Flynn (metrics migration). | `Observability Platform Alignment`, `TICK-109` | DEC-08 |
+| Q5 | *Why did we choose Vault for secret management?* | Vault dynamic secrets, decided by Diana Prince. | `TICK-107`, `Security Architecture Review` | DEC-05 |
+| Q6 | *Quantum encryption migration plan* | "The answer is not found in the Company Brain." | none | none |
+| Q7 | *Oracle database licensing* | "The answer is not found in the Company Brain." | none | none |
 
-| # | Question | Key Answer Element | Citations | Nodes / Edges | Status |
-| :-: | :--- | :--- | :--- | :---: | :---: |
-| **Q1** | *"Why did we choose Kafka over RabbitMQ?"* | Surfaces conflict: Alice Vance adopted Kafka (`TICK-105`) while Bob Martin adopted RabbitMQ (`TICK-106`, `Core Messaging Sync`). Both accepted; no one-sided choice. | `TICK-106`, `Core Messaging Sync`, `TICK-105`, `TICK-110` | 15 / 17 | Verified |
-| **Q2** | *"Who owns Elasticsearch?"* | States Marcus Aurelius owns Elasticsearch and explicitly notes his departure on 2025-11-30. | `Observability Alignment`, `TICK-104`, `TICK-107`, `TICK-103` | 15 / 15 | Verified |
-| **Q3** | *"What replaced Redis and why?"* | Explains Redis was not replaced overall, but session storage (`TICK-101`) was superseded by embedded Keycloak cache; Redis PubSub adopted for notifications (`TICK-110`). | `TICK-110`, `TICK-101` | 15 / 15 | Verified |
-| **Q4** | *"Who decided Prometheus?"* | Explains Laura Croft decided Prometheus Operator (`TICK-109`) and Kevin Flynn migrated metrics (`Observability Alignment` meeting). | `Observability Alignment`, `TICK-109` | 15 / 14 | Verified |
-| **Q5** | *"Where are secrets stored?"* | Explains HashiCorp Vault dynamic secrets decided by Diana Prince (`TICK-107`, `Security Architecture Review`). | `TICK-107`, `Security Architecture Review` | 14 / 15 | Verified |
-| **Q6** | *"Quantum encryption migration plan"* | Unanswerable: accurately returns *"The answer is not found in the Company Brain."* | `0 citations` | 14 / 15 | Verified |
-| **Q7** | *"Oracle database licensing"* | Unanswerable: accurately returns *"The answer is not found in the Company Brain."* | `0 citations` | 15 / 16 | Verified |
+`/ask` returns only citations the answer text actually references and that come from real `based_on` edges, so an answer that cites nothing carries no sources.
 
 ---
 
@@ -151,21 +139,12 @@ All 7 benchmark queries run through `POST https://decision-trace.pages.dev/api/a
 
 ## 7. Frontend State & Visual Verification
 
-* **Framework**: React 18, Vite 6, TypeScript 5.7, Tailwind CSS 3.4.
-* **Layout**: Professional 240px responsive sidebar, clear hierarchy, high legibility.
-* **Typography**: `@fontsource/overpass` (headings/body) and `@fontsource/overpass-mono` (tickets/code).
-* **Graph Rendering**: Cytoscape.js with `cytoscape-dagre` layout.
-  * Node states: `active`, `superseded`, `contradicted`, and `possibly_stale` (renders distinct dashed ring border).
-  * Graph legend includes explicit "Possibly stale (dashed ring)" indicator.
-* **Accessibility & E2E Testing**:
-  * Automated Axe testing verifies **0 critical or serious WCAG 2.1 AA violations** in both light and dark modes.
-  * All 12 responsive full-page screenshots captured and committed in `frontend/screenshots/`:
-    * `ask-answer-1440-light.png` / `dark`
-    * `ask-answer-1024-light.png` / `dark`
-    * `ask-answer-390-light.png` / `dark`
-    * `ask-not-found-1440-light.png` / `dark`
-    * `ask-not-found-1024-light.png` / `dark`
-    * `ask-not-found-390-light.png` / `dark`
+* **Stack**: React 18, Vite 6, TypeScript 5.7, Tailwind CSS 3.4, TanStack Query, Cytoscape.js.
+* **Design**: Linear-style, light only (Geist via Google Fonts, 13px base). Tokens are in `src/styles/tokens.css`. The mockups are in `frontend/design-ref/`.
+* **Pages**: Ask (`/`), Decisions (`/decisions`), Graph (`/graph`), plus a command palette (Cmd/Ctrl+K). `/sources` is a placeholder.
+* **Data**: `useDecisions`, `useGraph`, `useDecisionDetail`, `useAsk` in `src/api/hooks.ts`. Mock mode (localhost / port 4173) serves frozen fixtures from `src/mocks/`, loaded lazily.
+* **Testing**: Vitest unit tests (54), Playwright journey plus axe on every page at 1440 and 390px (zero serious/critical violations), and `e2e/design-compare.spec.ts`, which renders the mockups next to the app.
+* **Screenshots**: `frontend/screenshots/{ask,decisions,graph}-{1440,390}.png` and `compare-*.png` (design on the left, implementation on the right).
 
 ---
 
@@ -190,39 +169,57 @@ All 7 benchmark queries run through `POST https://decision-trace.pages.dev/api/a
 │   │   ├── main.py                   # FastAPI entrypoint, middleware, CORS, lifespan
 │   │   ├── config.py                 # Pydantic Settings & environment validation
 │   │   ├── api/
-│   │   │   ├── ask.py                # POST /ask endpoint (graph retrieval, LLM Q&A, citations)
+│   │   │   ├── ask.py                # POST /ask endpoint (graph retrieval, one LLM call, citations, primary decision)
+│   │   │   ├── primary.py            # Server-side choice of the answer's primary decision
 │   │   │   ├── decisions.py          # GET /decisions and GET /decisions/{id}
 │   │   │   ├── graph.py              # GET /graph full topology extraction
 │   │   │   ├── health.py             # GET /health healthcheck with FalkorDB ping
 │   │   │   └── rate_limiter.py       # Per-IP rate limiting and daily LLM quota enforcement
 │   │   ├── brain/
 │   │   │   ├── memory.py             # FalkorDB connection, Cognee config, graph queries, retry logic
+│   │   │   ├── codes.py              # Stable DEC-NN decision codes
+│   │   │   ├── names.py              # Splits list-valued names ("A, B and C")
+│   │   │   ├── health.py             # Decision health rules (decider-based staleness)
+│   │   │   ├── reconciliation.py     # Decision dedupe + split_composite_nodes
 │   │   │   └── models.py             # Graph Node & Relationship Pydantic definitions
 │   │   └── ingest/
 │   │       ├── decisions_extractor.py# Decision extraction & verb-based status derivation
 │   │       ├── notes_source.py       # Meeting notes ingestion parser
 │   │       ├── tickets_source.py     # Tickets ingestion parser
 │   │       └── sql_source.py         # Relational entities ingestion parser
-│   └── tests/                        # 28 passing unit tests (test_status_integrity.py, test_api.py, etc.)
+│   └── tests/                        # 39 unit tests + 6 integration tests (pytest -m integration)
 ├── data/
 │   ├── GROUND_TRUTH.md               # Human-curated ground truth for decisions & contradictions
+│   ├── GROUND_TRUTH_ADDENDUM.md      # Genuine unplanted decisions (note: its Elasticsearch quote is not in the source note)
+│   ├── HOLDOUT_TRUTH.md, HOLDOUT2_TRUTH.md  # Ground truth for the two holdout sets
+│   ├── holdout/, holdout2/           # Hand-written holdout tickets and meeting notes
+│   ├── meeting_notes/, tickets.csv   # Main corpus (12 notes, 80 tickets)
+│   ├── company.db                    # SQLite org data (people, teams, systems)
+│   ├── verification_freeze_report.json # Baseline evaluation numbers from the original freeze
 │   ├── snapshot/
-│   │   └── company_brain_snapshot.json # Canonical 148-node / 371-edge / 17-decision graph backup
-│   ├── notes/                        # 12 Markdown meeting notes (IAM, messaging, secrets, etc.)
-│   ├── tickets/                      # 12 Markdown ticket records (TICK-101 through TICK-112)
-│   └── sql/                          # Schema and seed data for relational database
+│   │   └── company_brain_snapshot.json # Canonical 146-node / 374-edge / 17-decision graph backup
 ├── frontend/
 │   ├── functions/api/[[path]].ts     # Cloudflare Pages Functions edge reverse proxy
+│   ├── design-ref/                   # Static design mockups (visual source of truth)
 │   ├── src/
-│   │   ├── api/                      # API client, types, and benchmark mocks
-│   │   ├── components/               # CytoscapeGraph, AppShell, StatusMarker, SourceDrawer, PathAsList
+│   │   ├── api/                      # Client, hooks, types (generated schema.d.ts), mock loader
+│   │   ├── components/               # AppShell, PageFrame, CommandPalette, CytoscapeGraph, StatusIcon, ask/*
 │   │   ├── pages/                    # AskPage, DecisionsPage, GraphPage
-│   │   └── mocks/                    # Saved JSON responses from the live 7 benchmark questions
-│   ├── e2e/                          # Playwright test suite (axe a11y, journey, screenshots)
-│   └── screenshots/                  # 12 committed responsive screenshots (1440, 1024, 390 in light/dark)
+│   │   ├── utils/                    # model, answer, evidence, graphConverter, format
+│   │   ├── mocks/                    # Frozen /ask, /decisions, /decisions/{id}, /graph responses
+│   │   └── test/                     # Vitest unit tests
+│   ├── e2e/                          # Playwright: app.spec.ts (journey, axe, screenshots), design-compare.spec.ts
+│   └── screenshots/                  # ask/decisions/graph at 1440 and 390, plus compare-*.png
 └── scripts/
-    ├── keepalive.py                  # Standalone keepalive script pinging FalkorDB
-    └── seed.py                       # Pipeline script to ingest data into FalkorDB
+    ├── evaluate.py                   # Scores the live graph against data/GROUND_TRUTH.md (read-only)
+    ├── evaluate_holdout.py           # Cold extraction on data/holdout (own dataset)
+    ├── evaluate_holdout2.py          # Cold extraction on data/holdout2 (own dataset)
+    ├── split_composites.py           # Splits list-valued Person/System nodes (idempotent)
+    ├── capture_fixtures.py           # Refreshes frontend/src/mocks from the current backend + graph
+    ├── restore_snapshot.py           # export (safe) / restore (DELETES ALL GRAPHS)
+    ├── seed.py                       # Full pipeline (DELETES ALL GRAPHS first)
+    ├── generate_synthetic_dataset.py # Regenerates data/
+    └── keepalive.py                  # Standalone keepalive script pinging FalkorDB
 ```
 
 ---
@@ -268,20 +265,25 @@ npx playwright test
      CLOUDFLARE_API_KEY="<YOUR_KEY>" CLOUDFLARE_EMAIL="<YOUR_EMAIL>" npx --yes wrangler pages deploy dist --project-name decision-trace --branch main
      ```
 
-### D. Re-running the 7 Live Benchmark Questions
-To query the production Cloudflare Pages proxy and refresh `frontend/src/mocks/ask-*.json`:
+### D. Refreshing the frozen mocks
+After changing the API shape or the data, regenerate the frontend fixtures (read-only against the graph; 7 LLM calls):
 ```bash
-python3 scratch/run_7_questions_live.py
+PYTHONPATH=backend python scripts/capture_fixtures.py
+cd frontend && npm run generate-api   # only if backend schemas changed (needs a fresh frontend/openapi.json)
 ```
+
+### E. Evaluations
+```bash
+PYTHONPATH=backend python scripts/evaluate.py                 # live graph vs data/GROUND_TRUTH.md (read-only)
+BYPASS_EXTRACTION_CACHE=1 PYTHONPATH=backend python scripts/evaluate_holdout.py    # cold extraction, own dataset
+BYPASS_EXTRACTION_CACHE=1 PYTHONPATH=backend python scripts/evaluate_holdout2.py
+```
+Scoring is per decision (rows are grouped by decision id/title). The holdout scripts reset only their own dataset, leave a graph behind, and should be deleted afterwards.
 
 ---
 
-## 10. Open Decisions & Next Steps
+## 10. Open Items
 
-1. **49-Node Test Graph Deletion**:
-   * The 49-node test graph (`company_brain`) on FalkorDB Cloud is currently preserved.
-   * If the user explicitly asks to remove it, run a Cypher command or script to execute `GRAPH.DELETE company_brain`.
-   * If the user wants the 148-node graph to have the name `company_brain`, copy it first: `GRAPH.COPY c87aa0cf-1c09-5296-8518-a3e8b9a1e744 company_brain`, verify counts match (148 nodes, 371 edges), update settings, and only then delete the UUID graph.
-2. **Additional Hackathon Features (Optional)**:
-   * Dedicated `/decisions` list search/filter UI enhancements.
-   * Full-screen interactive Cytoscape graph explorer enhancements.
+1. **Orphaned Elasticsearch has no decision in the corpus** (see 3C). If a stale-by-departed-decider demo is wanted, add a source document in which a departed person decides something; do not edit extraction to invent one.
+2. `scripts/seed.py` and `restore_snapshot.py restore` delete every graph. Consider guarding `reset(delete_all_graphs=True)` behind an explicit confirmation flag.
+3. `/sources` is a placeholder page.

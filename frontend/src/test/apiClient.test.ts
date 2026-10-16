@@ -16,8 +16,9 @@ describe('API Client and Mock Fixtures', () => {
     const res = getMockAskResponse('What replaced Redis for session storage?');
     expect(res.answer).toContain('Keycloak');
     expect(res.citations?.length).toBeGreaterThan(0);
+    expect(res.citations?.some((c) => c.id === 'TICK-102')).toBe(true);
     expect(res.citations?.some((c) => c.id === 'TICK-101')).toBe(true);
-    expect(res.citations?.some((c) => c.id === 'TICK-110')).toBe(true);
+    expect(res.primary_decision_id).toBeTruthy();
   });
 
   it('matches prometheus decision question correctly', () => {

@@ -74,6 +74,7 @@ def test_get_decisions_with_filters():
             reason="Active decision",
             system="Postgres",
             decided_by="Evan Wright",
+            decider_departed=False,
         ),
         "d2": DecisionHealthInfo(
             id="d2",
@@ -86,16 +87,18 @@ def test_get_decisions_with_filters():
     }
 
     mock_rows = [
-        ["d1", "Adopt Postgres 16", "accepted", "Postgres", "Evan Wright", "2026-08-01"],
-        ["d2", "Use Redis for sessions", "accepted", "Redis", "Alice Vance", "2026-02-01"],
+        ["d1", "Adopt Postgres 16", "accepted", ["Postgres"], ["Evan Wright"], "2026-08-01", [], [], [], None],
+        ["d2", "Use Redis for sessions", "accepted", ["Redis"], ["Alice Vance"], "2026-02-01", [], [], [], None],
     ]
 
     with (
         patch("app.api.decisions.evaluate_graph_health", new_callable=AsyncMock) as mock_eval,
         patch("app.api.decisions.query_graph", new_callable=AsyncMock) as mock_query,
+        patch("app.api.decisions.get_decision_codes", new_callable=AsyncMock) as mock_codes,
     ):
         mock_eval.return_value = mock_health
         mock_query.return_value = mock_rows
+        mock_codes.return_value = {"d2": "DEC-01", "d1": "DEC-02"}
 
         # Filter by system
         res_sys = client.get("/decisions?system=Postgres")
@@ -103,6 +106,9 @@ def test_get_decisions_with_filters():
         items = res_sys.json()
         assert len(items) == 1
         assert items[0]["system"] == "Postgres"
+        assert items[0]["systems"] == ["Postgres"]
+        assert items[0]["decision_code"] == "DEC-02"
+        assert items[0]["decider_departed"] is False
         assert items[0]["health"] == "active"
 
         # Filter by health

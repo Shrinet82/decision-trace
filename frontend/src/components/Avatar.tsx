@@ -3,17 +3,19 @@ import { getAvatarTone, getInitials } from '../utils/format';
 
 export interface AvatarProps {
   name?: string | null;
+  /** Tooltip; defaults to the name. */
+  title?: string;
   size?: number;
   /** Inactive people (left the company) render in a muted tone. */
   active?: boolean;
   className?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ name, size = 22, active = true, className = '' }) => {
+export const Avatar: React.FC<AvatarProps> = ({ name, title, size = 22, active = true, className = '' }) => {
   const tone = getAvatarTone(name, active);
   return (
     <span
-      title={name ?? undefined}
+      title={title ?? name ?? undefined}
       aria-hidden="true"
       className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold ${className}`}
       style={{

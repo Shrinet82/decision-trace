@@ -1,5 +1,5 @@
 {
-  "answer": "The Company Brain records show **conflicting accepted decisions** rather than a one-sided choice of Kafka over RabbitMQ. Both technologies were independently adopted for \"all event messaging across services,\" creating a direct contradiction in the decision history:\n\n1.  **Decision to Adopt Kafka:**\n    *   **Status:** Accepted\n    *   **Decided by:** Alice Vance\n    *   **Source Ticket:** TICK-105 (\"Need enterprise event bus for asynchronous order processing\")\n    *   **Rationale:** The decision was driven by the need for an enterprise event bus for asynchronous order processing.\n\n2.  **Decision to Adopt RabbitMQ:**\n    *   **Status:** Accepted\n    *   **Decided by:** Bob Martin\n    *   **Source Ticket:** TICK-106 (\"Lightweight pubsub requirements for async background tasks\")\n    *   **Source Meeting:** Core Messaging Architecture Sync (Date: 2026-05-18)\n    *   **Rationale:** The decision was driven by lightweight pubsub requirements for async background tasks.\n\nThese two decisions explicitly **contradict** each other. The records do not indicate that one decision superseded or rejected the other; instead, both are marked as \"accepted.\" Therefore, the Company Brain does not contain a single definitive reason for choosing Kafka *over* RabbitMQ, but rather documents two separate, conflicting accepted decisions for the same scope (\"all event messaging across services\").\n\nAdditionally, there is a separate accepted decision (TICK-110) to deprecate legacy RabbitMQ clusters in favor of Redis PubSub specifically for *low-volume notifications*, decided by Ian Malcolm, but this does not resolve the broader contradiction regarding general event messaging.",
+  "answer": "Based solely on the provided context, there is no single decision to choose Kafka over RabbitMQ. Instead, the records show two conflicting, accepted decisions.\n\n**Contradiction Found:**\nThe Company Brain contains two directly opposing, accepted decisions for the same purpose (\"all event messaging across services\"):\n\n1.  **Decision to adopt Kafka:** Decided by Alice Vance and recorded in ticket TICK-105. Status: **accepted**. [Contradicts: 'Adopt RabbitMQ for all event messaging across services']\n2.  **Decision to adopt RabbitMQ:** Decided by Bob Martin and recorded in ticket TICK-106 and a meeting on 2026-05-18. Status: **accepted**. [Contradicts: 'Adopt Kafka for all event messaging across services']\n\nTherefore, the context does not show a definitive choice of one over the other; it shows conflicting records where both decisions are marked as accepted.",
   "citations": [
     {
       "type": "ticket",
@@ -7,19 +7,9 @@
       "title": "Lightweight pubsub requirements for async background tasks"
     },
     {
-      "type": "meeting",
-      "id": "Core Messaging Architecture Sync",
-      "title": "Core Messaging Architecture Sync"
-    },
-    {
       "type": "ticket",
       "id": "TICK-105",
       "title": "Need enterprise event bus for asynchronous order processing"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-110",
-      "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
     }
   ],
   "people": [
@@ -28,6 +18,7 @@
     "Ian Malcolm",
     "Kevin Flynn"
   ],
+  "primary_decision_id": "dec_98a223fad745",
   "graph_path": {
     "nodes": [
       {
@@ -36,14 +27,16 @@
         "properties": {
           "title": "Adopt RabbitMQ for all event messaging across services",
           "status": "accepted",
-          "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision."
+          "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision.",
+          "decision_code": "DEC-07"
         }
       },
       {
         "id": "dec_76772c5b323f",
         "label": "Decision",
         "properties": {
-          "title": "Adopt Kafka for all event messaging across services"
+          "title": "Adopt Kafka for all event messaging across services",
+          "decision_code": "DEC-04"
         }
       },
       {
@@ -52,7 +45,8 @@
         "properties": {
           "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
+          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
+          "decision_code": "DEC-10"
         }
       },
       {
@@ -61,7 +55,8 @@
         "properties": {
           "title": "Standardize application traces on Datadog APM across all production services",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology."
+          "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
+          "decision_code": "DEC-06"
         }
       },
       {

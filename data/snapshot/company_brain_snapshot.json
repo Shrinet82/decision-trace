@@ -1,13 +1,13 @@
 {
   "dataset_name": "company_brain",
-  "exported_at": "2026-10-15T10:33:46Z",
+  "exported_at": "2026-10-16T15:36:44Z",
   "falkordb_memory": {
-    "used_memory": 4354848,
-    "used_memory_human": "4.15M",
+    "used_memory": 4189616,
+    "used_memory_human": "4.00M",
     "used_memory_peak_human": "6.79M"
   },
-  "nodes_count": 148,
-  "edges_count": 371,
+  "nodes_count": 146,
+  "edges_count": 374,
   "nodes": [
     {
       "export_id": 0,
@@ -2121,24 +2121,6 @@
     {
       "export_id": 145,
       "labels": [
-        "Person"
-      ],
-      "properties": {
-        "name": "Laura Croft, Fiona Gallagher, Bob Martin"
-      }
-    },
-    {
-      "export_id": 146,
-      "labels": [
-        "System"
-      ],
-      "properties": {
-        "name": "Snowflake, ClickHouse"
-      }
-    },
-    {
-      "export_id": 147,
-      "labels": [
         "Decision"
       ],
       "properties": {
@@ -2156,13 +2138,13 @@
   "edges": [
     {
       "src_export_id": 4,
-      "type": "leads",
+      "type": "member_of",
       "properties": {},
       "tgt_export_id": 0
     },
     {
       "src_export_id": 4,
-      "type": "member_of",
+      "type": "leads",
       "properties": {},
       "tgt_export_id": 0
     },
@@ -2204,13 +2186,13 @@
     },
     {
       "src_export_id": 6,
-      "type": "leads",
+      "type": "member_of",
       "properties": {},
       "tgt_export_id": 1
     },
     {
       "src_export_id": 6,
-      "type": "member_of",
+      "type": "leads",
       "properties": {},
       "tgt_export_id": 1
     },
@@ -2228,13 +2210,13 @@
     },
     {
       "src_export_id": 7,
-      "type": "leads",
+      "type": "member_of",
       "properties": {},
       "tgt_export_id": 2
     },
     {
       "src_export_id": 7,
-      "type": "member_of",
+      "type": "leads",
       "properties": {},
       "tgt_export_id": 2
     },
@@ -2276,13 +2258,13 @@
     },
     {
       "src_export_id": 11,
-      "type": "leads",
+      "type": "member_of",
       "properties": {},
       "tgt_export_id": 3
     },
     {
       "src_export_id": 11,
-      "type": "member_of",
+      "type": "leads",
       "properties": {},
       "tgt_export_id": 3
     },
@@ -2432,13 +2414,13 @@
     },
     {
       "src_export_id": 40,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 6
     },
     {
       "src_export_id": 40,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 6
     },
@@ -2612,13 +2594,13 @@
     },
     {
       "src_export_id": 50,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 50,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -2630,13 +2612,13 @@
     },
     {
       "src_export_id": 51,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 8
     },
     {
       "src_export_id": 51,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 8
     },
@@ -2648,13 +2630,13 @@
     },
     {
       "src_export_id": 52,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 14
     },
     {
       "src_export_id": 52,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 14
     },
@@ -2702,13 +2684,13 @@
     },
     {
       "src_export_id": 55,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 4
     },
     {
       "src_export_id": 55,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 4
     },
@@ -2738,13 +2720,13 @@
     },
     {
       "src_export_id": 57,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 5
     },
     {
       "src_export_id": 57,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 5
     },
@@ -2774,13 +2756,13 @@
     },
     {
       "src_export_id": 59,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 9
     },
     {
       "src_export_id": 59,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 9
     },
@@ -2792,13 +2774,13 @@
     },
     {
       "src_export_id": 60,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 7
     },
     {
       "src_export_id": 60,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 7
     },
@@ -2846,13 +2828,13 @@
     },
     {
       "src_export_id": 63,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 63,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -2882,13 +2864,13 @@
     },
     {
       "src_export_id": 65,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 65,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -2900,13 +2882,13 @@
     },
     {
       "src_export_id": 66,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 8
     },
     {
       "src_export_id": 66,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 8
     },
@@ -2918,13 +2900,13 @@
     },
     {
       "src_export_id": 67,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 14
     },
     {
       "src_export_id": 67,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 14
     },
@@ -2972,13 +2954,13 @@
     },
     {
       "src_export_id": 70,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 4
     },
     {
       "src_export_id": 70,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 4
     },
@@ -3008,13 +2990,13 @@
     },
     {
       "src_export_id": 72,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 5
     },
     {
       "src_export_id": 72,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 5
     },
@@ -3044,13 +3026,13 @@
     },
     {
       "src_export_id": 74,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 9
     },
     {
       "src_export_id": 74,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 9
     },
@@ -3062,13 +3044,13 @@
     },
     {
       "src_export_id": 75,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 7
     },
     {
       "src_export_id": 75,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 7
     },
@@ -3116,13 +3098,13 @@
     },
     {
       "src_export_id": 78,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 78,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -3152,13 +3134,13 @@
     },
     {
       "src_export_id": 80,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 80,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -3170,13 +3152,13 @@
     },
     {
       "src_export_id": 81,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 8
     },
     {
       "src_export_id": 81,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 8
     },
@@ -3188,13 +3170,13 @@
     },
     {
       "src_export_id": 82,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 14
     },
     {
       "src_export_id": 82,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 14
     },
@@ -3242,13 +3224,13 @@
     },
     {
       "src_export_id": 85,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 4
     },
     {
       "src_export_id": 85,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 4
     },
@@ -3278,13 +3260,13 @@
     },
     {
       "src_export_id": 87,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 5
     },
     {
       "src_export_id": 87,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 5
     },
@@ -3314,13 +3296,13 @@
     },
     {
       "src_export_id": 89,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 9
     },
     {
       "src_export_id": 89,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 9
     },
@@ -3332,13 +3314,13 @@
     },
     {
       "src_export_id": 90,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 7
     },
     {
       "src_export_id": 90,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 7
     },
@@ -3386,13 +3368,13 @@
     },
     {
       "src_export_id": 93,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 93,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -3422,13 +3404,13 @@
     },
     {
       "src_export_id": 95,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 95,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -3440,13 +3422,13 @@
     },
     {
       "src_export_id": 96,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 8
     },
     {
       "src_export_id": 96,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 8
     },
@@ -3458,13 +3440,13 @@
     },
     {
       "src_export_id": 97,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 14
     },
     {
       "src_export_id": 97,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 14
     },
@@ -3512,13 +3494,13 @@
     },
     {
       "src_export_id": 100,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 4
     },
     {
       "src_export_id": 100,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 4
     },
@@ -3548,13 +3530,13 @@
     },
     {
       "src_export_id": 102,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 5
     },
     {
       "src_export_id": 102,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 5
     },
@@ -3584,13 +3566,13 @@
     },
     {
       "src_export_id": 104,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 9
     },
     {
       "src_export_id": 104,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 9
     },
@@ -3602,13 +3584,13 @@
     },
     {
       "src_export_id": 105,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 7
     },
     {
       "src_export_id": 105,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 7
     },
@@ -3656,13 +3638,13 @@
     },
     {
       "src_export_id": 108,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 108,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -3692,13 +3674,13 @@
     },
     {
       "src_export_id": 110,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 15
     },
     {
       "src_export_id": 110,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 15
     },
@@ -3710,13 +3692,13 @@
     },
     {
       "src_export_id": 111,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 8
     },
     {
       "src_export_id": 111,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 8
     },
@@ -3728,13 +3710,13 @@
     },
     {
       "src_export_id": 112,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 14
     },
     {
       "src_export_id": 112,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 14
     },
@@ -3782,13 +3764,13 @@
     },
     {
       "src_export_id": 115,
-      "type": "assigned_to",
+      "type": "raised_by",
       "properties": {},
       "tgt_export_id": 4
     },
     {
       "src_export_id": 115,
-      "type": "raised_by",
+      "type": "assigned_to",
       "properties": {},
       "tgt_export_id": 4
     },
@@ -4346,36 +4328,54 @@
     },
     {
       "src_export_id": 144,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 5
+    },
+    {
+      "src_export_id": 144,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 9
+    },
+    {
+      "src_export_id": 144,
+      "type": "decided_by",
+      "properties": {},
+      "tgt_export_id": 15
+    },
+    {
+      "src_export_id": 144,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 27
+    },
+    {
+      "src_export_id": 144,
+      "type": "about_system",
+      "properties": {},
+      "tgt_export_id": 33
+    },
+    {
+      "src_export_id": 144,
       "type": "based_on",
       "properties": {},
       "tgt_export_id": 128
     },
     {
-      "src_export_id": 144,
-      "type": "decided_by",
-      "properties": {},
-      "tgt_export_id": 145
-    },
-    {
-      "src_export_id": 144,
-      "type": "about_system",
-      "properties": {},
-      "tgt_export_id": 146
-    },
-    {
-      "src_export_id": 147,
+      "src_export_id": 145,
       "type": "decided_by",
       "properties": {},
       "tgt_export_id": 7
     },
     {
-      "src_export_id": 147,
+      "src_export_id": 145,
       "type": "about_system",
       "properties": {},
       "tgt_export_id": 34
     },
     {
-      "src_export_id": 147,
+      "src_export_id": 145,
       "type": "based_on",
       "properties": {},
       "tgt_export_id": 122

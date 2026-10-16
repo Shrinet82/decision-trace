@@ -48,10 +48,13 @@ async def test_health_rules_on_hand_built_graph():
         # d3: Active decision that supersedes d2
         # d4: Contradicted decision (contradicted by d5)
         # d5: Contradicting decision
-        # d6: Possibly stale decision (system Elasticsearch owner Marcus Aurelius has left)
+        # d6: Possibly stale decision (decided by Marcus Aurelius, who has left)
+        # d8: Superseded decision also decided by Marcus (stays superseded; decider_departed is True)
+        # d9: Active decision (by Alice) that supersedes d8
         # d7: Possibly stale decision (decision older than 180 days with no newer update)
         await query_graph(
             "MATCH (a:Person {name: 'Alice Vance'}), (b:Person {name: 'Bob Martin'}), "
+            "      (m:Person {name: 'Marcus Aurelius'}), "
             "      (s_pg:System {name: 'Postgres'}), (s_redis:System {name: 'Redis'}), "
             "      (s_kafka:System {name: 'Kafka'}), (s_es:System {name: 'Elasticsearch'}) "
             "CREATE (d1:Decision {id: 'd1', title: 'Adopt Postgres 16', decided_on: '2026-08-01'}) "
@@ -61,6 +64,8 @@ async def test_health_rules_on_hand_built_graph():
             "CREATE (d5:Decision {id: 'd5', title: 'Use RabbitMQ for messaging', decided_on: '2026-03-10'}) "
             "CREATE (d6:Decision {id: 'd6', title: 'Use Elasticsearch for log indexing', decided_on: '2026-06-01'}) "
             "CREATE (d7:Decision {id: 'd7', title: 'Use Legacy Auth', decided_on: '2025-01-01'}) "
+            "CREATE (d8:Decision {id: 'd8', title: 'Old Elasticsearch plan', decided_on: '2026-04-01'}) "
+            "CREATE (d9:Decision {id: 'd9', title: 'New Elasticsearch plan', decided_on: '2026-07-01'}) "
             # Edges
             "CREATE (d1)-[:about_system]->(s_pg) "
             "CREATE (d1)-[:decided_by]->(a) "
@@ -75,7 +80,12 @@ async def test_health_rules_on_hand_built_graph():
             "CREATE (d5)-[:decided_by]->(b) "
             "CREATE (d5)-[:contradicts]->(d4) "
             "CREATE (d6)-[:about_system]->(s_es) "
-            "CREATE (d6)-[:decided_by]->(a)",
+            "CREATE (d6)-[:decided_by]->(m) "
+            "CREATE (d8)-[:about_system]->(s_es) "
+            "CREATE (d8)-[:decided_by]->(m) "
+            "CREATE (d9)-[:about_system]->(s_es) "
+            "CREATE (d9)-[:decided_by]->(a) "
+            "CREATE (d9)-[:supersedes]->(d8)",
             dataset_name=test_ds,
         )
 
@@ -107,10 +117,20 @@ async def test_health_rules_on_hand_built_graph():
         assert "d5" in health_map
         assert health_map["d5"].status == "contradicted"
 
-        # Verify d6 is POSSIBLY STALE (system owner Marcus Aurelius departed)
+        # Verify d6 is POSSIBLY STALE (its decider Marcus Aurelius departed)
         assert "d6" in health_map
         assert health_map["d6"].status == "possibly_stale"
         assert "Marcus Aurelius" in health_map["d6"].reason
+        assert health_map["d6"].decider_departed is True
+
+        # Superseded beats stale, but the departed decider is still reported
+        assert health_map["d8"].status == "superseded"
+        assert health_map["d8"].decider_departed is True
+        assert health_map["d9"].status == "active"
+        assert health_map["d9"].decider_departed is False
+
+        # A departed SYSTEM OWNER alone no longer makes a decision stale
+        assert health_map["d1"].decider_departed is False
 
         # Verify d7 is POSSIBLY STALE (decision older than 180 days)
         assert "d7" in health_map

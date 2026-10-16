@@ -16,10 +16,10 @@ import {
 } from '../utils/graphConverter';
 import {
   buildGraphIndex,
+  decisionCode,
   healthToStatus,
   isPersonActive,
   nodeTitle,
-  sourceTicketId,
   STATUS_LABEL,
   type GraphIndex,
   type StatusKind,
@@ -146,7 +146,7 @@ const Inspector: React.FC<{
   ].filter((e) => e.other);
   const shown = showAll ? edges : edges.slice(0, EDGE_PREVIEW);
   const rows = describeNode(node, statusById, edges.length);
-  const id = node.label === 'Decision' ? sourceTicketId(index, node.id) : null;
+  const id = node.label === 'Decision' ? decisionCode(node) : null;
   const decidedBy =
     node.label === 'Decision'
       ? (index.outgoing.get(node.id) ?? [])

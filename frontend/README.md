@@ -4,23 +4,21 @@ Web UI for Decision Trace — an interactive, evidence-grounded decision memory 
 
 ## Key Features
 
-- **Ask Interface**: Query architectural decisions, system ownership, and replacements with natural language.
-- **Evidence Path Graph**: Interactive Cytoscape graph using the London Underground transit map aesthetic:
-  - Left-to-right orthogonal layout (`dagre`).
-  - Distinct node glyphs (Decision station markers, System rectangles, Person chips, Ticket documents).
-  - Transit category lines (Messaging, Identity & Security, Data, Observability, Platform).
-  - Supersedes (solid replacement) and Contradicts (dashed conflict) edge styling.
-- **Accessible Path as List**: Full WCAG AA keyboard-accessible alternative view for every graph path.
-- **Evidence Source Drawer**: Slide-over panel displaying source tickets and meeting notes, record metadata, and verbatim rationales.
-- **Dual Theme Support**: Light and dark themes tuned for minimum 4.5:1 WCAG AA contrast ratio.
-- **Standalone Mock Mode**: Preloaded with 5 frozen benchmark questions and 2 unanswerable sanity queries so reviewers can explore the complete application without spinning up backend or database services.
+- **Ask**: A chat thread. Each answer shows a validity verdict, the answer text with numbered citation markers, a vertical **evidence path** around the primary decision, and source cards with the verbatim evidence quote. A properties panel shows the decision's status, deciders, system, supersedes/conflicts and validity checks. Unanswerable questions show a "No decision found" empty state with no evidence or citations.
+- **Decisions**: Decisions grouped by status (Conflict, Possibly stale, Active, Superseded), each with a stable `DEC-NN` code, a relation hint, system chip, decider avatar and date. Tabs, filter, display options, and a peek panel.
+- **Graph**: A Cytoscape explorer centred on one node (radial layout) with node-type filters showing real counts, Expand / Fit / Copy Cypher, and an inspector listing properties and edges.
+- **Command palette**: `Cmd/Ctrl+K` searches decisions or asks a question.
+- **Accessible**: Keyboard-reachable controls, visible focus rings, an `axe` check on every page at desktop and mobile widths, and a screen-reader node list for the graph canvas.
+- **Standalone mock mode**: Frozen API responses (`src/mocks/`, captured from the live backend) let reviewers click through every page without any backend.
+
+The design is a light-only, Linear-style system (Geist, 13px base). The static design mockups live in `design-ref/`; `e2e/design-compare.spec.ts` renders them next to the app into `screenshots/compare-*.png`.
 
 ## Architecture & Topology
 
 ### 1. Frontend on Cloudflare Pages
 The frontend is compiled into a static Single Page Application (`dist/`) and is pre-configured with `public/_redirects` for SPA routing on Cloudflare Pages:
-- **Zero Config CI/CD**: Connect the GitHub repository to Cloudflare Pages. Every `git push` or pull request automatically generates a preview deployment with a live public URL.
-- **Standalone Verification**: Because `VITE_USE_MOCKS` defaults to `true`, Cloudflare Pages builds allow anyone to click through the 5 benchmark questions, inspect Cytoscape graphs, and test drawers immediately on the web.
+- **Zero Config CI/CD**: Deploy `dist/` to Cloudflare Pages (`wrangler pages deploy dist`). `functions/api/[[path]].ts` is the hardened reverse proxy to the backend.
+- **Standalone Verification**: Because `VITE_USE_MOCKS` defaults to `true`, Cloudflare Pages builds allow anyone to click through the benchmark questions, inspect the graph, and explore the Ask, Decisions and Graph pages immediately on the web.
 
 ### 2. Full-Stack Topology
 - **Frontend**: Cloudflare Pages (global edge CDN).
@@ -68,8 +66,8 @@ Create a `.env` file or configure build environment variables:
 ## Library Credits
 
 - **Framework**: React 18, Vite 6, TypeScript 5
-- **Styling**: Tailwind CSS, Overpass & Overpass Mono typography (`@fontsource`)
-- **Graph Visualization**: Cytoscape.js with `cytoscape-dagre`
+- **Styling**: Tailwind CSS, Geist typography (Google Fonts)
+- **Graph Visualization**: Cytoscape.js (radial `breadthfirst` layout)
 - **Data Fetching**: `@tanstack/react-query`
 - **Icons**: `lucide-react`
 - **Testing**: Vitest, React Testing Library, Playwright, `@axe-core/playwright`

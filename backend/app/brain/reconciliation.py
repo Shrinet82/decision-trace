@@ -12,6 +12,7 @@ import numpy as np
 from fastembed import TextEmbedding
 
 from app.brain.memory import query_graph
+from app.brain.names import split_names
 
 logger = logging.getLogger("decision_trace.reconciliation")
 
@@ -391,3 +392,92 @@ async def reconcile_decisions(
 
     logger.info("Decision reconciliation completed: merged %d nodes.", len(merges))
     return {"merged_count": len(merges), "merges": merges}
+
+
+_REL_TYPE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_SPLITTABLE_LABELS = ("Person", "System")
+
+
+async def split_composite_nodes(
+    dataset_name: Optional[str] = None,
+    labels: tuple[str, ...] = _SPLITTABLE_LABELS,
+) -> dict[str, Any]:
+    """Split list-valued Person/System nodes (e.g. "A, B and C") into one node per entity.
+
+    Each part reuses the existing node of that name, or is created if missing. Every edge of the
+    composite node (in either direction, with its properties) is copied to each part, then the
+    composite node is deleted. Safe to run repeatedly: with no composite nodes it changes nothing.
+
+    Returns:
+        dict with the composites that were ``split`` (name, label, parts) and the ``created`` parts.
+    """
+    split: list[dict[str, Any]] = []
+    created: list[dict[str, str]] = []
+
+    for label in labels:
+        if not _REL_TYPE.match(label):
+            raise ValueError(f"Unsafe node label: {label!r}")
+        rows = await query_graph(
+            f"MATCH (n:{label}) WHERE n.name IS NOT NULL RETURN id(n), n.name",
+            dataset_name=dataset_name,
+        )
+        composites = [(r[0], str(r[1])) for r in rows if r and len(split_names(str(r[1]))) > 1]
+
+        for composite_id, name in composites:
+            parts = split_names(name)
+            out_edges = await query_graph(
+                "MATCH (c)-[r]->(t) WHERE id(c) = $cid RETURN id(t), type(r), properties(r)",
+                dataset_name=dataset_name,
+                params={"cid": composite_id},
+            )
+            in_edges = await query_graph(
+                "MATCH (s)-[r]->(c) WHERE id(c) = $cid RETURN id(s), type(r), properties(r)",
+                dataset_name=dataset_name,
+                params={"cid": composite_id},
+            )
+
+            for part in parts:
+                existing = await query_graph(
+                    f"MATCH (n:{label} {{name: $name}}) WHERE id(n) <> $cid RETURN id(n)",
+                    dataset_name=dataset_name,
+                    params={"name": part, "cid": composite_id},
+                )
+                if existing:
+                    part_id = existing[0][0]
+                else:
+                    made = await query_graph(
+                        f"CREATE (n:{label} {{name: $name}}) RETURN id(n)",
+                        dataset_name=dataset_name,
+                        params={"name": part},
+                    )
+                    part_id = made[0][0]
+                    created.append({"label": label, "name": part})
+
+                for other_id, rel_type, props in out_edges:
+                    if not _REL_TYPE.match(str(rel_type)):
+                        raise ValueError(f"Unsafe relationship type: {rel_type!r}")
+                    await query_graph(
+                        f"MATCH (p) WHERE id(p) = $pid MATCH (o) WHERE id(o) = $oid "
+                        f"MERGE (p)-[r:{rel_type}]->(o) SET r += $props",
+                        dataset_name=dataset_name,
+                        params={"pid": part_id, "oid": other_id, "props": props or {}},
+                    )
+                for other_id, rel_type, props in in_edges:
+                    if not _REL_TYPE.match(str(rel_type)):
+                        raise ValueError(f"Unsafe relationship type: {rel_type!r}")
+                    await query_graph(
+                        f"MATCH (p) WHERE id(p) = $pid MATCH (o) WHERE id(o) = $oid "
+                        f"MERGE (o)-[r:{rel_type}]->(p) SET r += $props",
+                        dataset_name=dataset_name,
+                        params={"pid": part_id, "oid": other_id, "props": props or {}},
+                    )
+
+            await query_graph(
+                "MATCH (c) WHERE id(c) = $cid DETACH DELETE c",
+                dataset_name=dataset_name,
+                params={"cid": composite_id},
+            )
+            split.append({"label": label, "name": name, "parts": parts})
+            logger.info("Split composite %s node %r into %s", label, name, parts)
+
+    return {"split": split, "created": created}

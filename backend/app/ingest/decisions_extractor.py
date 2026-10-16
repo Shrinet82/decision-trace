@@ -16,12 +16,13 @@ from pathlib import Path
 from typing import Any, Literal, Optional
 
 from app.config import export_cognee_env, get_settings
+
 _settings = get_settings()
 export_cognee_env(_settings)
 
 import litellm
-from litellm.caching import Cache
 from cognee.infrastructure.llm.LLMGateway import LLMGateway
+from litellm.caching import Cache
 from litellm.integrations.custom_logger import CustomLogger
 from pydantic import BaseModel, Field
 
@@ -203,6 +204,8 @@ token_tracker.register()
 
 import re
 
+from app.brain.names import split_names
+
 
 def derive_status_from_evidence(quote: str, default: str = "accepted") -> str:
     """Derive decision lifecycle status deterministically from verb evidence in quote."""
@@ -263,29 +266,26 @@ async def _save_verified_decision(
         },
     )
 
-    # 2. Link decided_by Person
+    # 2. Link decided_by Person(s). A list such as "A, B and C" becomes one edge per person.
     decider = (verification.decided_by_verified or candidate.decided_by or "").strip()
-    if decider:
-        # Match Person or create if not present
+    for person in split_names(decider):
         await query_graph(
             "MATCH (d:Decision {title: $title}) "
             "MERGE (p:Person {name: $person}) "
             "MERGE (d)-[:decided_by]->(p)",
             dataset_name=dataset_name,
-            params={"title": title, "person": decider},
+            params={"title": title, "person": person},
         )
 
-    # 3. Link about_system System
+    # 3. Link about_system System(s), one edge per system
     sys_name = (verification.system_verified or candidate.system or "").strip()
-    if sys_name.lower().startswith("system:"):
-        sys_name = sys_name[7:].strip()
-    if sys_name:
+    for system in split_names(sys_name):
         await query_graph(
             "MATCH (d:Decision {title: $title}) "
             "MERGE (s:System {name: $system}) "
             "MERGE (d)-[:about_system]->(s)",
             dataset_name=dataset_name,
-            params={"title": title, "system": sys_name},
+            params={"title": title, "system": system},
         )
 
     # 4. Link based_on Ticket or Meeting

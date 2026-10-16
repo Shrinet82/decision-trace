@@ -1,10 +1,12 @@
 import type { AskResponse, GraphEdge, GraphNode } from '../api/types';
-import { nodeTitle, type StatusKind } from './model';
+import { decisionCode, nodeTitle } from './model';
 
 export interface EvidenceRow {
   /** Node type shown in the left column: Ticket, Meeting, Decision, System, Person. */
   kind: string;
   name: string;
+  /** DEC-NN code (decision rows only). */
+  code: string | null;
   detail: string;
   /** Relation of this row to the main decision, e.g. "based on". */
   relation: string | null;
@@ -25,54 +27,6 @@ const RELATION_LABEL: Record<string, string> = {
   about_system: 'affects',
   decided_by: 'decided by',
 };
-
-/**
- * The decision the answer is mainly about. Scores each decision in the path:
- * +2 if its title is quoted in the answer, +1 if it is based on a cited source
- * (earlier citations win ties), -1.5 if it is already superseded.
- */
-export function pickMainDecision(
-  response: AskResponse,
-  statusById?: Map<string, StatusKind>
-): GraphNode | undefined {
-  const { nodes, edges } = response.graph_path;
-  const decisions = nodes.filter((n) => n.label === 'Decision');
-  if (decisions.length === 0) return undefined;
-
-  const byId = new Map(nodes.map((n) => [n.id, n]));
-  const answer = response.answer.toLowerCase();
-
-  // Earliest citation index each decision is based on.
-  const citedAt = new Map<string, number>();
-  response.citations.forEach((citation, ci) => {
-    for (const edge of edges) {
-      if (edge.type !== 'based_on') continue;
-      const target = byId.get(edge.target);
-      const source = byId.get(edge.source);
-      if (!target || source?.label !== 'Decision') continue;
-      const p = target.properties ?? {};
-      if (target.id === citation.id || p.ticket_id === citation.id || p.title === citation.id) {
-        if (!citedAt.has(source.id)) citedAt.set(source.id, ci);
-      }
-    }
-  });
-
-  let best: GraphNode | undefined;
-  let bestScore = -Infinity;
-  for (const d of decisions) {
-    // The model often quotes a shortened title, so match on the first five words.
-    const lead = String(d.properties?.title ?? '').toLowerCase().split(/\s+/).slice(0, 5).join(' ');
-    let score = 0;
-    if (lead.split(' ').length >= 3 && answer.includes(lead)) score += 2;
-    if (citedAt.has(d.id)) score += 1 - 0.01 * (citedAt.get(d.id) ?? 0);
-    if (statusById?.get(d.id) === 'superseded') score -= 1.5;
-    if (score > bestScore) {
-      best = d;
-      bestScore = score;
-    }
-  }
-  return best;
-}
 
 function describe(node: GraphNode): { name: string; detail: string } {
   const p = node.properties ?? {};
@@ -124,6 +78,7 @@ export function buildEvidencePath(response: AskResponse, mainId: string, maxRows
 
   const toRow = (node: GraphNode, relation: string | null, isMain: boolean): EvidenceRow => ({
     kind: node.label,
+    code: node.label === 'Decision' ? decisionCode(node) : null,
     ...describe(node),
     relation,
     isMain,

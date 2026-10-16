@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowUp, User } from 'lucide-react';
+import type { AskResponse, GraphNode } from '../api/types';
 import { useAsk, useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
 import { AnswerBody } from '../components/ask/AnswerBody';
 import { AskProperties } from '../components/ask/AskProperties';
@@ -10,11 +11,10 @@ import { PageFrame } from '../components/PageFrame';
 import { StatusIcon } from '../components/StatusIcon';
 import { btnOutline, btnPrimary } from '../components/ui';
 import { isNotFoundAnswer } from '../utils/answer';
-import { buildEvidencePath, pickMainDecision } from '../utils/evidence';
+import { buildEvidencePath } from '../utils/evidence';
 import {
   buildGraphIndex,
   healthToStatus,
-  sourceTicketId,
   STATUS_LABEL,
   type GraphIndex,
   type StatusKind,
@@ -34,6 +34,11 @@ const VERDICT: Record<StatusKind, string> = {
   stale: STATUS_LABEL.stale,
   superseded: STATUS_LABEL.superseded,
 };
+
+/** The decision node the server marked as the answer's primary one. */
+function primaryNode(data: AskResponse): GraphNode | undefined {
+  return data.graph_path.nodes.find((n) => n.id === data.primary_decision_id);
+}
 
 const AnswerSkeleton: React.FC = () => (
   <div role="status" aria-label="Searching the Company Brain" className="flex flex-col gap-3">
@@ -56,8 +61,8 @@ interface TurnProps {
 const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, statusById }) => {
   const ask = useAsk(question);
   const data = ask.data;
-  const notFound = data ? isNotFoundAnswer(data.answer, data.citations.length) : false;
-  const main = data && !notFound ? pickMainDecision(data, statusById) : undefined;
+  const notFound = data ? isNotFoundAnswer(data.answer) : false;
+  const main = data && !notFound ? primaryNode(data) : undefined;
   const detail = useDecisionDetail(main?.id);
 
   const scrollTo = (anchorId: string) => {
@@ -132,7 +137,7 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
                     {verdict}
                   </span>
                 )}
-                {decisionCount !== undefined && (
+                {main && decisionCount !== undefined && (
                   <span className="text-xs text-muted">
                     Health checked across {decisionCount} decisions
                   </span>
@@ -206,11 +211,8 @@ export const AskPage: React.FC = () => {
 
   const lastQuestion = turns.length > 0 ? turns[turns.length - 1] : null;
   const lastAsk = useAsk(lastQuestion);
-  const lastNotFound = lastAsk.data
-    ? isNotFoundAnswer(lastAsk.data.answer, lastAsk.data.citations.length)
-    : false;
-  const lastMain =
-    lastAsk.data && !lastNotFound ? pickMainDecision(lastAsk.data, statusById) : undefined;
+  const lastNotFound = lastAsk.data ? isNotFoundAnswer(lastAsk.data.answer) : false;
+  const lastMain = lastAsk.data && !lastNotFound ? primaryNode(lastAsk.data) : undefined;
   const lastDetail = useDecisionDetail(lastMain?.id);
 
   useEffect(() => {
@@ -266,8 +268,6 @@ export const AskPage: React.FC = () => {
     <AskProperties
       detail={lastDetail.data}
       loading={lastAsk.isLoading || (Boolean(lastMain) && lastDetail.isLoading)}
-      ticketId={lastMain ? sourceTicketId(index, lastMain.id) : null}
-      index={index}
     />
   );
 

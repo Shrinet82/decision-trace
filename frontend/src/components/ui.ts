@@ -7,8 +7,3 @@ export const btnPrimary =
 
 export const btnSecondary =
   'inline-flex h-[30px] w-full items-center justify-center gap-1.5 rounded-control border border-border bg-surface text-sm font-medium text-text transition-colors hover:bg-subtle';
-
-export const iconButton =
-  'inline-flex h-7 w-7 items-center justify-center rounded-control text-muted transition-colors hover:bg-hover hover:text-text';
-
-export const panelLabel = 'text-muted';

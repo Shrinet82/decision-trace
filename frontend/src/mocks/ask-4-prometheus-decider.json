@@ -1,5 +1,5 @@
 {
-  "answer": "Based on the Company Brain context, there are two accepted decisions related to the **Prometheus** system:\n\n1.  **\"Migrate application metrics from Datadog to Prometheus Operator\"** was decided by **Kevin Flynn**. This decision was made during the *Observability Platform Alignment* meeting on 2026-04-12.\n2.  **\"Deploy Prometheus Operator on all Kubernetes staging clusters\"** was decided by **Laura Croft**. This decision is associated with ticket **TICK-109** ('Cluster-wide metrics collection and automated alerts').\n\nAdditionally, **Kevin Flynn** is the active System Owner for Prometheus.",
+  "answer": "Kevin Flynn decided to adopt Prometheus for application metrics, as recorded in the accepted decision 'Migrate application metrics from Datadog to Prometheus Operator' from the Observability Platform Alignment meeting on 2026-04-12. Laura Croft also made the accepted decision to 'Deploy Prometheus Operator on all Kubernetes staging clusters' in ticket TICK-109. Both decisions involve adopting Prometheus technology.",
   "citations": [
     {
       "type": "meeting",
@@ -13,12 +13,12 @@
     }
   ],
   "people": [
-    "Alice Vance",
     "Fiona Gallagher",
-    "Ian Malcolm",
+    "Julia Roberts",
     "Kevin Flynn",
     "Laura Croft"
   ],
+  "primary_decision_id": "dec_21a4de59b886",
   "graph_path": {
     "nodes": [
       {
@@ -27,7 +27,8 @@
         "properties": {
           "title": "Migrate application metrics from Datadog to Prometheus Operator",
           "status": "accepted",
-          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
+          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
+          "decision_code": "DEC-08"
         }
       },
       {
@@ -36,16 +37,18 @@
         "properties": {
           "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance."
+          "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
+          "decision_code": "DEC-09"
         }
       },
       {
-        "id": "dec_2c6a03017923",
+        "id": "dec_f8a30e251e54",
         "label": "Decision",
         "properties": {
-          "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+          "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
+          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
+          "decision_code": "DEC-12"
         }
       },
       {
@@ -54,7 +57,8 @@
         "properties": {
           "title": "Adopt Snowflake for analytics ETL queries",
           "status": "accepted",
-          "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision."
+          "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
+          "decision_code": "DEC-03"
         }
       },
       {
@@ -79,17 +83,17 @@
         }
       },
       {
-        "id": "Ian Malcolm",
+        "id": "Julia Roberts",
         "label": "Person",
         "properties": {
-          "name": "Ian Malcolm"
+          "name": "Julia Roberts"
         }
       },
       {
-        "id": "Redis",
+        "id": "Keycloak",
         "label": "System",
         "properties": {
-          "name": "Redis"
+          "name": "Keycloak"
         }
       },
       {
@@ -104,15 +108,6 @@
         "label": "System",
         "properties": {
           "name": "Snowflake"
-        }
-      },
-      {
-        "id": "Alice Vance",
-        "label": "Person",
-        "properties": {
-          "name": "Alice Vance",
-          "is_active": true,
-          "leave_date": null
         }
       },
       {
@@ -132,11 +127,19 @@
         }
       },
       {
-        "id": "TICK-110",
+        "id": "TICK-111",
         "label": "Ticket",
         "properties": {
-          "ticket_id": "TICK-110",
-          "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
+          "ticket_id": "TICK-111",
+          "title": "OAuth2 token issuance architecture for internal gateway"
+        }
+      },
+      {
+        "id": "TICK-103",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-103",
+          "title": "Slow analytical queries on historical clickstream datasets"
         }
       }
     ],
@@ -184,26 +187,26 @@
         "properties": {}
       },
       {
-        "source": "dec_2c6a03017923",
-        "target": "Ian Malcolm",
+        "source": "dec_f8a30e251e54",
+        "target": "Julia Roberts",
         "type": "decided_by",
         "properties": {}
       },
       {
-        "source": "dec_2c6a03017923",
-        "target": "Redis",
+        "source": "dec_f8a30e251e54",
+        "target": "Keycloak",
         "type": "about_system",
         "properties": {}
       },
       {
-        "source": "Alice Vance",
-        "target": "Redis",
+        "source": "Julia Roberts",
+        "target": "Keycloak",
         "type": "owns",
         "properties": {}
       },
       {
-        "source": "dec_2c6a03017923",
-        "target": "TICK-110",
+        "source": "dec_f8a30e251e54",
+        "target": "TICK-111",
         "type": "based_on",
         "properties": {}
       },
@@ -224,8 +227,14 @@
         "target": "Snowflake",
         "type": "owns",
         "properties": {}
+      },
+      {
+        "source": "dec_8c7075150849",
+        "target": "TICK-103",
+        "type": "based_on",
+        "properties": {}
       }
     ],
-    "omitted_count": 3
+    "omitted_count": 2
   }
 }

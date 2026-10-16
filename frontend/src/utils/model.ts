@@ -100,24 +100,6 @@ export function isPersonActive(person: GraphNode): boolean {
   return p.is_active !== false;
 }
 
-/** People who own a system but have left (is_active false). */
-export function ownersWhoLeft(index: GraphIndex, decisionId: string): GraphNode[] {
-  const left: GraphNode[] = [];
-  for (const system of targets(index, decisionId, 'about_system')) {
-    for (const owner of sources(index, system.id, 'owns')) {
-      if (!isPersonActive(owner)) left.push(owner);
-    }
-  }
-  return left;
-}
-
-/** True if there is at least one owner on record for the decision's system. */
-export function hasOwnerOnRecord(index: GraphIndex, decisionId: string): boolean {
-  return targets(index, decisionId, 'about_system').some(
-    (system) => sources(index, system.id, 'owns').length > 0
-  );
-}
-
 export interface RelationHint {
   text: string;
   tone: 'muted' | 'stale';
@@ -129,25 +111,26 @@ export interface DecisionRow {
   status: StatusKind;
   health: HealthStatus;
   healthReason: string;
-  system: string | null;
-  decidedBy: string | null;
+  /** Stable code from the API, e.g. DEC-07. */
+  code: string | null;
+  /** Governed systems (first is the primary one). */
+  systems: string[];
+  /** Every person who decided it (first is shown as the avatar). */
+  deciders: string[];
   decidedOn: string | null;
-  /** Source ticket id (e.g. TICK-105) when the decision is based on one. */
-  ticketId: string | null;
+  /** True if any decider has left the company. */
+  deciderDeparted: boolean;
   hint: RelationHint | null;
 }
 
-export function sourceTicketId(index: GraphIndex | undefined, decisionId: string): string | null {
-  if (!index) return null;
-  for (const node of targets(index, decisionId, 'based_on')) {
-    const ticketId = node.properties?.ticket_id;
-    if (node.label === 'Ticket' && typeof ticketId === 'string') return ticketId;
-  }
-  return null;
+/** The DEC-NN code of a Decision node, when the API supplied one. */
+export function decisionCode(node: GraphNode | undefined): string | null {
+  const code = node?.properties?.decision_code;
+  return typeof code === 'string' && code ? code : null;
 }
 
-function refOf(index: GraphIndex, node: GraphNode): string {
-  return shortRef(sourceTicketId(index, node.id) ?? undefined, nodeTitle(node));
+function refOf(node: GraphNode): string {
+  return shortRef(decisionCode(node) ?? undefined, nodeTitle(node));
 }
 
 function relationHint(
@@ -161,19 +144,19 @@ function relationHint(
   const replaces = targets(index, id, 'supersedes');
 
   if (status === 'conflict' && conflicts.length > 0) {
-    return { text: `conflicts with ${refOf(index, conflicts[0])}`, tone: 'muted' };
+    return { text: `conflicts with ${refOf(conflicts[0])}`, tone: 'muted' };
   }
   if (status === 'superseded' && replacedBy.length > 0) {
-    return { text: `replaced by ${refOf(index, replacedBy[0])}`, tone: 'muted' };
+    return { text: `replaced by ${refOf(replacedBy[0])}`, tone: 'muted' };
   }
   if (status === 'stale') {
-    if (ownersWhoLeft(index, id).length > 0) {
-      return { text: 'owner left the company', tone: 'stale' };
+    if (summary.decider_departed) {
+      return { text: 'decider left the company', tone: 'stale' };
     }
     return { text: 'needs review', tone: 'stale' };
   }
   if (replaces.length > 0) {
-    return { text: `supersedes ${refOf(index, replaces[0])}`, tone: 'muted' };
+    return { text: `supersedes ${refOf(replaces[0])}`, tone: 'muted' };
   }
   return null;
 }
@@ -190,10 +173,11 @@ export function buildDecisionRows(
       status,
       health: d.health,
       healthReason: d.health_reason,
-      system: d.system ?? null,
-      decidedBy: d.decided_by ?? null,
+      code: d.decision_code,
+      systems: d.systems,
+      deciders: d.deciders,
       decidedOn: d.decided_on ?? null,
-      ticketId: sourceTicketId(index, d.id),
+      deciderDeparted: d.decider_departed,
       hint: index ? relationHint(index, d, status) : null,
     };
   });
@@ -243,8 +227,8 @@ export interface ValidityCheck {
   ok: boolean;
 }
 
-/** Validity checks shown in the Ask properties panel, derived from health data and the graph. */
-export function validityChecks(detail: DecisionDetail, index: GraphIndex | undefined): ValidityCheck[] {
+/** Validity checks shown in the Ask properties panel, derived from the decision's health data. */
+export function validityChecks(detail: DecisionDetail): ValidityCheck[] {
   const checks: ValidityCheck[] = [
     detail.superseded_by.length === 0
       ? { label: 'No newer decision', ok: true }
@@ -253,12 +237,10 @@ export function validityChecks(detail: DecisionDetail, index: GraphIndex | undef
       ? { label: 'No contradictions', ok: true }
       : { label: `Conflicts with ${detail.contradicts[0]}`, ok: false },
   ];
-  if (index && hasOwnerOnRecord(index, detail.id)) {
-    checks.push(
-      ownersWhoLeft(index, detail.id).length === 0
-        ? { label: 'Owner still on team', ok: true }
-        : { label: 'Owner left the company', ok: false }
-    );
-  }
+  checks.push(
+    detail.decider_departed
+      ? { label: 'Decider left the company', ok: false }
+      : { label: 'Decider still on team', ok: true }
+  );
   return checks;
 }

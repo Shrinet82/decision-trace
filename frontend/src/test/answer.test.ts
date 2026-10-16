@@ -60,8 +60,9 @@ describe('answer parsing', () => {
   });
 
   it('detects not-found answers', () => {
-    expect(isNotFoundAnswer('The answer is not found in the Company Brain.', 0)).toBe(true);
-    expect(isNotFoundAnswer('Something', 0)).toBe(true);
-    expect(isNotFoundAnswer('Alice decided.', 2)).toBe(false);
+    expect(isNotFoundAnswer('The answer is not found in the Company Brain.')).toBe(true);
+    expect(isNotFoundAnswer('I could not find any relevant decisions, systems, or people.')).toBe(true);
+    // An answer without citations (e.g. system ownership) is still an answer
+    expect(isNotFoundAnswer('Elasticsearch is owned by Marcus Aurelius, who has departed.')).toBe(false);
   });
 });

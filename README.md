@@ -95,7 +95,7 @@ company-brain/
 ### Graph-Native Decision Health Rules
 - **Superseded**: Incoming `[:SUPERSEDES]` relation from a newer decision.
 - **Contradicted**: Linked via `[:CONTRADICTS]` relation with an active decision.
-- **Possibly Stale**: Decider no longer owns the target system or linked ticket was reopened.
+- **Possibly Stale**: A person who decided it has left the company (`is_active = false` or a past `leave_date`), or it is older than 180 days with no newer decision about its systems. Superseded and contradicted decisions are never reported as stale. Every decision also carries a `decider_departed` flag.
 - **Active**: Valid, uncontradicted decision with current owners.
 
 ---

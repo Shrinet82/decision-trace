@@ -1,7 +1,7 @@
 """Tests for Decision Status Correctness, Citation Graph-Edge Integrity, and LLM Post-Processing."""
 
 import re
-import pytest
+
 from app.api.schemas import Citation, GraphEdge
 from app.ingest.decisions_extractor import derive_status_from_evidence
 
@@ -40,17 +40,17 @@ def test_citation_integrity_filters_unlinked_citations():
         GraphEdge(source="D2", target="2026-04-12_observability_sync.md", type="based_on"),
         GraphEdge(source="D1", target="D2", type="supersedes"),
     ]
-    
+
     # Candidate citations includes an unlinked/hallucinated ticket TICK-999
     citations_map = {
         "TICK-101": Citation(type="ticket", id="TICK-101", title="Session store"),
         "2026-04-12_observability_sync.md": Citation(type="meeting", id="2026-04-12_observability_sync.md", title="Observability"),
         "TICK-999": Citation(type="ticket", id="TICK-999", title="Hallucinated ticket"),
     }
-    
+
     valid_based_on_targets = {e.target for e in edges if e.type == "based_on"}
     verified_citations = [c for c in citations_map.values() if c.id in valid_based_on_targets]
-    
+
     citation_ids = {c.id for c in verified_citations}
     assert "TICK-101" in citation_ids
     assert "2026-04-12_observability_sync.md" in citation_ids
@@ -61,7 +61,6 @@ def test_status_integrity_never_says_decided_for_proposed_or_rejected():
     """Verify rule that proposed or rejected decisions are sanitized so they are never phrased as 'decided'."""
     raw_answer = "Alice Vance decided Deploy Prometheus Operator on all Kubernetes staging clusters."
     d_title = "Deploy Prometheus Operator on all Kubernetes staging clusters"
-    d_status = "proposed"
 
     sanitized = re.sub(
         rf"\bdecided(?:\s+to)?\s+({re.escape(d_title)})",

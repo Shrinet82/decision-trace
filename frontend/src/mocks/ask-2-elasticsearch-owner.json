@@ -1,27 +1,6 @@
 {
-  "answer": "Elasticsearch is owned by Marcus Aurelius, who is noted as DEPARTED on 2025-11-30.",
-  "citations": [
-    {
-      "type": "meeting",
-      "id": "Observability Platform Alignment",
-      "title": "Observability Platform Alignment"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-104",
-      "title": "High compute credits on daily analytics warehouse rollups"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-107",
-      "title": "Plaintext secret leakage risk in CI/CD pipeline variables"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-103",
-      "title": "Slow analytical queries on historical clickstream datasets"
-    }
-  ],
+  "answer": "Elasticsearch is owned by Marcus Aurelius, who **departed** on 2025-11-30.",
+  "citations": [],
   "people": [
     "Carlos Mendez",
     "Diana Prince",
@@ -29,6 +8,7 @@
     "Kevin Flynn",
     "Marcus Aurelius"
   ],
+  "primary_decision_id": null,
   "graph_path": {
     "nodes": [
       {
@@ -37,7 +17,8 @@
         "properties": {
           "title": "Migrate application metrics from Datadog to Prometheus Operator",
           "status": "accepted",
-          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
+          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
+          "decision_code": "DEC-08"
         }
       },
       {
@@ -46,14 +27,16 @@
         "properties": {
           "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action."
+          "rationale": "The text explicitly states a decision to migrate analytics reporting queries from one system (Snowflake) to another (ClickHouse), which is a clear technology choice and migration action.",
+          "decision_code": "DEC-13"
         }
       },
       {
         "id": "dec_8c7075150849",
         "label": "Decision",
         "properties": {
-          "title": "Adopt Snowflake for analytics ETL queries"
+          "title": "Adopt Snowflake for analytics ETL queries",
+          "decision_code": "DEC-03"
         }
       },
       {
@@ -62,7 +45,8 @@
         "properties": {
           "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy."
+          "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
+          "decision_code": "DEC-05"
         }
       },
       {

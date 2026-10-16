@@ -18,6 +18,7 @@ import time
 from typing import Any
 
 from app.config import get_settings
+
 _settings = get_settings()
 
 from app.brain.memory import (
@@ -26,6 +27,7 @@ from app.brain.memory import (
     query_graph,
     reset,
 )
+from app.brain.reconciliation import split_composite_nodes
 from app.ingest.decisions_extractor import extract_all_decisions
 from app.ingest.notes_source import ingest_notes_source
 from app.ingest.sql_source import ingest_sql_source
@@ -115,6 +117,11 @@ async def run_seed(
         )
     except Exception as norm_err:  # noqa: BLE001
         logger.warning("Could not normalize based_on_meeting edges: %s", norm_err)
+
+    # Defensive: collapse any list-valued Person/System nodes into one node per entity
+    split_result = await split_composite_nodes(dataset_name=dataset_name)
+    if split_result["split"]:
+        print(f"  Split composite nodes: {[s['name'] for s in split_result['split']]}")
 
     print("\n[6/6] Final Graph Inventory & Telemetry...")
     mem_final = await get_falkordb_memory_usage()

@@ -177,19 +177,26 @@ async def evaluate_graph(dataset_name: str = "company_brain") -> dict[str, Any]:
     )
     raw_decisions = await query_graph(cypher_decisions, dataset_name=dataset_name)
 
-    extracted = []
+    # One record per decision: the query returns one row per (decider x system x source) combination
+    by_title: dict[str, dict[str, Any]] = {}
     for row in raw_decisions:
+        title = row[0] or ""
+        rec = by_title.setdefault(
+            title,
+            {"title": title, "status": row[1] or "", "deciders": [], "systems": [],
+             "based_on_type": "", "based_on_id": ""},
+        )
+        if row[2] and row[2] not in rec["deciders"]:
+            rec["deciders"].append(row[2])
+        if row[3] and row[3] not in rec["systems"]:
+            rec["systems"].append(row[3])
+        if not rec["based_on_id"] and len(row) > 6:
+            rec["based_on_id"] = row[5] or row[6] or ""
+            rec["based_on_type"] = row[4][0] if row[4] else ""
+    extracted = []
+    for rec in by_title.values():
         extracted.append(
-            {
-                "title": row[0] or "",
-                "status": row[1] or "",
-                "decider": row[2] or "",
-                "system": row[3] or "",
-                "based_on_type": (row[4][0] if row[4] else "")
-                if len(row) > 4 and row[4]
-                else "",
-                "based_on_id": (row[5] or row[6] or "") if len(row) > 6 else "",
-            }
+            {**rec, "decider": ", ".join(rec["deciders"]), "system": ", ".join(rec["systems"])}
         )
 
     # 2. Decision Matching (Recall & Precision)
@@ -203,7 +210,7 @@ async def evaluate_graph(dataset_name: str = "company_brain") -> dict[str, Any]:
         for idx, ext in enumerate(extracted):
             sim = compute_embedding_similarity(gt["title"], ext["title"])
             bonus = 0.0
-            if ext["decider"] and gt["decider"].lower() == ext["decider"].lower():
+            if gt["decider"].lower() in [d.lower() for d in ext["deciders"]]:
                 bonus += 0.15
             if ext["system"] and gt["system"].lower() in ext["system"].lower():
                 bonus += 0.10
@@ -225,10 +232,7 @@ async def evaluate_graph(dataset_name: str = "company_brain") -> dict[str, Any]:
         matched_gt_ids.add(gt["id"])
         matched_ext_indices.add(idx)
         matched_gt[gt["id"]] = ext
-        if (
-            ext["decider"]
-            and ext["decider"].lower() == gt["decider"].lower()
-        ):
+        if gt["decider"].lower() in [d.lower() for d in ext["deciders"]]:
             decider_correct_count += 1
 
     tp_count = len(matched_gt)

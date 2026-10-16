@@ -31,13 +31,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ open, onClose, d
       .filter((d) =>
         q === ''
           ? true
-          : [d.title, d.ticketId, d.system, d.decidedBy].some((v) => v?.toLowerCase().includes(q))
+          : [d.title, d.code, ...d.systems, ...d.deciders].some((v) => v?.toLowerCase().includes(q))
       )
       .slice(0, 8)
       .map<PaletteItem>((d) => ({
         key: d.id,
         label: d.title,
-        hint: d.ticketId ?? d.system ?? '',
+        hint: d.code ?? d.systems[0] ?? '',
         status: d.status,
         href: `/decisions?selected=${encodeURIComponent(d.id)}`,
       }));

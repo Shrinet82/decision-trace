@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Annotated, Literal, Optional
 
 from app.config import get_settings
+
 _settings = get_settings()
 
 from cognee.infrastructure.engine import DataPoint, FromIdentity
