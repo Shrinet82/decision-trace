@@ -27,6 +27,8 @@ jobs:
         run: |
           railway variable set "FALKORDB_GRAPH_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
           railway variable set "DATASET_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
+          # Startup imports the LLM/ML stack (~10 s locally); the default 15 s healthcheck window is too tight
+          railway variable set "RAILWAY_HEALTHCHECK_TIMEOUT_SEC=120" --service decision-trace-api
           railway up --service decision-trace-api -c
 
       - name: Show runtime logs of a failed deployment
