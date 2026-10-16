@@ -86,8 +86,22 @@ class PeopleChanges(BaseModel):
 
 
 class LinkJudgement(BaseModel):
+    new_choice: str = Field(..., description="What the NEW decision chooses, in a few words (e.g. 'Kafka')")
+    existing_choice: str = Field(..., description="What the EXISTING decision chooses, in a few words")
+    same_choice: bool = Field(
+        ..., description="True if both decisions choose the same technology/option for the same purpose"
+    )
     relation: Literal["supersedes", "contradicts", "reaffirms", "none"]
     reason: str = Field(..., description="One sentence grounded in the two decisions")
+
+
+def effective_relation(j: LinkJudgement) -> str:
+    """The edge to create. Making the same choice is never supersession or contradiction:
+    restating or extending an existing choice (e.g. 'standardise on Kafka and retire RabbitMQ'
+    vs 'adopt Kafka') reaffirms it, so no edge is created."""
+    if j.same_choice and j.relation in ("supersedes", "contradicts"):
+        return "none"
+    return j.relation if j.relation in ("supersedes", "contradicts") else "none"
 
 
 PEOPLE_PROMPT = (
@@ -106,7 +120,9 @@ JUDGE_PROMPT = (
     "- supersedes: the new decision replaces, retires, or reverses the existing one, or settles a "
     "choice between alternatives in favour of a different option than the existing decision chose.\n"
     "- contradicts: both remain in force and are incompatible, with no resolution.\n"
-    "- reaffirms: the new decision makes the same choice as the existing one (no edge is created).\n"
+    "- reaffirms: the new decision makes the same choice as the existing one, even if it adds "
+    "details such as retiring alternatives or setting deadlines (no edge is created).\n"
+    "First state what each decision chooses and whether it is the same choice for the same purpose.\n"
     "- none: unrelated or only loosely related.\n"
     "Base the answer only on the two decisions and the source text. Give a one-sentence reason."
 )
@@ -327,8 +343,11 @@ async def run_ingest(req: IngestRequest, dataset: str) -> AsyncIterator[dict[str
             if isinstance(res, BaseException):
                 links.append({"new": i, "existing": x_id, "title": x_title, "relation": "none", "reason": f"Judge failed: {res}"})
             else:
-                rel = res.relation if res.relation in ("supersedes", "contradicts") else "none"
-                links.append({"new": i, "existing": x_id, "title": x_title, "relation": rel, "reason": res.reason, "raw": res.relation})
+                rel = effective_relation(res)
+                reason = res.reason
+                if rel == "none" and res.relation in ("supersedes", "contradicts"):
+                    reason = f"Same choice ({res.existing_choice}), so it reaffirms rather than {res.relation}. {res.reason}"
+                links.append({"new": i, "existing": x_id, "title": x_title, "relation": rel, "reason": reason, "raw": res.relation})
         linked = [lk for lk in links if lk["relation"] != "none"]
         yield _step(
             "linking",
