@@ -129,3 +129,15 @@ async def test_reset_only_touches_tagged_data():
     destructive = [q for q in queries if "DELETE" in q]
     assert destructive, "reset issued no deletes"
     assert all("demo_ingest_id IS NOT NULL" in q for q in destructive)
+
+
+def test_same_choice_is_never_supersession():
+    def j(relation, same):
+        return live.LinkJudgement(new_choice="Kafka", existing_choice="Kafka" if same else "RabbitMQ",
+                                  same_choice=same, relation=relation, reason="r")
+
+    assert live.effective_relation(j("supersedes", same=True)) == "none"
+    assert live.effective_relation(j("contradicts", same=True)) == "none"
+    assert live.effective_relation(j("supersedes", same=False)) == "supersedes"
+    assert live.effective_relation(j("contradicts", same=False)) == "contradicts"
+    assert live.effective_relation(j("reaffirms", same=True)) == "none"
