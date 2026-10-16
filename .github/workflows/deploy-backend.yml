@@ -28,3 +28,12 @@ jobs:
           railway variable set "FALKORDB_GRAPH_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
           railway variable set "DATASET_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
           railway up --service decision-trace-api -c
+
+      - name: Show runtime logs of a failed deployment
+        if: failure()
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          # Last lines of the container's own output (startup errors), long token-like strings masked
+          timeout 45 railway logs --service decision-trace-api 2>&1 \
+            | sed -E 's/[A-Za-z0-9+\/=_-]{32,}/***/g' | tail -120 || true
