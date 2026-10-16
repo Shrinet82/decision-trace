@@ -138,8 +138,14 @@ describe('Add source drawer', () => {
       'pending',
     ]);
     expect(items[4]).toHaveAttribute('aria-current', 'step');
-    expect(within(items[1]).getByText(/1 decision: Standardise on Kafka/)).toBeInTheDocument();
-    expect(within(dialog).getByRole('img', { name: /Graph changes: 2 nodes added/ })).toBeInTheDocument();
+    // Step details come straight from the (recorded) backend events
+    const decisionsDone = MOCK_INGEST_KAFKA.find(
+      (e) => e.event === 'step' && e.data.step === 'extracting_decisions' && e.data.status === 'done'
+    );
+    const detail = decisionsDone?.event === 'step' ? decisionsDone.data.detail ?? '' : '';
+    expect(detail).not.toBe('');
+    expect(items[1]).toHaveTextContent(detail);
+    expect(within(dialog).getByRole('img', { name: /Graph changes/ })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
 
     stream.release();
@@ -187,10 +193,12 @@ describe('Add source drawer', () => {
     const orphaned = within(dialog).getByRole('region', { name: 'Orphaned systems' });
     expect(within(orphaned).getByRole('link', { name: 'Kafka' })).toHaveAttribute('href', '/systems/Kafka');
     expect(orphaned).toHaveTextContent('Redis: owned → orphaned');
-    const skipped = within(dialog)
+    // Every step completes; the steps with nothing to do report it in their detail
+    const steps = within(dialog)
       .getAllByRole('listitem')
-      .filter((li) => li.getAttribute('data-step-status') === 'skipped');
-    expect(skipped.map((li) => li.getAttribute('data-step'))).toEqual(['extracting_decisions', 'linking']);
+      .filter((li) => li.hasAttribute('data-step'));
+    expect(steps.map((li) => li.getAttribute('data-step-status'))).toEqual(Array(7).fill('done'));
+    expect(steps.find((li) => li.getAttribute('data-step') === 'linking')).toHaveTextContent('no links');
   });
 
   it('cancels a running ingest', async () => {

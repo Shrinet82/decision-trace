@@ -1,360 +1,340 @@
 [
-  {
-    "event": "step",
-    "data": {
-      "step": "reading",
-      "status": "running",
-      "label": "Reading source"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "reading",
-      "status": "done",
-      "label": "Reading source",
-      "detail": "Meeting notes · 289 characters · 3 participants"
-    }
-  },
-  {
-    "event": "graph",
-    "data": {
-      "nodes": [
-        {
-          "id": "Meeting:Architecture sync",
-          "label": "Meeting",
-          "name": "Architecture sync",
-          "change": "added"
-        }
-      ],
-      "edges": []
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_decisions",
-      "status": "running",
-      "label": "Extracting decisions"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_decisions",
-      "status": "done",
-      "label": "Extracting decisions",
-      "detail": "1 decision: Standardise on Kafka for all event messaging across services"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_people",
-      "status": "running",
-      "label": "Extracting people"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_people",
-      "status": "done",
-      "label": "Extracting people",
-      "detail": "3 people: Alice Vance, Bob Martin, Kevin Flynn"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "matching",
-      "status": "running",
-      "label": "Matching existing entities"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "matching",
-      "status": "done",
-      "label": "Matching existing entities",
-      "detail": "Matched 3 people and 2 systems (Kafka, RabbitMQ) to existing nodes"
-    }
-  },
-  {
-    "event": "graph",
-    "data": {
-      "nodes": [
-        {
-          "id": "Decision:dec_6b1f2e9a4c80",
-          "label": "Decision",
-          "name": "Standardise on Kafka for all event messaging across services",
-          "decision_code": "DEC-18",
-          "change": "added"
-        },
-        {
-          "id": "Person:Alice Vance",
-          "label": "Person",
-          "name": "Alice Vance",
-          "change": "context"
-        },
-        {
-          "id": "Person:Bob Martin",
-          "label": "Person",
-          "name": "Bob Martin",
-          "change": "context"
-        },
-        {
-          "id": "Person:Kevin Flynn",
-          "label": "Person",
-          "name": "Kevin Flynn",
-          "change": "context"
-        },
-        {
-          "id": "System:Kafka",
-          "label": "System",
-          "name": "Kafka",
-          "change": "context"
-        },
-        {
-          "id": "System:RabbitMQ",
-          "label": "System",
-          "name": "RabbitMQ",
-          "change": "context"
-        }
-      ],
-      "edges": [
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "Meeting:Architecture sync",
-          "type": "based_on",
-          "change": "added"
-        },
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "Person:Alice Vance",
-          "type": "decided_by",
-          "change": "added"
-        },
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "System:Kafka",
-          "type": "about_system",
-          "change": "added"
-        },
-        {
-          "source": "Meeting:Architecture sync",
-          "target": "Person:Alice Vance",
-          "type": "attended_by",
-          "change": "added"
-        },
-        {
-          "source": "Meeting:Architecture sync",
-          "target": "Person:Bob Martin",
-          "type": "attended_by",
-          "change": "added"
-        },
-        {
-          "source": "Meeting:Architecture sync",
-          "target": "Person:Kevin Flynn",
-          "type": "attended_by",
-          "change": "added"
-        }
-      ]
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "linking",
-      "status": "running",
-      "label": "Linking to existing decisions"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "linking",
-      "status": "done",
-      "label": "Linking to existing decisions",
-      "detail": "DEC-18 supersedes DEC-07 (RabbitMQ); DEC-18 restates DEC-04"
-    }
-  },
-  {
-    "event": "graph",
-    "data": {
-      "nodes": [
-        {
-          "id": "Decision:dec_98a223fad745",
-          "label": "Decision",
-          "name": "Adopt RabbitMQ for all event messaging across services",
-          "decision_code": "DEC-07",
-          "change": "changed"
-        },
-        {
-          "id": "Decision:dec_76772c5b323f",
-          "label": "Decision",
-          "name": "Adopt Kafka for all event messaging across services",
-          "decision_code": "DEC-04",
-          "change": "changed"
-        }
-      ],
-      "edges": [
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "Decision:dec_98a223fad745",
-          "type": "supersedes",
-          "change": "added"
-        },
-        {
-          "source": "Decision:dec_98a223fad745",
-          "target": "Decision:dec_76772c5b323f",
-          "type": "contradicts",
-          "change": "context"
-        },
-        {
-          "source": "Decision:dec_98a223fad745",
-          "target": "System:RabbitMQ",
-          "type": "about_system",
-          "change": "context"
-        },
-        {
-          "source": "Decision:dec_76772c5b323f",
-          "target": "System:Kafka",
-          "type": "about_system",
-          "change": "context"
-        }
-      ]
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "writing",
-      "status": "running",
-      "label": "Writing to graph"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "writing",
-      "status": "done",
-      "label": "Writing to graph",
-      "detail": "2 nodes and 7 edges written"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "health",
-      "status": "running",
-      "label": "Recomputing decision health"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "health",
-      "status": "done",
-      "label": "Recomputing decision health",
-      "detail": "DEC-07 now superseded; DEC-04 conflict resolved"
-    }
-  },
-  {
-    "event": "diff",
-    "data": {
-      "ingest_id": "ing_mock_kafka_0001",
-      "ingested_at": "2026-10-16T14:05:12Z",
-      "source": {
-        "id": "Meeting:Architecture sync",
-        "label": "Meeting",
-        "title": "Architecture sync"
-      },
-      "nodes_added": [
-        {
-          "id": "Meeting:Architecture sync",
-          "label": "Meeting",
-          "name": "Architecture sync"
-        },
-        {
-          "id": "Decision:dec_6b1f2e9a4c80",
-          "label": "Decision",
-          "name": "Standardise on Kafka for all event messaging across services",
-          "decision_code": "DEC-18"
-        }
-      ],
-      "edges_added": [
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "Meeting:Architecture sync",
-          "type": "based_on"
-        },
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "Person:Alice Vance",
-          "type": "decided_by"
-        },
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "System:Kafka",
-          "type": "about_system"
-        },
-        {
-          "source": "Meeting:Architecture sync",
-          "target": "Person:Alice Vance",
-          "type": "attended_by"
-        },
-        {
-          "source": "Meeting:Architecture sync",
-          "target": "Person:Bob Martin",
-          "type": "attended_by"
-        },
-        {
-          "source": "Meeting:Architecture sync",
-          "target": "Person:Kevin Flynn",
-          "type": "attended_by"
-        },
-        {
-          "source": "Decision:dec_6b1f2e9a4c80",
-          "target": "Decision:dec_98a223fad745",
-          "type": "supersedes",
-          "reason": "The meeting retires RabbitMQ and moves the same scope, all event messaging across services, to Kafka."
-        }
-      ],
-      "status_changes": [
-        {
-          "id": "dec_98a223fad745",
-          "decision_code": "DEC-07",
-          "title": "Adopt RabbitMQ for all event messaging across services",
-          "before": "contradicted",
-          "after": "superseded"
-        },
-        {
-          "id": "dec_76772c5b323f",
-          "decision_code": "DEC-04",
-          "title": "Adopt Kafka for all event messaging across services",
-          "before": "contradicted",
-          "after": "active"
-        }
-      ],
-      "person_changes": [],
-      "orphan_changes": [],
-      "links": [
-        {
-          "new_code": "DEC-18",
-          "existing_code": "DEC-07",
-          "relation": "supersedes",
-          "reason": "Both cover all event messaging across services; the new decision retires RabbitMQ in favour of Kafka."
-        },
-        {
-          "new_code": "DEC-18",
-          "existing_code": "DEC-04",
-          "relation": "none",
-          "reason": "Same direction as DEC-04 (Kafka for all event messaging); it restates it rather than replacing it."
-        }
-      ],
-      "summary": "1 new decision · 2 status changes · conflict resolved"
-    }
+ {
+  "event": "step",
+  "data": {
+   "step": "reading",
+   "status": "running",
+   "label": "Reading source"
   }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "reading",
+   "status": "done",
+   "label": "Reading source",
+   "detail": "35 words \u00b7 3 participants \u00b7 meeting"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_decisions",
+   "status": "running",
+   "label": "Extracting decisions"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_decisions",
+   "status": "done",
+   "label": "Extracting decisions",
+   "detail": "1 verified of 1 candidates: Standardize on Kafka for event messaging and retire RabbitMQ"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_people",
+   "status": "running",
+   "label": "Extracting people and status changes"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_people",
+   "status": "done",
+   "label": "Extracting people and status changes",
+   "detail": "No status changes"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "matching",
+   "status": "running",
+   "label": "Matching people and systems"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "matching",
+   "status": "done",
+   "label": "Matching people and systems",
+   "detail": "Bob Martin \u2192 existing, Kevin Flynn \u2192 existing, Alice Vance \u2192 existing, Kafka \u2192 existing"
+  }
+ },
+ {
+  "event": "graph",
+  "data": {
+   "nodes": [
+    {
+     "id": "Person:Bob Martin",
+     "label": "Person",
+     "name": "Bob Martin",
+     "change": "context"
+    },
+    {
+     "id": "Person:Kevin Flynn",
+     "label": "Person",
+     "name": "Kevin Flynn",
+     "change": "context"
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "name": "Alice Vance",
+     "change": "context"
+    },
+    {
+     "id": "System:Kafka",
+     "label": "System",
+     "name": "Kafka",
+     "change": "context"
+    },
+    {
+     "id": "System:RabbitMQ",
+     "label": "System",
+     "name": "RabbitMQ",
+     "change": "context"
+    }
+   ],
+   "edges": []
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "linking",
+   "status": "running",
+   "label": "Linking to existing decisions"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "linking",
+   "status": "done",
+   "label": "Linking to existing decisions",
+   "detail": "2 pairs judged \u00b7 supersedes \u201cAdopt RabbitMQ for all event messaging across services\u201d"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "writing",
+   "status": "running",
+   "label": "Writing to FalkorDB"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "writing",
+   "status": "done",
+   "label": "Writing to FalkorDB",
+   "detail": "2 nodes, 7 edges, 0 updated"
+  }
+ },
+ {
+  "event": "graph",
+  "data": {
+   "nodes": [
+    {
+     "id": "Meeting:Architecture sync",
+     "label": "Meeting",
+     "name": "Architecture sync",
+     "change": "added"
+    },
+    {
+     "id": "Decision:dec_010dd9ea58c1",
+     "label": "Decision",
+     "name": "Standardize on Kafka for event messaging and retire RabbitMQ",
+     "change": "added"
+    }
+   ],
+   "edges": [
+    {
+     "source": "Meeting:Architecture sync",
+     "target": "Person:Alice Vance",
+     "type": "attended_by",
+     "change": "added"
+    },
+    {
+     "source": "Meeting:Architecture sync",
+     "target": "Person:Bob Martin",
+     "type": "attended_by",
+     "change": "added"
+    },
+    {
+     "source": "Meeting:Architecture sync",
+     "target": "Person:Kevin Flynn",
+     "type": "attended_by",
+     "change": "added"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "change": "added"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "System:Kafka",
+     "type": "about_system",
+     "change": "added"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "Meeting:Architecture sync",
+     "type": "based_on",
+     "change": "added"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "Decision:dec_98a223fad745",
+     "type": "supersedes",
+     "change": "added"
+    }
+   ]
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "health",
+   "status": "running",
+   "label": "Recomputing health"
+  }
+ },
+ {
+  "event": "graph",
+  "data": {
+   "nodes": [
+    {
+     "id": "Decision:dec_76772c5b323f",
+     "label": "Decision",
+     "name": "Adopt Kafka for all event messaging across services",
+     "decision_code": "DEC-04",
+     "change": "changed"
+    },
+    {
+     "id": "Decision:dec_98a223fad745",
+     "label": "Decision",
+     "name": "Adopt RabbitMQ for all event messaging across services",
+     "decision_code": "DEC-07",
+     "change": "changed"
+    }
+   ],
+   "edges": []
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "health",
+   "status": "done",
+   "label": "Recomputing health",
+   "detail": "1 new decision \u00b7 2 status changes \u00b7 conflict resolved"
+  }
+ },
+ {
+  "event": "diff",
+  "data": {
+   "ingest_id": "ing_c71f042595",
+   "ingested_at": "2026-10-16T19:31:03Z",
+   "source": {
+    "id": "Meeting:Architecture sync",
+    "label": "Meeting",
+    "title": "Architecture sync"
+   },
+   "nodes_added": [
+    {
+     "id": "Meeting:Architecture sync",
+     "label": "Meeting",
+     "name": "Architecture sync"
+    },
+    {
+     "id": "Decision:dec_010dd9ea58c1",
+     "label": "Decision",
+     "name": "Standardize on Kafka for event messaging and retire RabbitMQ",
+     "decision_code": "DEC-18"
+    }
+   ],
+   "edges_added": [
+    {
+     "source": "Meeting:Architecture sync",
+     "target": "Person:Alice Vance",
+     "type": "attended_by"
+    },
+    {
+     "source": "Meeting:Architecture sync",
+     "target": "Person:Bob Martin",
+     "type": "attended_by"
+    },
+    {
+     "source": "Meeting:Architecture sync",
+     "target": "Person:Kevin Flynn",
+     "type": "attended_by"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "Person:Alice Vance",
+     "type": "decided_by"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "System:Kafka",
+     "type": "about_system"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "Meeting:Architecture sync",
+     "type": "based_on"
+    },
+    {
+     "source": "Decision:dec_010dd9ea58c1",
+     "target": "Decision:dec_98a223fad745",
+     "type": "supersedes",
+     "reason": "The new decision explicitly retires RabbitMQ and standardizes on Kafka, directly reversing the previous choice to use RabbitMQ for all event messaging."
+    }
+   ],
+   "status_changes": [
+    {
+     "id": "dec_76772c5b323f",
+     "decision_code": "DEC-04",
+     "title": "Adopt Kafka for all event messaging across services",
+     "before": "contradicted",
+     "after": "active"
+    },
+    {
+     "id": "dec_98a223fad745",
+     "decision_code": "DEC-07",
+     "title": "Adopt RabbitMQ for all event messaging across services",
+     "before": "contradicted",
+     "after": "superseded"
+    }
+   ],
+   "person_changes": [],
+   "orphan_changes": [],
+   "links": [
+    {
+     "new_code": "DEC-18",
+     "existing_code": "DEC-07",
+     "relation": "supersedes",
+     "reason": "The new decision explicitly retires RabbitMQ and standardizes on Kafka, directly reversing the previous choice to use RabbitMQ for all event messaging."
+    },
+    {
+     "new_code": "DEC-18",
+     "existing_code": "DEC-04",
+     "relation": "none",
+     "reason": "The new decision makes the same choice to use Kafka for event messaging as the existing decision, adding the specific detail of retiring RabbitMQ, which constitutes a reaffirmation rather than a contradiction or supersession."
+    }
+   ],
+   "summary": "1 new decision \u00b7 2 status changes \u00b7 conflict resolved"
+  }
+ }
 ]

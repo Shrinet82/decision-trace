@@ -1,292 +1,249 @@
 [
-  {
-    "event": "step",
-    "data": {
-      "step": "reading",
-      "status": "running",
-      "label": "Reading source"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "reading",
-      "status": "done",
-      "label": "Reading source",
-      "detail": "Announcement · 128 characters"
-    }
-  },
-  {
-    "event": "graph",
-    "data": {
-      "nodes": [
-        {
-          "id": "Document:People update: Alice Vance",
-          "label": "Document",
-          "name": "People update: Alice Vance",
-          "change": "added"
-        }
-      ],
-      "edges": []
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_decisions",
-      "status": "running",
-      "label": "Extracting decisions"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_decisions",
-      "status": "skipped",
-      "label": "Extracting decisions",
-      "detail": "No decision in this source"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_people",
-      "status": "running",
-      "label": "Extracting people"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "extracting_people",
-      "status": "done",
-      "label": "Extracting people",
-      "detail": "1 person: Alice Vance, left the company on 2026-10-16"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "matching",
-      "status": "running",
-      "label": "Matching existing entities"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "matching",
-      "status": "done",
-      "label": "Matching existing entities",
-      "detail": "Matched Alice Vance to an existing person"
-    }
-  },
-  {
-    "event": "graph",
-    "data": {
-      "nodes": [
-        {
-          "id": "Person:Alice Vance",
-          "label": "Person",
-          "name": "Alice Vance",
-          "change": "changed"
-        }
-      ],
-      "edges": [
-        {
-          "source": "Document:People update: Alice Vance",
-          "target": "Person:Alice Vance",
-          "type": "mentions",
-          "change": "added"
-        }
-      ]
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "linking",
-      "status": "running",
-      "label": "Linking to existing decisions"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "linking",
-      "status": "skipped",
-      "label": "Linking to existing decisions",
-      "detail": "No new decision to link"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "writing",
-      "status": "running",
-      "label": "Writing to graph"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "writing",
-      "status": "done",
-      "label": "Writing to graph",
-      "detail": "Alice Vance marked as departed on 2026-10-16"
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "health",
-      "status": "running",
-      "label": "Recomputing decision health"
-    }
-  },
-  {
-    "event": "graph",
-    "data": {
-      "nodes": [
-        {
-          "id": "Decision:dec_fda8c9b4e631",
-          "label": "Decision",
-          "name": "Migrate session storage from Postgres to Redis cluster",
-          "decision_code": "DEC-01",
-          "change": "context"
-        },
-        {
-          "id": "Decision:dec_76772c5b323f",
-          "label": "Decision",
-          "name": "Adopt Kafka for all event messaging across services",
-          "decision_code": "DEC-04",
-          "change": "changed"
-        },
-        {
-          "id": "Decision:dec_f564fcd15601",
-          "label": "Decision",
-          "name": "Migrate session storage to embedded Keycloak cache",
-          "decision_code": "DEC-11",
-          "change": "changed"
-        },
-        {
-          "id": "System:Kafka",
-          "label": "System",
-          "name": "Kafka",
-          "change": "changed"
-        },
-        {
-          "id": "System:Redis",
-          "label": "System",
-          "name": "Redis",
-          "change": "changed"
-        }
-      ],
-      "edges": [
-        {
-          "source": "Decision:dec_fda8c9b4e631",
-          "target": "Person:Alice Vance",
-          "type": "decided_by",
-          "change": "context"
-        },
-        {
-          "source": "Decision:dec_76772c5b323f",
-          "target": "Person:Alice Vance",
-          "type": "decided_by",
-          "change": "context"
-        },
-        {
-          "source": "Decision:dec_f564fcd15601",
-          "target": "Person:Alice Vance",
-          "type": "decided_by",
-          "change": "context"
-        },
-        {
-          "source": "Person:Alice Vance",
-          "target": "System:Kafka",
-          "type": "owns",
-          "change": "context"
-        },
-        {
-          "source": "Person:Alice Vance",
-          "target": "System:Redis",
-          "type": "owns",
-          "change": "context"
-        }
-      ]
-    }
-  },
-  {
-    "event": "step",
-    "data": {
-      "step": "health",
-      "status": "done",
-      "label": "Recomputing decision health",
-      "detail": "2 decisions possibly stale; 2 systems orphaned"
-    }
-  },
-  {
-    "event": "diff",
-    "data": {
-      "ingest_id": "ing_mock_alice_0002",
-      "ingested_at": "2026-10-16T14:09:40Z",
-      "source": {
-        "id": "Document:People update: Alice Vance",
-        "label": "Document",
-        "title": "People update: Alice Vance"
-      },
-      "nodes_added": [
-        {
-          "id": "Document:People update: Alice Vance",
-          "label": "Document",
-          "name": "People update: Alice Vance"
-        }
-      ],
-      "edges_added": [
-        {
-          "source": "Document:People update: Alice Vance",
-          "target": "Person:Alice Vance",
-          "type": "mentions"
-        }
-      ],
-      "status_changes": [
-        {
-          "id": "dec_76772c5b323f",
-          "decision_code": "DEC-04",
-          "title": "Adopt Kafka for all event messaging across services",
-          "before": "active",
-          "after": "possibly_stale"
-        },
-        {
-          "id": "dec_f564fcd15601",
-          "decision_code": "DEC-11",
-          "title": "Migrate session storage to embedded Keycloak cache",
-          "before": "active",
-          "after": "possibly_stale"
-        }
-      ],
-      "person_changes": [
-        {
-          "name": "Alice Vance",
-          "field": "departed",
-          "before": false,
-          "after": true
-        }
-      ],
-      "orphan_changes": [
-        {
-          "system": "Kafka",
-          "before": false,
-          "after": true
-        },
-        {
-          "system": "Redis",
-          "before": false,
-          "after": true
-        }
-      ],
-      "links": [],
-      "summary": "1 person left · 2 decisions possibly stale · 2 systems orphaned"
-    }
+ {
+  "event": "step",
+  "data": {
+   "step": "reading",
+   "status": "running",
+   "label": "Reading source"
   }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "reading",
+   "status": "done",
+   "label": "Reading source",
+   "detail": "16 words \u00b7 0 participants \u00b7 announcement"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_decisions",
+   "status": "running",
+   "label": "Extracting decisions"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_decisions",
+   "status": "done",
+   "label": "Extracting decisions",
+   "detail": "0 verified of 0 candidates"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_people",
+   "status": "running",
+   "label": "Extracting people and status changes"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "extracting_people",
+   "status": "done",
+   "label": "Extracting people and status changes",
+   "detail": "Alice Vance leaves"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "matching",
+   "status": "running",
+   "label": "Matching people and systems"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "matching",
+   "status": "done",
+   "label": "Matching people and systems",
+   "detail": "Alice Vance \u2192 existing"
+  }
+ },
+ {
+  "event": "graph",
+  "data": {
+   "nodes": [
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "name": "Alice Vance",
+     "change": "context"
+    }
+   ],
+   "edges": []
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "linking",
+   "status": "running",
+   "label": "Linking to existing decisions"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "linking",
+   "status": "done",
+   "label": "Linking to existing decisions",
+   "detail": "0 pairs judged \u00b7 no links"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "writing",
+   "status": "running",
+   "label": "Writing to FalkorDB"
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "writing",
+   "status": "done",
+   "label": "Writing to FalkorDB",
+   "detail": "1 nodes, 0 edges, 1 updated"
+  }
+ },
+ {
+  "event": "graph",
+  "data": {
+   "nodes": [
+    {
+     "id": "Document:People update: Alice Vance",
+     "label": "Document",
+     "name": "People update: Alice Vance",
+     "change": "added"
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "name": "Alice Vance",
+     "change": "changed"
+    }
+   ],
+   "edges": []
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "health",
+   "status": "running",
+   "label": "Recomputing health"
+  }
+ },
+ {
+  "event": "graph",
+  "data": {
+   "nodes": [
+    {
+     "id": "Decision:dec_76772c5b323f",
+     "label": "Decision",
+     "name": "Adopt Kafka for all event messaging across services",
+     "decision_code": "DEC-04",
+     "change": "changed"
+    },
+    {
+     "id": "Decision:dec_f564fcd15601",
+     "label": "Decision",
+     "name": "Migrate session storage to embedded Keycloak cache",
+     "decision_code": "DEC-11",
+     "change": "changed"
+    },
+    {
+     "id": "Decision:dec_010dd9ea58c1",
+     "label": "Decision",
+     "name": "Standardize on Kafka for event messaging and retire RabbitMQ",
+     "decision_code": "DEC-18",
+     "change": "changed"
+    }
+   ],
+   "edges": []
+  }
+ },
+ {
+  "event": "step",
+  "data": {
+   "step": "health",
+   "status": "done",
+   "label": "Recomputing health",
+   "detail": "3 status changes \u00b7 1 person left \u00b7 2 systems orphaned"
+  }
+ },
+ {
+  "event": "diff",
+  "data": {
+   "ingest_id": "ing_4e7b1be7c8",
+   "ingested_at": "2026-10-16T19:31:13Z",
+   "source": {
+    "id": "Document:People update: Alice Vance",
+    "label": "Document",
+    "title": "People update: Alice Vance"
+   },
+   "nodes_added": [
+    {
+     "id": "Document:People update: Alice Vance",
+     "label": "Document",
+     "name": "People update: Alice Vance"
+    }
+   ],
+   "edges_added": [],
+   "status_changes": [
+    {
+     "id": "dec_76772c5b323f",
+     "decision_code": "DEC-04",
+     "title": "Adopt Kafka for all event messaging across services",
+     "before": "active",
+     "after": "possibly_stale"
+    },
+    {
+     "id": "dec_f564fcd15601",
+     "decision_code": "DEC-11",
+     "title": "Migrate session storage to embedded Keycloak cache",
+     "before": "active",
+     "after": "possibly_stale"
+    },
+    {
+     "id": "dec_010dd9ea58c1",
+     "decision_code": "DEC-18",
+     "title": "Standardize on Kafka for event messaging and retire RabbitMQ",
+     "before": "active",
+     "after": "possibly_stale"
+    }
+   ],
+   "person_changes": [
+    {
+     "name": "Alice Vance",
+     "field": "departed",
+     "before": false,
+     "after": true
+    }
+   ],
+   "orphan_changes": [
+    {
+     "system": "Kafka",
+     "before": false,
+     "after": true
+    },
+    {
+     "system": "Redis",
+     "before": false,
+     "after": true
+    }
+   ],
+   "links": [],
+   "summary": "3 status changes \u00b7 1 person left \u00b7 2 systems orphaned"
+  }
+ }
 ]
