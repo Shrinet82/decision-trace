@@ -41,6 +41,23 @@ class SourceRef(BaseModel):
     date: Optional[str] = Field(default=None, description="Date of the source")
 
 
+class GraphNode(BaseModel):
+    """Graph node in a serialized graph representation."""
+
+    id: str = Field(..., description="Unique node identifier")
+    label: str = Field(..., description="Primary node label (e.g. Decision, Person, System)")
+    properties: dict[str, Any] = Field(default_factory=dict, description="Node property attributes")
+
+
+class GraphEdge(BaseModel):
+    """Graph relationship edge."""
+
+    source: str = Field(..., description="Source node ID")
+    target: str = Field(..., description="Target node ID")
+    type: str = Field(..., description="Relationship type (e.g. decided_by, supersedes)")
+    properties: dict[str, Any] = Field(default_factory=dict, description="Edge property attributes")
+
+
 class PersonRef(BaseModel):
     """A person, with whether they have left the company."""
 
@@ -126,8 +143,8 @@ class CypherTraceOut(BaseModel):
 class SubgraphOut(BaseModel):
     """Deduplicated nodes and edges touched by a detail response. Node ids are 'Label:key'."""
 
-    nodes: list["GraphNode"] = Field(default_factory=list)
-    edges: list["GraphEdge"] = Field(default_factory=list)
+    nodes: list[GraphNode] = Field(default_factory=list)
+    edges: list[GraphEdge] = Field(default_factory=list)
 
 
 class DecisionDetail(BaseModel):
@@ -187,23 +204,6 @@ class Citation(BaseModel):
     title: str = Field(..., description="Node title or descriptor")
 
 
-class GraphNode(BaseModel):
-    """Graph node in a serialized graph representation."""
-
-    id: str = Field(..., description="Unique node identifier")
-    label: str = Field(..., description="Primary node label (e.g. Decision, Person, System)")
-    properties: dict[str, Any] = Field(default_factory=dict, description="Node property attributes")
-
-
-class GraphEdge(BaseModel):
-    """Graph relationship edge."""
-
-    source: str = Field(..., description="Source node ID")
-    target: str = Field(..., description="Target node ID")
-    type: str = Field(..., description="Relationship type (e.g. decided_by, supersedes)")
-    properties: dict[str, Any] = Field(default_factory=dict, description="Edge property attributes")
-
-
 class GraphPath(BaseModel):
     """Connected subgraph traversed to formulate an answer."""
 
@@ -261,9 +261,6 @@ class ResetResponse(BaseModel):
     dataset: str = Field(..., description="Target dataset that was purged")
     message: str = Field(..., description="Confirmation details")
 
-
-SubgraphOut.model_rebuild()
-DecisionDetail.model_rebuild()
 
 
 class SystemSummary(BaseModel):
