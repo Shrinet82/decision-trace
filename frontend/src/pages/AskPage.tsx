@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowUp, User } from 'lucide-react';
 import type { AskResponse, GraphNode } from '../api/types';
 import { useAsk, useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
@@ -11,6 +11,7 @@ import { PageFrame } from '../components/PageFrame';
 import { StatusIcon } from '../components/StatusIcon';
 import { btnOutline, btnPrimary } from '../components/ui';
 import { isNotFoundAnswer } from '../utils/answer';
+import { decisionHref } from '../utils/links';
 import { buildEvidencePath } from '../utils/evidence';
 import {
   buildGraphIndex,
@@ -137,6 +138,16 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
                     {verdict}
                   </span>
                 )}
+                {main && (
+                  <Link
+                    to={decisionHref(String(main.properties.decision_code ?? main.id))}
+                    title={String(main.properties.title ?? '')}
+                    className="inline-flex h-[22px] max-w-full items-center gap-1 truncate rounded-chip border border-border px-2 text-xs text-accent hover:bg-subtle"
+                  >
+                    {String(main.properties.decision_code ?? 'Decision')}
+                    <span className="truncate text-text-2">· {String(main.properties.title ?? '')}</span>
+                  </Link>
+                )}
                 {main && decisionCount !== undefined && (
                   <span className="text-xs text-muted">
                     Health checked across {decisionCount} decisions
@@ -256,7 +267,7 @@ export const AskPage: React.FC = () => {
       <button
         type="button"
         disabled={!lastMain}
-        onClick={() => lastMain && navigate(`/graph?node=${encodeURIComponent(lastMain.id)}`)}
+        onClick={() => lastMain && navigate(`/explore?node=${encodeURIComponent(lastMain.id)}`)}
         className={btnOutline}
       >
         Open in graph

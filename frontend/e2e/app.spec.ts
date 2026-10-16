@@ -71,10 +71,19 @@ test.describe('journey', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Decisions' })).toBeVisible();
     const conflicts = page.getByRole('region', { name: /^Conflict, / });
     await expect(conflicts).toBeVisible();
-    await conflicts.getByRole('button').first().click();
-    const peek = page.getByRole('complementary', { name: 'Selected decision' });
-    await expect(peek.getByText(/^Conflicts with/)).toBeVisible();
-    await expect(peek.getByRole('link', { name: 'Open' })).toBeVisible();
+    // A row opens the full decision page
+    await conflicts.getByRole('link').first().click();
+    await expect(page).toHaveURL(/\/decisions\/DEC-\d{2}$/);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Lineage' })).toBeVisible();
+    await expect(page.getByText(/^Conflict\./)).toBeVisible();
+    const props = page.getByRole('complementary', { name: 'Decision properties' });
+    await props.getByText('Show Cypher').click();
+    await expect(props.getByText('supersedes_chain')).toBeVisible();
+    // Conflicting decision is one click away
+    await props.getByRole('link', { name: /^DEC-\d{2}$/ }).first().click();
+    await expect(page).toHaveURL(/\/decisions\/DEC-\d{2}$/);
+    await expect(page.getByRole('region', { name: 'System timeline' })).toBeVisible();
 
     // Views link in the sidebar filters the list
     await page.getByRole('link', { name: /^Superseded\s*\d/ }).click();
@@ -82,7 +91,7 @@ test.describe('journey', () => {
     await expect(page.getByRole('region', { name: /^Active, / })).toHaveCount(0);
 
     // Graph: canvas, node-type filter with real counts, expand, copy Cypher, inspector
-    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Graph' }).click();
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Explore' }).click();
     await settleGraph(page);
     const decisionFilter = page.getByRole('checkbox', { name: /^Decision/ });
     await expect(decisionFilter).toBeChecked();
@@ -98,6 +107,7 @@ test.describe('journey', () => {
     expect(cypher).toMatch(/^MATCH p = \(n:Decision \{id: 'dec_[0-9a-f]+'\}\)-\[\*1\.\.2\]-\(\) RETURN p$/);
     const inspector = page.getByRole('complementary', { name: 'Selected node' });
     await expect(inspector.getByRole('link', { name: 'Ask about this' })).toBeVisible();
+    await expect(inspector.getByRole('link', { name: 'Open decision page' })).toBeVisible();
 
     // Command palette: filter decisions and jump to one
     await page.keyboard.press('Control+k');
@@ -105,8 +115,28 @@ test.describe('journey', () => {
     await expect(dialog).toBeVisible();
     await dialog.getByRole('combobox').fill('keycloak');
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(/\/decisions\?selected=dec_/);
+    await expect(page).toHaveURL(/\/decisions\/DEC-\d{2}$/);
     await expect(dialog).toBeHidden();
+  });
+
+  test('orphaned system and its departed owner', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.getByRole('link', { name: /^Orphaned systems\s*1/ }).click();
+    await expect(page).toHaveURL(/\/systems\?view=orphaned/);
+    await page.getByRole('link', { name: /Elasticsearch/ }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Elasticsearch' })).toBeVisible();
+    await expect(page.getByText('No active owner')).toBeVisible();
+    const props = page.getByRole('complementary', { name: 'System properties' });
+    await props.getByRole('link', { name: /Marcus Aurelius/ }).click();
+    await expect(page).toHaveURL(/\/people\/Marcus%20Aurelius$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Marcus Aurelius' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Systems owned' }).getByText('Orphaned')).toBeVisible();
+  });
+
+  test('old /graph links redirect to /explore', async ({ page }) => {
+    await page.goto('/graph?node=dec_x');
+    await expect(page).toHaveURL(/\/explore\?node=dec_x$/);
   });
 
   test('unanswerable question shows the empty state with no evidence or citations', async ({
@@ -149,8 +179,34 @@ for (const width of [1440, 390]) {
       await expectNoHorizontalScroll(page);
     });
 
-    test('Graph page', async ({ page }) => {
-      await page.goto('/graph');
+    for (const [label, url, ready] of [
+      ['Decision page DEC-11', '/decisions/DEC-11', 'Lineage'],
+      ['Decision page DEC-04', '/decisions/DEC-04', 'Lineage'],
+      ['System page', '/systems/Elasticsearch', 'Decisions'],
+      ['Person page', '/people/Alice%20Vance', 'Decisions made'],
+    ] as const) {
+      test(label, async ({ page }) => {
+        await page.goto(url);
+        await expect(page.getByRole('region', { name: ready })).toBeVisible();
+        await page.waitForTimeout(600);
+        await expectNoSeriousViolations(page);
+        await expectNoHorizontalScroll(page);
+      });
+    }
+
+    test('Systems and People lists', async ({ page }) => {
+      await page.goto('/systems');
+      await expect(page.getByRole('link', { name: /Elasticsearch/ })).toBeVisible();
+      await expectNoSeriousViolations(page);
+      await expectNoHorizontalScroll(page);
+      await page.goto('/people');
+      await expect(page.getByRole('link', { name: /Alice Vance/ })).toBeVisible();
+      await expectNoSeriousViolations(page);
+      await expectNoHorizontalScroll(page);
+    });
+
+    test('Explore page', async ({ page }) => {
+      await page.goto('/explore');
       await settleGraph(page);
       await expectNoSeriousViolations(page);
       await expectNoHorizontalScroll(page);
@@ -188,9 +244,21 @@ test.describe('screenshots', () => {
       await page.waitForTimeout(300);
       await page.screenshot({ path: path.join(screenshotsDir, `decisions-${width}.png`), fullPage: true });
 
-      await page.goto('/graph');
+      await page.goto('/explore');
       await settleGraph(page);
       await page.screenshot({ path: path.join(screenshotsDir, `graph-${width}.png`), fullPage: true });
+
+      for (const [file, url, ready] of [
+        ['decision-DEC-11', '/decisions/DEC-11', 'Lineage'],
+        ['decision-DEC-04', '/decisions/DEC-04', 'Lineage'],
+        ['system-Elasticsearch', '/systems/Elasticsearch', 'Decisions'],
+        ['person-Alice-Vance', '/people/Alice%20Vance', 'Decisions made'],
+      ] as const) {
+        await page.goto(url);
+        await expect(page.getByRole('region', { name: ready })).toBeVisible();
+        await page.waitForTimeout(900);
+        await page.screenshot({ path: path.join(screenshotsDir, `${file}-${width}.png`), fullPage: true });
+      }
     });
   }
 });

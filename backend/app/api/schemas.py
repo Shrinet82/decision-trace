@@ -41,6 +41,95 @@ class SourceRef(BaseModel):
     date: Optional[str] = Field(default=None, description="Date of the source")
 
 
+class PersonRef(BaseModel):
+    """A person, with whether they have left the company."""
+
+    name: str
+    role: Optional[str] = None
+    departed: bool = False
+    leave_date: Optional[str] = None
+
+
+class DecisionRef(BaseModel):
+    """Compact decision reference used in lineage, timelines and entity pages."""
+
+    id: str
+    decision_code: Optional[str] = None
+    title: str
+    health: HealthStatus = "active"
+    decided_on: Optional[str] = None
+    deciders: list[str] = Field(default_factory=list)
+    systems: list[str] = Field(default_factory=list)
+
+
+class LineageItem(DecisionRef):
+    """A decision in a supersedes chain; depth 1 is the direct neighbour."""
+
+    depth: int = 1
+
+
+class Lineage(BaseModel):
+    """Full supersedes chains (both directions) and contradiction links of a decision."""
+
+    supersedes: list[LineageItem] = Field(
+        default_factory=list, description="Older decisions this one replaces, transitively"
+    )
+    superseded_by: list[LineageItem] = Field(
+        default_factory=list, description="Newer decisions that replace this one, transitively"
+    )
+    contradicts: list[DecisionRef] = Field(
+        default_factory=list, description="Decisions this one contradicts (outgoing edge)"
+    )
+    contradicted_by: list[DecisionRef] = Field(
+        default_factory=list, description="Decisions that contradict this one (incoming edge)"
+    )
+
+
+class SourceDetail(BaseModel):
+    """An evidence source of a decision."""
+
+    type: Literal["ticket", "meeting", "document"]
+    id: str = Field(..., description="Ticket ID or meeting title")
+    title: Optional[str] = None
+    date: Optional[str] = None
+    quote: Optional[str] = Field(
+        default=None,
+        description=(
+            "Verbatim evidence quote. Quotes are stored per decision, so this is set only when the "
+            "decision has a single source; otherwise see DecisionDetail.evidence_quote."
+        ),
+    )
+
+
+class Impact(BaseModel):
+    """Teams, projects and people within two hops of the decision's systems."""
+
+    teams: list[str] = Field(default_factory=list)
+    projects: list[str] = Field(default_factory=list)
+    people: list[PersonRef] = Field(default_factory=list)
+
+
+class CypherQuery(BaseModel):
+    name: str
+    query: str
+    params: dict[str, Any] = Field(default_factory=dict)
+    ms: float
+
+
+class CypherTraceOut(BaseModel):
+    """The exact Cypher statements that produced a response, with timings."""
+
+    queries: list[CypherQuery] = Field(default_factory=list)
+    total_ms: float = 0.0
+
+
+class SubgraphOut(BaseModel):
+    """Deduplicated nodes and edges touched by a detail response. Node ids are 'Label:key'."""
+
+    nodes: list["GraphNode"] = Field(default_factory=list)
+    edges: list["GraphEdge"] = Field(default_factory=list)
+
+
 class DecisionDetail(BaseModel):
     """Detailed decision view including graph connections and health audit."""
 
@@ -63,7 +152,7 @@ class DecisionDetail(BaseModel):
     systems: list[str] = Field(
         default_factory=list, description="Related systems (about_system, mentions)"
     )
-    sources: list[SourceRef] = Field(
+    sources: list[SourceDetail] = Field(
         default_factory=list, description="Originating tickets or meetings"
     )
     supersedes: list[str] = Field(
@@ -75,6 +164,17 @@ class DecisionDetail(BaseModel):
     contradicts: list[str] = Field(
         default_factory=list, description="Decisions contradicted by or contradicting this decision"
     )
+    evidence_quote: Optional[str] = Field(default=None, description="Verbatim evidence quote")
+    deciders: list[PersonRef] = Field(default_factory=list, description="Each decider")
+    system_names: list[str] = Field(default_factory=list, description="Systems it is about")
+    lineage: Lineage = Field(default_factory=Lineage)
+    timeline: list[DecisionRef] = Field(
+        default_factory=list,
+        description="Every decision on the same system(s), oldest first, including this one",
+    )
+    impact: Impact = Field(default_factory=Impact)
+    subgraph: SubgraphOut = Field(default_factory=SubgraphOut)
+    cypher: CypherTraceOut = Field(default_factory=CypherTraceOut)
 
 
 class Citation(BaseModel):
@@ -160,3 +260,59 @@ class ResetResponse(BaseModel):
     status: str = Field(..., description="Reset status, e.g. success")
     dataset: str = Field(..., description="Target dataset that was purged")
     message: str = Field(..., description="Confirmation details")
+
+
+SubgraphOut.model_rebuild()
+DecisionDetail.model_rebuild()
+
+
+class SystemSummary(BaseModel):
+    """A system with its owner and whether it is orphaned (owner has left)."""
+
+    name: str
+    system_type: Optional[str] = None
+    vendor: Optional[str] = None
+    owner: Optional[PersonRef] = None
+    orphaned: bool = Field(default=False, description="True if the owner has left the company")
+    decision_count: int = 0
+    ticket_count: int = 0
+    teams: list[str] = Field(default_factory=list)
+
+
+class PersonInvolvement(PersonRef):
+    """A person connected to a system, and how."""
+
+    roles: list[str] = Field(
+        default_factory=list, description="owner, decider, and/or tickets (raised or assigned)"
+    )
+    ticket_count: int = 0
+
+
+class SystemDetail(SystemSummary):
+    decisions: list[DecisionRef] = Field(default_factory=list, description="Oldest first")
+    people: list[PersonInvolvement] = Field(default_factory=list)
+    cypher: CypherTraceOut = Field(default_factory=CypherTraceOut)
+
+
+class PersonSummary(PersonRef):
+    teams: list[str] = Field(default_factory=list)
+    systems_owned: list[str] = Field(default_factory=list)
+    decision_count: int = 0
+
+
+class OwnedSystem(BaseModel):
+    name: str
+    orphaned: bool = False
+
+
+class PersonDetail(PersonSummary):
+    start_date: Optional[str] = None
+    email: Optional[str] = None
+    teams_led: list[str] = Field(default_factory=list)
+    projects_led: list[str] = Field(default_factory=list)
+    owned: list[OwnedSystem] = Field(default_factory=list)
+    decisions: list[DecisionRef] = Field(default_factory=list, description="Oldest first")
+    tickets_raised: int = 0
+    tickets_assigned: int = 0
+    meetings_attended: int = 0
+    cypher: CypherTraceOut = Field(default_factory=CypherTraceOut)

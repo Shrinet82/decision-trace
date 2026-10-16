@@ -12,7 +12,8 @@
   "decided_on": "2026-02-03",
   "decided_by": "Alice Vance",
   "people": [
-   "Alice Vance"
+   "Alice Vance",
+   "Ian Malcolm"
   ],
   "systems": [
    "Redis"
@@ -22,14 +23,384 @@
     "type": "ticket",
     "id": "TICK-101",
     "title": "Severe latency on Postgres session store under peak load",
-    "date": "2026-02-03"
+    "date": "2026-02-03",
+    "quote": "Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention."
    }
   ],
   "supersedes": [],
   "superseded_by": [
    "Migrate session storage to embedded Keycloak cache"
   ],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention.",
+  "deciders": [
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Redis"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [
+    {
+     "id": "dec_f564fcd15601",
+     "decision_code": "DEC-11",
+     "title": "Migrate session storage to embedded Keycloak cache",
+     "health": "active",
+     "decided_on": "2026-05-12",
+     "deciders": [
+      "Alice Vance"
+     ],
+     "systems": [
+      "Keycloak"
+     ],
+     "depth": 1
+    }
+   ],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_fda8c9b4e631",
+    "decision_code": "DEC-01",
+    "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+    "health": "superseded",
+    "decided_on": "2026-02-03",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   },
+   {
+    "id": "dec_2c6a03017923",
+    "decision_code": "DEC-10",
+    "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+    "health": "active",
+    "decided_on": "2026-05-05",
+    "deciders": [
+     "Ian Malcolm"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Horizon"
+   ],
+   "people": [
+    {
+     "name": "Alice Vance",
+     "role": "Principal Platform Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Ian Malcolm",
+     "role": "Distributed Systems Architect",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_fda8c9b4e631",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_fda8c9b4e631",
+      "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+      "decided_on": "2026-02-03",
+      "status": "accepted",
+      "decision_code": "DEC-01",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "properties": {
+      "name": "Alice Vance",
+      "email": "alice.vance@novascale.io",
+      "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Principal Platform Engineer",
+      "start_date": "2022-03-01"
+     }
+    },
+    {
+     "id": "System:Redis",
+     "label": "System",
+     "properties": {
+      "name": "Redis",
+      "id": "3513e265-fe56-5a66-ba00-5f925be3ceee",
+      "status": "active",
+      "system_type": "cache",
+      "vendor": "Redis Ltd"
+     }
+    },
+    {
+     "id": "Decision:dec_2c6a03017923",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_2c6a03017923",
+      "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+      "decided_on": "2026-05-05",
+      "status": "accepted",
+      "decision_code": "DEC-10",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Decision:dec_f564fcd15601",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f564fcd15601",
+      "title": "Migrate session storage to embedded Keycloak cache",
+      "decided_on": "2026-05-12",
+      "decision_code": "DEC-11",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-102",
+     "label": "Ticket",
+     "properties": {
+      "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
+      "ticket_id": "TICK-102",
+      "title": "Redis session cluster operational maintenance and failover complexity",
+      "status": "closed",
+      "opened": "2026-05-10",
+      "closed": "2026-05-12",
+      "system": "Keycloak"
+     }
+    },
+    {
+     "id": "Ticket:TICK-101",
+     "label": "Ticket",
+     "properties": {
+      "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
+      "ticket_id": "TICK-101",
+      "title": "Severe latency on Postgres session store under peak load",
+      "status": "closed",
+      "opened": "2026-02-01",
+      "closed": "2026-02-03",
+      "system": "Redis"
+     }
+    },
+    {
+     "id": "Person:Ian Malcolm",
+     "label": "Person",
+     "properties": {
+      "email": "ian.malcolm@novascale.io",
+      "id": "7cd29e90-177e-5bcd-a6c1-9394f2b1b40a",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Ian Malcolm",
+      "role": "Distributed Systems Architect",
+      "start_date": "2021-05-10"
+     }
+    },
+    {
+     "id": "Project:Project Horizon",
+     "label": "Project",
+     "properties": {
+      "description": "Session Layer Modernization and Cache Migration",
+      "id": "51a799d3-08d8-5fb9-9d51-f60e6146c9ab",
+      "name": "Project Horizon",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "System:Redis",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_2c6a03017923",
+     "target": "System:Redis",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Decision:dec_fda8c9b4e631",
+     "type": "supersedes",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Ticket:TICK-102",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "Ticket:TICK-101",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_2c6a03017923",
+     "target": "Person:Ian Malcolm",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "System:Redis",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Project:Project Horizon",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Team:Core Infrastructure",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_fda8c9b4e631"
+     },
+     "ms": 73.4
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_fda8c9b4e631"
+     },
+     "ms": 87.4
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_fda8c9b4e631"
+     },
+     "ms": 87.4
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_fda8c9b4e631"
+     },
+     "ms": 100.1
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_fda8c9b4e631"
+     },
+     "ms": 99.9
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_fda8c9b4e631"
+     },
+     "ms": 85.1
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_2c6a03017923",
+       "dec_f564fcd15601",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 86.3
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_f564fcd15601",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 74.7
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_f564fcd15601",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 80.2
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Redis"
+      ]
+     },
+     "ms": 97.5
+    }
+   ],
+   "total_ms": 872.0
+  }
  },
  "dec_f17ee7ad31a2": {
   "id": "dec_f17ee7ad31a2",
@@ -44,6 +415,7 @@
   "decided_on": "2026-02-10",
   "decided_by": "Julia Roberts",
   "people": [
+   "Alice Vance",
    "Julia Roberts"
   ],
   "systems": [
@@ -54,12 +426,358 @@
     "type": "meeting",
     "id": "IAM Architecture Modernization",
     "title": "IAM Architecture Modernization",
-    "date": "2026-02-10"
+    "date": "2026-02-10",
+    "quote": "Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints.",
+  "deciders": [
+   {
+    "name": "Julia Roberts",
+    "role": "Identity & Access Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Keycloak"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_f17ee7ad31a2",
+    "decision_code": "DEC-02",
+    "title": "Adopt Keycloak for company-wide single sign-on",
+    "health": "active",
+    "decided_on": "2026-02-10",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f564fcd15601",
+    "decision_code": "DEC-11",
+    "title": "Migrate session storage to embedded Keycloak cache",
+    "health": "active",
+    "decided_on": "2026-05-12",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f8a30e251e54",
+    "decision_code": "DEC-12",
+    "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "health": "active",
+    "decided_on": "2026-05-24",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Security & IAM"
+   ],
+   "projects": [
+    "Project Shield"
+   ],
+   "people": [
+    {
+     "name": "Alice Vance",
+     "role": "Principal Platform Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Julia Roberts",
+     "role": "Identity & Access Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_f17ee7ad31a2",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f17ee7ad31a2",
+      "title": "Adopt Keycloak for company-wide single sign-on",
+      "decided_on": "2026-02-10",
+      "status": "accepted",
+      "decision_code": "DEC-02",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Julia Roberts",
+     "label": "Person",
+     "properties": {
+      "name": "Julia Roberts",
+      "email": "julia.roberts@novascale.io",
+      "id": "9f04412b-7bb9-50c6-8c7b-644c6e18e8d2",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Identity & Access Lead",
+      "start_date": "2022-07-01"
+     }
+    },
+    {
+     "id": "System:Keycloak",
+     "label": "System",
+     "properties": {
+      "name": "Keycloak",
+      "id": "966e4c75-dd82-54d3-b9dd-1a89d3c6a06f",
+      "status": "active",
+      "system_type": "iam",
+      "vendor": "Red Hat"
+     }
+    },
+    {
+     "id": "Decision:dec_f8a30e251e54",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f8a30e251e54",
+      "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+      "decided_on": "2026-05-24",
+      "status": "accepted",
+      "decision_code": "DEC-12",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Decision:dec_f564fcd15601",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f564fcd15601",
+      "title": "Migrate session storage to embedded Keycloak cache",
+      "decided_on": "2026-05-12",
+      "status": "accepted",
+      "decision_code": "DEC-11",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Meeting:IAM Architecture Modernization",
+     "label": "Meeting",
+     "properties": {
+      "id": "a500d882-96cf-5b04-b378-3d36b7e12d1e",
+      "title": "IAM Architecture Modernization",
+      "date": "2026-02-10",
+      "meeting_date": "2026-02-10",
+      "file_name": "2026-02-10_iam_modernization.md"
+     }
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "properties": {
+      "email": "alice.vance@novascale.io",
+      "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Alice Vance",
+      "role": "Principal Platform Engineer",
+      "start_date": "2022-03-01"
+     }
+    },
+    {
+     "id": "Project:Project Shield",
+     "label": "Project",
+     "properties": {
+      "description": "Zero Trust Auth Gateway and Enterprise SSO",
+      "id": "7de3ca9e-8a3f-5cd4-a241-adca88b3e910",
+      "name": "Project Shield",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Security & IAM",
+     "label": "Team",
+     "properties": {
+      "department": "Information Security",
+      "id": "13ef364e-fda3-5c11-805b-1dd2ee615608",
+      "name": "Security & IAM"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "Person:Julia Roberts",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "Meeting:IAM Architecture Modernization",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "Person:Julia Roberts",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "System:Keycloak",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "Project:Project Shield",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "Team:Security & IAM",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_f17ee7ad31a2"
+     },
+     "ms": 83.9
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_f17ee7ad31a2"
+     },
+     "ms": 92.1
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_f17ee7ad31a2"
+     },
+     "ms": 77.7
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_f17ee7ad31a2"
+     },
+     "ms": 78.7
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_f17ee7ad31a2"
+     },
+     "ms": 81.0
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_f17ee7ad31a2"
+     },
+     "ms": 80.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_f17ee7ad31a2",
+       "dec_f564fcd15601",
+       "dec_f8a30e251e54"
+      ]
+     },
+     "ms": 86.3
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_f17ee7ad31a2"
+      ]
+     },
+     "ms": 75.5
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_f17ee7ad31a2"
+      ]
+     },
+     "ms": 97.3
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Keycloak"
+      ]
+     },
+     "ms": 571.3
+    }
+   ],
+   "total_ms": 1323.8
+  }
  },
  "dec_8c7075150849": {
   "id": "dec_8c7075150849",
@@ -74,7 +792,9 @@
   "decided_on": "2026-02-18",
   "decided_by": "Fiona Gallagher",
   "people": [
-   "Fiona Gallagher"
+   "Bob Martin",
+   "Fiona Gallagher",
+   "Laura Croft"
   ],
   "systems": [
    "Snowflake"
@@ -84,14 +804,394 @@
     "type": "ticket",
     "id": "TICK-103",
     "title": "Slow analytical queries on historical clickstream datasets",
-    "date": "2026-02-18"
+    "date": "2026-02-18",
+    "quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems."
    }
   ],
   "supersedes": [],
   "superseded_by": [
    "Migrate analytics reporting queries from Snowflake to ClickHouse cluster"
   ],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems.",
+  "deciders": [
+   {
+    "name": "Fiona Gallagher",
+    "role": "Lead Analytics Engineer",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Snowflake"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [
+    {
+     "id": "dec_d1d225a60971",
+     "decision_code": "DEC-13",
+     "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+     "health": "active",
+     "decided_on": "2026-06-04",
+     "deciders": [
+      "Carlos Mendez"
+     ],
+     "systems": [
+      "ClickHouse"
+     ],
+     "depth": 1
+    }
+   ],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_8c7075150849",
+    "decision_code": "DEC-03",
+    "title": "Adopt Snowflake for analytics ETL queries",
+    "health": "superseded",
+    "decided_on": "2026-02-18",
+    "deciders": [
+     "Fiona Gallagher"
+    ],
+    "systems": [
+     "Snowflake"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Data Platform"
+   ],
+   "projects": [],
+   "people": [
+    {
+     "name": "Bob Martin",
+     "role": "Senior Staff SRE",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Fiona Gallagher",
+     "role": "Lead Analytics Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Laura Croft",
+     "role": "Cloud Operations Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_8c7075150849",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_8c7075150849",
+      "title": "Adopt Snowflake for analytics ETL queries",
+      "decided_on": "2026-02-18",
+      "status": "accepted",
+      "decision_code": "DEC-03",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Person:Fiona Gallagher",
+     "label": "Person",
+     "properties": {
+      "name": "Fiona Gallagher",
+      "email": "fiona.gallagher@novascale.io",
+      "id": "0bb4c85f-396c-5a74-9978-e7c746d76489",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Lead Analytics Engineer",
+      "start_date": "2022-11-01"
+     }
+    },
+    {
+     "id": "System:Snowflake",
+     "label": "System",
+     "properties": {
+      "name": "Snowflake",
+      "id": "7c54b083-1145-52f5-8c0c-1b7377ac839e",
+      "status": "active",
+      "system_type": "data-warehouse",
+      "vendor": "Snowflake Inc"
+     }
+    },
+    {
+     "id": "Decision:dec_d1d225a60971",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d1d225a60971",
+      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+      "decided_on": "2026-06-04",
+      "decision_code": "DEC-13",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Decision:dec_d09476870168",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d09476870168",
+      "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+      "decided_on": "2026-10-10",
+      "status": "accepted",
+      "decision_code": "DEC-17",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-103",
+     "label": "Ticket",
+     "properties": {
+      "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
+      "ticket_id": "TICK-103",
+      "title": "Slow analytical queries on historical clickstream datasets",
+      "status": "closed",
+      "opened": "2026-02-15",
+      "closed": "2026-02-18",
+      "system": "Snowflake"
+     }
+    },
+    {
+     "id": "Ticket:TICK-104",
+     "label": "Ticket",
+     "properties": {
+      "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
+      "ticket_id": "TICK-104",
+      "title": "High compute credits on daily analytics warehouse rollups",
+      "status": "closed",
+      "opened": "2026-06-01",
+      "closed": "2026-06-04",
+      "system": "ClickHouse"
+     }
+    },
+    {
+     "id": "Person:Laura Croft",
+     "label": "Person",
+     "properties": {
+      "email": "laura.croft@novascale.io",
+      "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Laura Croft",
+      "role": "Cloud Operations Lead",
+      "start_date": "2022-04-01"
+     }
+    },
+    {
+     "id": "Person:Bob Martin",
+     "label": "Person",
+     "properties": {
+      "email": "bob.martin@novascale.io",
+      "id": "b372efab-4b32-5aa0-a154-edc0cd6a2100",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Bob Martin",
+      "role": "Senior Staff SRE",
+      "start_date": "2022-06-15"
+     }
+    },
+    {
+     "id": "Team:Data Platform",
+     "label": "Team",
+     "properties": {
+      "department": "Data & Analytics",
+      "id": "02efb04c-4926-52db-8c17-3fdca3b3cf74",
+      "name": "Data Platform"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_8c7075150849",
+     "target": "Person:Fiona Gallagher",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_8c7075150849",
+     "target": "System:Snowflake",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "System:Snowflake",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "Decision:dec_8c7075150849",
+     "type": "supersedes",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_8c7075150849",
+     "target": "Ticket:TICK-103",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "Ticket:TICK-104",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Laura Croft",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Fiona Gallagher",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Bob Martin",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Fiona Gallagher",
+     "target": "System:Snowflake",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Fiona Gallagher",
+     "target": "Team:Data Platform",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_8c7075150849"
+     },
+     "ms": 86.9
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_8c7075150849"
+     },
+     "ms": 96.1
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_8c7075150849"
+     },
+     "ms": 358.0
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_8c7075150849"
+     },
+     "ms": 369.7
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_8c7075150849"
+     },
+     "ms": 134.2
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_8c7075150849"
+     },
+     "ms": 78.5
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d09476870168",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 95.2
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 291.1
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 93.7
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Snowflake"
+      ]
+     },
+     "ms": 504.8
+    }
+   ],
+   "total_ms": 2108.2
+  }
  },
  "dec_76772c5b323f": {
   "id": "dec_76772c5b323f",
@@ -116,14 +1216,343 @@
     "type": "ticket",
     "id": "TICK-105",
     "title": "Need enterprise event bus for asynchronous order processing",
-    "date": "2026-03-04"
+    "date": "2026-03-04",
+    "quote": "Use Kafka for all event messaging across services."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
   "contradicts": [
    "Adopt RabbitMQ for all event messaging across services"
-  ]
+  ],
+  "evidence_quote": "Use Kafka for all event messaging across services.",
+  "deciders": [
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Kafka"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": [
+    {
+     "id": "dec_98a223fad745",
+     "decision_code": "DEC-07",
+     "title": "Adopt RabbitMQ for all event messaging across services",
+     "health": "contradicted",
+     "decided_on": "2026-04-08",
+     "deciders": [
+      "Bob Martin"
+     ],
+     "systems": [
+      "RabbitMQ"
+     ]
+    }
+   ]
+  },
+  "timeline": [
+   {
+    "id": "dec_76772c5b323f",
+    "decision_code": "DEC-04",
+    "title": "Adopt Kafka for all event messaging across services",
+    "health": "contradicted",
+    "decided_on": "2026-03-04",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Kafka"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Horizon"
+   ],
+   "people": [
+    {
+     "name": "Alice Vance",
+     "role": "Principal Platform Engineer",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_76772c5b323f",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_76772c5b323f",
+      "title": "Adopt Kafka for all event messaging across services",
+      "decided_on": "2026-03-04",
+      "status": "accepted",
+      "decision_code": "DEC-04",
+      "health": "contradicted"
+     }
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "properties": {
+      "name": "Alice Vance",
+      "email": "alice.vance@novascale.io",
+      "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Principal Platform Engineer",
+      "start_date": "2022-03-01"
+     }
+    },
+    {
+     "id": "System:Kafka",
+     "label": "System",
+     "properties": {
+      "name": "Kafka",
+      "id": "62d67fac-4128-57dd-8e5c-586f1a353323",
+      "status": "active",
+      "system_type": "event-streaming",
+      "vendor": "Apache Software Foundation"
+     }
+    },
+    {
+     "id": "Decision:dec_98a223fad745",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_98a223fad745",
+      "title": "Adopt RabbitMQ for all event messaging across services",
+      "decided_on": "2026-04-08",
+      "decision_code": "DEC-07",
+      "health": "contradicted"
+     }
+    },
+    {
+     "id": "Ticket:TICK-105",
+     "label": "Ticket",
+     "properties": {
+      "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
+      "ticket_id": "TICK-105",
+      "title": "Need enterprise event bus for asynchronous order processing",
+      "status": "closed",
+      "opened": "2026-03-01",
+      "closed": "2026-03-04",
+      "system": "Kafka"
+     }
+    },
+    {
+     "id": "Ticket:TICK-106",
+     "label": "Ticket",
+     "properties": {
+      "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
+      "ticket_id": "TICK-106",
+      "title": "Lightweight pubsub requirements for async background tasks",
+      "status": "closed",
+      "opened": "2026-04-05",
+      "closed": "2026-04-08",
+      "system": "RabbitMQ"
+     }
+    },
+    {
+     "id": "Meeting:Core Messaging Architecture Sync",
+     "label": "Meeting",
+     "properties": {
+      "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
+      "title": "Core Messaging Architecture Sync",
+      "date": "2026-05-18",
+      "meeting_date": "2026-05-18",
+      "file_name": "2026-05-18_messaging_strategy.md"
+     }
+    },
+    {
+     "id": "Project:Project Horizon",
+     "label": "Project",
+     "properties": {
+      "description": "Session Layer Modernization and Cache Migration",
+      "id": "51a799d3-08d8-5fb9-9d51-f60e6146c9ab",
+      "name": "Project Horizon",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_76772c5b323f",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_76772c5b323f",
+     "target": "System:Kafka",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Decision:dec_76772c5b323f",
+     "type": "contradicts",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_76772c5b323f",
+     "target": "Ticket:TICK-105",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Ticket:TICK-106",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Meeting:Core Messaging Architecture Sync",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "System:Kafka",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Project:Project Horizon",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Team:Core Infrastructure",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_76772c5b323f"
+     },
+     "ms": 66.2
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_76772c5b323f"
+     },
+     "ms": 92.3
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_76772c5b323f"
+     },
+     "ms": 88.8
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_76772c5b323f"
+     },
+     "ms": 103.0
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_76772c5b323f"
+     },
+     "ms": 81.9
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_76772c5b323f"
+     },
+     "ms": 75.1
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_76772c5b323f",
+       "dec_98a223fad745"
+      ]
+     },
+     "ms": 83.0
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_76772c5b323f",
+       "dec_98a223fad745"
+      ]
+     },
+     "ms": 375.4
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_76772c5b323f",
+       "dec_98a223fad745"
+      ]
+     },
+     "ms": 75.9
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Kafka"
+      ]
+     },
+     "ms": 105.1
+    }
+   ],
+   "total_ms": 1146.7
+  }
  },
  "dec_e287aa298850": {
   "id": "dec_e287aa298850",
@@ -148,12 +1577,291 @@
     "type": "ticket",
     "id": "TICK-107",
     "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
-    "date": "2026-03-14"
+    "date": "2026-03-14",
+    "quote": "Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets.",
+  "deciders": [
+   {
+    "name": "Diana Prince",
+    "role": "Security Architect",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Vault"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_e287aa298850",
+    "decision_code": "DEC-05",
+    "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+    "health": "active",
+    "decided_on": "2026-03-14",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   },
+   {
+    "id": "dec_ecd94c860f08",
+    "decision_code": "DEC-14",
+    "title": "Rotate all database passwords into Vault dynamic secrets",
+    "health": "active",
+    "decided_on": "2026-06-08",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Security & IAM"
+   ],
+   "projects": [],
+   "people": [
+    {
+     "name": "Diana Prince",
+     "role": "Security Architect",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_e287aa298850",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_e287aa298850",
+      "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+      "decided_on": "2026-03-14",
+      "status": "accepted",
+      "decision_code": "DEC-05",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Diana Prince",
+     "label": "Person",
+     "properties": {
+      "name": "Diana Prince",
+      "email": "diana.prince@novascale.io",
+      "id": "48524af6-c1ee-5511-af18-71f4895e1ac5",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Security Architect",
+      "start_date": "2021-08-01"
+     }
+    },
+    {
+     "id": "System:Vault",
+     "label": "System",
+     "properties": {
+      "name": "Vault",
+      "id": "f555b55a-5dcc-5d37-891e-f655fdedb917",
+      "status": "active",
+      "system_type": "secrets-management",
+      "vendor": "HashiCorp"
+     }
+    },
+    {
+     "id": "Decision:dec_ecd94c860f08",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_ecd94c860f08",
+      "title": "Rotate all database passwords into Vault dynamic secrets",
+      "decided_on": "2026-06-08",
+      "status": "accepted",
+      "decision_code": "DEC-14",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-107",
+     "label": "Ticket",
+     "properties": {
+      "id": "a91113f5-387c-5ee3-890a-fdafb324de11",
+      "ticket_id": "TICK-107",
+      "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
+      "status": "closed",
+      "opened": "2026-03-12",
+      "closed": "2026-03-14",
+      "system": "Vault"
+     }
+    },
+    {
+     "id": "Team:Security & IAM",
+     "label": "Team",
+     "properties": {
+      "department": "Information Security",
+      "id": "13ef364e-fda3-5c11-805b-1dd2ee615608",
+      "name": "Security & IAM"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_e287aa298850",
+     "target": "Person:Diana Prince",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_e287aa298850",
+     "target": "System:Vault",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_ecd94c860f08",
+     "target": "System:Vault",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_e287aa298850",
+     "target": "Ticket:TICK-107",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_ecd94c860f08",
+     "target": "Person:Diana Prince",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Diana Prince",
+     "target": "System:Vault",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Diana Prince",
+     "target": "Team:Security & IAM",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Diana Prince",
+     "target": "Team:Security & IAM",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_e287aa298850"
+     },
+     "ms": 77.1
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_e287aa298850"
+     },
+     "ms": 102.7
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_e287aa298850"
+     },
+     "ms": 102.1
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_e287aa298850"
+     },
+     "ms": 102.4
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_e287aa298850"
+     },
+     "ms": 103.1
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_e287aa298850"
+     },
+     "ms": 101.7
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_e287aa298850",
+       "dec_ecd94c860f08"
+      ]
+     },
+     "ms": 103.8
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_e287aa298850"
+      ]
+     },
+     "ms": 101.0
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_e287aa298850"
+      ]
+     },
+     "ms": 205.2
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Vault"
+      ]
+     },
+     "ms": 207.7
+    }
+   ],
+   "total_ms": 1206.8
+  }
  },
  "dec_5b196394600e": {
   "id": "dec_5b196394600e",
@@ -178,14 +1886,319 @@
     "type": "ticket",
     "id": "TICK-108",
     "title": "Inconsistent distributed trace propagation in checkout services",
-    "date": "2026-03-28"
+    "date": "2026-03-28",
+    "quote": "Standardize application traces on Datadog APM across all production services."
    }
   ],
   "supersedes": [],
   "superseded_by": [
    "Migrate application metrics from Datadog to Prometheus Operator"
   ],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Standardize application traces on Datadog APM across all production services.",
+  "deciders": [
+   {
+    "name": "Kevin Flynn",
+    "role": "Observability Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Datadog"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [
+    {
+     "id": "dec_21a4de59b886",
+     "decision_code": "DEC-08",
+     "title": "Migrate application metrics from Datadog to Prometheus Operator",
+     "health": "active",
+     "decided_on": "2026-04-12",
+     "deciders": [
+      "Kevin Flynn"
+     ],
+     "systems": [
+      "Prometheus"
+     ],
+     "depth": 1
+    }
+   ],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_5b196394600e",
+    "decision_code": "DEC-06",
+    "title": "Standardize application traces on Datadog APM across all production services",
+    "health": "superseded",
+    "decided_on": "2026-03-28",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Datadog"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Beacon"
+   ],
+   "people": [
+    {
+     "name": "Kevin Flynn",
+     "role": "Observability Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_5b196394600e",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_5b196394600e",
+      "title": "Standardize application traces on Datadog APM across all production services",
+      "decided_on": "2026-03-28",
+      "status": "accepted",
+      "decision_code": "DEC-06",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Person:Kevin Flynn",
+     "label": "Person",
+     "properties": {
+      "name": "Kevin Flynn",
+      "email": "kevin.flynn@novascale.io",
+      "id": "ae7f1280-ec95-5115-aebc-5b53966ad868",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Observability Lead",
+      "start_date": "2023-02-15"
+     }
+    },
+    {
+     "id": "System:Datadog",
+     "label": "System",
+     "properties": {
+      "name": "Datadog",
+      "id": "a8f9f613-759b-58cf-b4a1-ee669b05c856",
+      "status": "active",
+      "system_type": "observability",
+      "vendor": "Datadog Inc"
+     }
+    },
+    {
+     "id": "Decision:dec_21a4de59b886",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_21a4de59b886",
+      "title": "Migrate application metrics from Datadog to Prometheus Operator",
+      "decided_on": "2026-04-12",
+      "decision_code": "DEC-08",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-108",
+     "label": "Ticket",
+     "properties": {
+      "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
+      "ticket_id": "TICK-108",
+      "title": "Inconsistent distributed trace propagation in checkout services",
+      "status": "closed",
+      "opened": "2026-03-25",
+      "closed": "2026-03-28",
+      "system": "Datadog"
+     }
+    },
+    {
+     "id": "Meeting:Observability Platform Alignment",
+     "label": "Meeting",
+     "properties": {
+      "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
+      "title": "Observability Platform Alignment",
+      "date": "2026-04-12",
+      "meeting_date": "2026-04-12",
+      "file_name": "2026-04-12_observability_sync.md"
+     }
+    },
+    {
+     "id": "Project:Project Beacon",
+     "label": "Project",
+     "properties": {
+      "description": "Unified Telemetry, Distributed Tracing and APM",
+      "id": "dcee8125-c41e-505b-9112-5b66bab841d7",
+      "name": "Project Beacon",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_5b196394600e",
+     "target": "Person:Kevin Flynn",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_5b196394600e",
+     "target": "System:Datadog",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Decision:dec_5b196394600e",
+     "type": "supersedes",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_5b196394600e",
+     "target": "Ticket:TICK-108",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Meeting:Observability Platform Alignment",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "System:Datadog",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "Project:Project Beacon",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_5b196394600e"
+     },
+     "ms": 246.0
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_5b196394600e"
+     },
+     "ms": 204.6
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_5b196394600e"
+     },
+     "ms": 205.0
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_5b196394600e"
+     },
+     "ms": 205.6
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_5b196394600e"
+     },
+     "ms": 204.9
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_5b196394600e"
+     },
+     "ms": 203.9
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_21a4de59b886",
+       "dec_5b196394600e"
+      ]
+     },
+     "ms": 205.1
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_21a4de59b886",
+       "dec_5b196394600e"
+      ]
+     },
+     "ms": 205.0
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_21a4de59b886",
+       "dec_5b196394600e"
+      ]
+     },
+     "ms": 204.2
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Datadog"
+      ]
+     },
+     "ms": 205.8
+    }
+   ],
+   "total_ms": 2090.1
+  }
  },
  "dec_98a223fad745": {
   "id": "dec_98a223fad745",
@@ -210,20 +2223,344 @@
     "type": "ticket",
     "id": "TICK-106",
     "title": "Lightweight pubsub requirements for async background tasks",
-    "date": "2026-04-08"
+    "date": "2026-04-08",
+    "quote": null
    },
    {
     "type": "meeting",
     "id": "Core Messaging Architecture Sync",
     "title": "Core Messaging Architecture Sync",
-    "date": "2026-05-18"
+    "date": "2026-05-18",
+    "quote": null
    }
   ],
   "supersedes": [],
   "superseded_by": [],
   "contradicts": [
    "Adopt Kafka for all event messaging across services"
-  ]
+  ],
+  "evidence_quote": "Bob Martin reiterated: Use RabbitMQ for all event messaging across services.",
+  "deciders": [
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "RabbitMQ"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [
+    {
+     "id": "dec_76772c5b323f",
+     "decision_code": "DEC-04",
+     "title": "Adopt Kafka for all event messaging across services",
+     "health": "contradicted",
+     "decided_on": "2026-03-04",
+     "deciders": [
+      "Alice Vance"
+     ],
+     "systems": [
+      "Kafka"
+     ]
+    }
+   ],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_98a223fad745",
+    "decision_code": "DEC-07",
+    "title": "Adopt RabbitMQ for all event messaging across services",
+    "health": "contradicted",
+    "decided_on": "2026-04-08",
+    "deciders": [
+     "Bob Martin"
+    ],
+    "systems": [
+     "RabbitMQ"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Nexus"
+   ],
+   "people": [
+    {
+     "name": "Bob Martin",
+     "role": "Senior Staff SRE",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_98a223fad745",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_98a223fad745",
+      "title": "Adopt RabbitMQ for all event messaging across services",
+      "decided_on": "2026-04-08",
+      "status": "accepted",
+      "decision_code": "DEC-07",
+      "health": "contradicted"
+     }
+    },
+    {
+     "id": "Person:Bob Martin",
+     "label": "Person",
+     "properties": {
+      "name": "Bob Martin",
+      "email": "bob.martin@novascale.io",
+      "id": "b372efab-4b32-5aa0-a154-edc0cd6a2100",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Senior Staff SRE",
+      "start_date": "2022-06-15"
+     }
+    },
+    {
+     "id": "System:RabbitMQ",
+     "label": "System",
+     "properties": {
+      "name": "RabbitMQ",
+      "id": "947b2207-8108-5b28-828c-eadef48fc20d",
+      "status": "active",
+      "system_type": "message-broker",
+      "vendor": "VMware"
+     }
+    },
+    {
+     "id": "Decision:dec_76772c5b323f",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_76772c5b323f",
+      "title": "Adopt Kafka for all event messaging across services",
+      "decided_on": "2026-03-04",
+      "decision_code": "DEC-04",
+      "health": "contradicted"
+     }
+    },
+    {
+     "id": "Ticket:TICK-105",
+     "label": "Ticket",
+     "properties": {
+      "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
+      "ticket_id": "TICK-105",
+      "title": "Need enterprise event bus for asynchronous order processing",
+      "status": "closed",
+      "opened": "2026-03-01",
+      "closed": "2026-03-04",
+      "system": "Kafka"
+     }
+    },
+    {
+     "id": "Ticket:TICK-106",
+     "label": "Ticket",
+     "properties": {
+      "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
+      "ticket_id": "TICK-106",
+      "title": "Lightweight pubsub requirements for async background tasks",
+      "status": "closed",
+      "opened": "2026-04-05",
+      "closed": "2026-04-08",
+      "system": "RabbitMQ"
+     }
+    },
+    {
+     "id": "Meeting:Core Messaging Architecture Sync",
+     "label": "Meeting",
+     "properties": {
+      "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
+      "title": "Core Messaging Architecture Sync",
+      "date": "2026-05-18",
+      "meeting_date": "2026-05-18",
+      "file_name": "2026-05-18_messaging_strategy.md"
+     }
+    },
+    {
+     "id": "Project:Project Nexus",
+     "label": "Project",
+     "properties": {
+      "description": "Real-time Event Streaming Spine across Microservices",
+      "id": "eaa0c703-858f-545f-bfbd-db3e4da80b82",
+      "name": "Project Nexus",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Person:Bob Martin",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "System:RabbitMQ",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Decision:dec_76772c5b323f",
+     "type": "contradicts",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_76772c5b323f",
+     "target": "Ticket:TICK-105",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Ticket:TICK-106",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_98a223fad745",
+     "target": "Meeting:Core Messaging Architecture Sync",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Person:Bob Martin",
+     "target": "System:RabbitMQ",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Bob Martin",
+     "target": "Project:Project Nexus",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Bob Martin",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_98a223fad745"
+     },
+     "ms": 197.7
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_98a223fad745"
+     },
+     "ms": 204.0
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_98a223fad745"
+     },
+     "ms": 204.5
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_98a223fad745"
+     },
+     "ms": 204.6
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_98a223fad745"
+     },
+     "ms": 205.0
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_98a223fad745"
+     },
+     "ms": 205.9
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_76772c5b323f",
+       "dec_98a223fad745"
+      ]
+     },
+     "ms": 203.7
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_76772c5b323f",
+       "dec_98a223fad745"
+      ]
+     },
+     "ms": 204.8
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_76772c5b323f",
+       "dec_98a223fad745"
+      ]
+     },
+     "ms": 207.2
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "RabbitMQ"
+      ]
+     },
+     "ms": 208.6
+    }
+   ],
+   "total_ms": 2046.0
+  }
  },
  "dec_21a4de59b886": {
   "id": "dec_21a4de59b886",
@@ -238,7 +2575,8 @@
   "decided_on": "2026-04-12",
   "decided_by": "Kevin Flynn",
   "people": [
-   "Kevin Flynn"
+   "Kevin Flynn",
+   "Laura Croft"
   ],
   "systems": [
    "Prometheus"
@@ -248,14 +2586,376 @@
     "type": "meeting",
     "id": "Observability Platform Alignment",
     "title": "Observability Platform Alignment",
-    "date": "2026-04-12"
+    "date": "2026-04-12",
+    "quote": "Migrate application metrics from Datadog to Prometheus Operator."
    }
   ],
   "supersedes": [
    "Standardize application traces on Datadog APM across all production services"
   ],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Migrate application metrics from Datadog to Prometheus Operator.",
+  "deciders": [
+   {
+    "name": "Kevin Flynn",
+    "role": "Observability Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Prometheus"
+  ],
+  "lineage": {
+   "supersedes": [
+    {
+     "id": "dec_5b196394600e",
+     "decision_code": "DEC-06",
+     "title": "Standardize application traces on Datadog APM across all production services",
+     "health": "superseded",
+     "decided_on": "2026-03-28",
+     "deciders": [
+      "Kevin Flynn"
+     ],
+     "systems": [
+      "Datadog"
+     ],
+     "depth": 1
+    }
+   ],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_21a4de59b886",
+    "decision_code": "DEC-08",
+    "title": "Migrate application metrics from Datadog to Prometheus Operator",
+    "health": "active",
+    "decided_on": "2026-04-12",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   },
+   {
+    "id": "dec_091c86e8e476",
+    "decision_code": "DEC-09",
+    "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+    "health": "active",
+    "decided_on": "2026-04-22",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Beacon"
+   ],
+   "people": [
+    {
+     "name": "Kevin Flynn",
+     "role": "Observability Lead",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Laura Croft",
+     "role": "Cloud Operations Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_21a4de59b886",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_21a4de59b886",
+      "title": "Migrate application metrics from Datadog to Prometheus Operator",
+      "decided_on": "2026-04-12",
+      "status": "accepted",
+      "decision_code": "DEC-08",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Kevin Flynn",
+     "label": "Person",
+     "properties": {
+      "name": "Kevin Flynn",
+      "email": "kevin.flynn@novascale.io",
+      "id": "ae7f1280-ec95-5115-aebc-5b53966ad868",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Observability Lead",
+      "start_date": "2023-02-15"
+     }
+    },
+    {
+     "id": "System:Prometheus",
+     "label": "System",
+     "properties": {
+      "name": "Prometheus",
+      "id": "5ae14694-9400-5002-a0a7-185b4fb92de8",
+      "status": "active",
+      "system_type": "monitoring",
+      "vendor": "Cloud Native Computing Foundation"
+     }
+    },
+    {
+     "id": "Decision:dec_5b196394600e",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_5b196394600e",
+      "title": "Standardize application traces on Datadog APM across all production services",
+      "decided_on": "2026-03-28",
+      "decision_code": "DEC-06",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Decision:dec_091c86e8e476",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_091c86e8e476",
+      "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+      "decided_on": "2026-04-22",
+      "status": "accepted",
+      "decision_code": "DEC-09",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-108",
+     "label": "Ticket",
+     "properties": {
+      "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
+      "ticket_id": "TICK-108",
+      "title": "Inconsistent distributed trace propagation in checkout services",
+      "status": "closed",
+      "opened": "2026-03-25",
+      "closed": "2026-03-28",
+      "system": "Datadog"
+     }
+    },
+    {
+     "id": "Meeting:Observability Platform Alignment",
+     "label": "Meeting",
+     "properties": {
+      "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
+      "title": "Observability Platform Alignment",
+      "date": "2026-04-12",
+      "meeting_date": "2026-04-12",
+      "file_name": "2026-04-12_observability_sync.md"
+     }
+    },
+    {
+     "id": "Person:Laura Croft",
+     "label": "Person",
+     "properties": {
+      "email": "laura.croft@novascale.io",
+      "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Laura Croft",
+      "role": "Cloud Operations Lead",
+      "start_date": "2022-04-01"
+     }
+    },
+    {
+     "id": "Project:Project Beacon",
+     "label": "Project",
+     "properties": {
+      "description": "Unified Telemetry, Distributed Tracing and APM",
+      "id": "dcee8125-c41e-505b-9112-5b66bab841d7",
+      "name": "Project Beacon",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Person:Kevin Flynn",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "System:Prometheus",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_091c86e8e476",
+     "target": "System:Prometheus",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Decision:dec_5b196394600e",
+     "type": "supersedes",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_5b196394600e",
+     "target": "Ticket:TICK-108",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Meeting:Observability Platform Alignment",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_091c86e8e476",
+     "target": "Person:Laura Croft",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "System:Prometheus",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "Project:Project Beacon",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_21a4de59b886"
+     },
+     "ms": 167.5
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_21a4de59b886"
+     },
+     "ms": 227.4
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_21a4de59b886"
+     },
+     "ms": 202.2
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_21a4de59b886"
+     },
+     "ms": 205.0
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_21a4de59b886"
+     },
+     "ms": 204.4
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_21a4de59b886"
+     },
+     "ms": 204.8
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_091c86e8e476",
+       "dec_21a4de59b886",
+       "dec_5b196394600e"
+      ]
+     },
+     "ms": 96.1
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_21a4de59b886",
+       "dec_5b196394600e"
+      ]
+     },
+     "ms": 79.7
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_21a4de59b886",
+       "dec_5b196394600e"
+      ]
+     },
+     "ms": 89.7
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Prometheus"
+      ]
+     },
+     "ms": 193.4
+    }
+   ],
+   "total_ms": 1670.2
+  }
  },
  "dec_091c86e8e476": {
   "id": "dec_091c86e8e476",
@@ -270,6 +2970,7 @@
   "decided_on": "2026-04-22",
   "decided_by": "Laura Croft",
   "people": [
+   "Kevin Flynn",
    "Laura Croft"
   ],
   "systems": [
@@ -280,12 +2981,322 @@
     "type": "ticket",
     "id": "TICK-109",
     "title": "Cluster-wide metrics collection and automated alerts",
-    "date": "2026-04-22"
+    "date": "2026-04-22",
+    "quote": "Deploy Prometheus Operator on all Kubernetes staging clusters."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Deploy Prometheus Operator on all Kubernetes staging clusters.",
+  "deciders": [
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Prometheus"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_21a4de59b886",
+    "decision_code": "DEC-08",
+    "title": "Migrate application metrics from Datadog to Prometheus Operator",
+    "health": "active",
+    "decided_on": "2026-04-12",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   },
+   {
+    "id": "dec_091c86e8e476",
+    "decision_code": "DEC-09",
+    "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+    "health": "active",
+    "decided_on": "2026-04-22",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Beacon"
+   ],
+   "people": [
+    {
+     "name": "Kevin Flynn",
+     "role": "Observability Lead",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Laura Croft",
+     "role": "Cloud Operations Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_091c86e8e476",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_091c86e8e476",
+      "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+      "decided_on": "2026-04-22",
+      "status": "accepted",
+      "decision_code": "DEC-09",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Laura Croft",
+     "label": "Person",
+     "properties": {
+      "name": "Laura Croft",
+      "email": "laura.croft@novascale.io",
+      "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Cloud Operations Lead",
+      "start_date": "2022-04-01"
+     }
+    },
+    {
+     "id": "System:Prometheus",
+     "label": "System",
+     "properties": {
+      "name": "Prometheus",
+      "id": "5ae14694-9400-5002-a0a7-185b4fb92de8",
+      "status": "active",
+      "system_type": "monitoring",
+      "vendor": "Cloud Native Computing Foundation"
+     }
+    },
+    {
+     "id": "Decision:dec_21a4de59b886",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_21a4de59b886",
+      "title": "Migrate application metrics from Datadog to Prometheus Operator",
+      "decided_on": "2026-04-12",
+      "status": "accepted",
+      "decision_code": "DEC-08",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-109",
+     "label": "Ticket",
+     "properties": {
+      "id": "59a9634b-5aba-5231-bed1-dba7943696cd",
+      "ticket_id": "TICK-109",
+      "title": "Cluster-wide metrics collection and automated alerts",
+      "status": "closed",
+      "opened": "2026-04-20",
+      "closed": "2026-04-22",
+      "system": "Prometheus"
+     }
+    },
+    {
+     "id": "Person:Kevin Flynn",
+     "label": "Person",
+     "properties": {
+      "email": "kevin.flynn@novascale.io",
+      "id": "ae7f1280-ec95-5115-aebc-5b53966ad868",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Kevin Flynn",
+      "role": "Observability Lead",
+      "start_date": "2023-02-15"
+     }
+    },
+    {
+     "id": "Project:Project Beacon",
+     "label": "Project",
+     "properties": {
+      "description": "Unified Telemetry, Distributed Tracing and APM",
+      "id": "dcee8125-c41e-505b-9112-5b66bab841d7",
+      "name": "Project Beacon",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_091c86e8e476",
+     "target": "Person:Laura Croft",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_091c86e8e476",
+     "target": "System:Prometheus",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "System:Prometheus",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_091c86e8e476",
+     "target": "Ticket:TICK-109",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Person:Kevin Flynn",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "System:Prometheus",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "Project:Project Beacon",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Kevin Flynn",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_091c86e8e476"
+     },
+     "ms": 70.9
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_091c86e8e476"
+     },
+     "ms": 104.9
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_091c86e8e476"
+     },
+     "ms": 87.0
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_091c86e8e476"
+     },
+     "ms": 96.3
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_091c86e8e476"
+     },
+     "ms": 419.7
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_091c86e8e476"
+     },
+     "ms": 100.2
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_091c86e8e476",
+       "dec_21a4de59b886"
+      ]
+     },
+     "ms": 149.3
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_091c86e8e476"
+      ]
+     },
+     "ms": 85.8
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_091c86e8e476"
+      ]
+     },
+     "ms": 80.7
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Prometheus"
+      ]
+     },
+     "ms": 111.6
+    }
+   ],
+   "total_ms": 1306.4
+  }
  },
  "dec_2c6a03017923": {
   "id": "dec_2c6a03017923",
@@ -300,6 +3311,7 @@
   "decided_on": "2026-05-05",
   "decided_by": "Ian Malcolm",
   "people": [
+   "Alice Vance",
    "Ian Malcolm"
   ],
   "systems": [
@@ -310,12 +3322,328 @@
     "type": "ticket",
     "id": "TICK-110",
     "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
-    "date": "2026-05-05"
+    "date": "2026-05-05",
+    "quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications.",
+  "deciders": [
+   {
+    "name": "Ian Malcolm",
+    "role": "Distributed Systems Architect",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Redis"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_fda8c9b4e631",
+    "decision_code": "DEC-01",
+    "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+    "health": "superseded",
+    "decided_on": "2026-02-03",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   },
+   {
+    "id": "dec_2c6a03017923",
+    "decision_code": "DEC-10",
+    "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+    "health": "active",
+    "decided_on": "2026-05-05",
+    "deciders": [
+     "Ian Malcolm"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [
+    "Project Horizon"
+   ],
+   "people": [
+    {
+     "name": "Alice Vance",
+     "role": "Principal Platform Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Ian Malcolm",
+     "role": "Distributed Systems Architect",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_2c6a03017923",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_2c6a03017923",
+      "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+      "decided_on": "2026-05-05",
+      "status": "accepted",
+      "decision_code": "DEC-10",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Ian Malcolm",
+     "label": "Person",
+     "properties": {
+      "name": "Ian Malcolm",
+      "email": "ian.malcolm@novascale.io",
+      "id": "7cd29e90-177e-5bcd-a6c1-9394f2b1b40a",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Distributed Systems Architect",
+      "start_date": "2021-05-10"
+     }
+    },
+    {
+     "id": "System:Redis",
+     "label": "System",
+     "properties": {
+      "name": "Redis",
+      "id": "3513e265-fe56-5a66-ba00-5f925be3ceee",
+      "status": "active",
+      "system_type": "cache",
+      "vendor": "Redis Ltd"
+     }
+    },
+    {
+     "id": "Decision:dec_fda8c9b4e631",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_fda8c9b4e631",
+      "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+      "decided_on": "2026-02-03",
+      "status": "accepted",
+      "decision_code": "DEC-01",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Ticket:TICK-110",
+     "label": "Ticket",
+     "properties": {
+      "id": "46e33a08-5a65-5643-8bd6-9158801f30d5",
+      "ticket_id": "TICK-110",
+      "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
+      "status": "closed",
+      "opened": "2026-05-02",
+      "closed": "2026-05-05",
+      "system": "Redis"
+     }
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "properties": {
+      "email": "alice.vance@novascale.io",
+      "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Alice Vance",
+      "role": "Principal Platform Engineer",
+      "start_date": "2022-03-01"
+     }
+    },
+    {
+     "id": "Project:Project Horizon",
+     "label": "Project",
+     "properties": {
+      "description": "Session Layer Modernization and Cache Migration",
+      "id": "51a799d3-08d8-5fb9-9d51-f60e6146c9ab",
+      "name": "Project Horizon",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_2c6a03017923",
+     "target": "Person:Ian Malcolm",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_2c6a03017923",
+     "target": "System:Redis",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "System:Redis",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_2c6a03017923",
+     "target": "Ticket:TICK-110",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "System:Redis",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Project:Project Horizon",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Team:Core Infrastructure",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Alice Vance",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_2c6a03017923"
+     },
+     "ms": 469.4
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_2c6a03017923"
+     },
+     "ms": 168.8
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_2c6a03017923"
+     },
+     "ms": 341.3
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_2c6a03017923"
+     },
+     "ms": 75.5
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_2c6a03017923"
+     },
+     "ms": 80.9
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_2c6a03017923"
+     },
+     "ms": 80.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_2c6a03017923",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 80.0
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_2c6a03017923"
+      ]
+     },
+     "ms": 84.8
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_2c6a03017923"
+      ]
+     },
+     "ms": 93.5
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Redis"
+      ]
+     },
+     "ms": 493.2
+    }
+   ],
+   "total_ms": 1967.4
+  }
  },
  "dec_f564fcd15601": {
   "id": "dec_f564fcd15601",
@@ -330,7 +3658,8 @@
   "decided_on": "2026-05-12",
   "decided_by": "Alice Vance",
   "people": [
-   "Alice Vance"
+   "Alice Vance",
+   "Julia Roberts"
   ],
   "systems": [
    "Keycloak"
@@ -340,14 +3669,416 @@
     "type": "ticket",
     "id": "TICK-102",
     "title": "Redis session cluster operational maintenance and failover complexity",
-    "date": "2026-05-12"
+    "date": "2026-05-12",
+    "quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache."
    }
   ],
   "supersedes": [
    "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention"
   ],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache.",
+  "deciders": [
+   {
+    "name": "Alice Vance",
+    "role": "Principal Platform Engineer",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Keycloak"
+  ],
+  "lineage": {
+   "supersedes": [
+    {
+     "id": "dec_fda8c9b4e631",
+     "decision_code": "DEC-01",
+     "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+     "health": "superseded",
+     "decided_on": "2026-02-03",
+     "deciders": [
+      "Alice Vance"
+     ],
+     "systems": [
+      "Redis"
+     ],
+     "depth": 1
+    }
+   ],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_f17ee7ad31a2",
+    "decision_code": "DEC-02",
+    "title": "Adopt Keycloak for company-wide single sign-on",
+    "health": "active",
+    "decided_on": "2026-02-10",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f564fcd15601",
+    "decision_code": "DEC-11",
+    "title": "Migrate session storage to embedded Keycloak cache",
+    "health": "active",
+    "decided_on": "2026-05-12",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f8a30e251e54",
+    "decision_code": "DEC-12",
+    "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "health": "active",
+    "decided_on": "2026-05-24",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Security & IAM"
+   ],
+   "projects": [
+    "Project Shield"
+   ],
+   "people": [
+    {
+     "name": "Alice Vance",
+     "role": "Principal Platform Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Julia Roberts",
+     "role": "Identity & Access Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_f564fcd15601",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f564fcd15601",
+      "title": "Migrate session storage to embedded Keycloak cache",
+      "decided_on": "2026-05-12",
+      "status": "accepted",
+      "decision_code": "DEC-11",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "properties": {
+      "name": "Alice Vance",
+      "email": "alice.vance@novascale.io",
+      "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Principal Platform Engineer",
+      "start_date": "2022-03-01"
+     }
+    },
+    {
+     "id": "System:Keycloak",
+     "label": "System",
+     "properties": {
+      "name": "Keycloak",
+      "id": "966e4c75-dd82-54d3-b9dd-1a89d3c6a06f",
+      "status": "active",
+      "system_type": "iam",
+      "vendor": "Red Hat"
+     }
+    },
+    {
+     "id": "Decision:dec_fda8c9b4e631",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_fda8c9b4e631",
+      "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+      "decided_on": "2026-02-03",
+      "decision_code": "DEC-01",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Decision:dec_f8a30e251e54",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f8a30e251e54",
+      "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+      "decided_on": "2026-05-24",
+      "status": "accepted",
+      "decision_code": "DEC-12",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Decision:dec_f17ee7ad31a2",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f17ee7ad31a2",
+      "title": "Adopt Keycloak for company-wide single sign-on",
+      "decided_on": "2026-02-10",
+      "status": "accepted",
+      "decision_code": "DEC-02",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-102",
+     "label": "Ticket",
+     "properties": {
+      "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
+      "ticket_id": "TICK-102",
+      "title": "Redis session cluster operational maintenance and failover complexity",
+      "status": "closed",
+      "opened": "2026-05-10",
+      "closed": "2026-05-12",
+      "system": "Keycloak"
+     }
+    },
+    {
+     "id": "Ticket:TICK-101",
+     "label": "Ticket",
+     "properties": {
+      "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
+      "ticket_id": "TICK-101",
+      "title": "Severe latency on Postgres session store under peak load",
+      "status": "closed",
+      "opened": "2026-02-01",
+      "closed": "2026-02-03",
+      "system": "Redis"
+     }
+    },
+    {
+     "id": "Person:Julia Roberts",
+     "label": "Person",
+     "properties": {
+      "email": "julia.roberts@novascale.io",
+      "id": "9f04412b-7bb9-50c6-8c7b-644c6e18e8d2",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Julia Roberts",
+      "role": "Identity & Access Lead",
+      "start_date": "2022-07-01"
+     }
+    },
+    {
+     "id": "Project:Project Shield",
+     "label": "Project",
+     "properties": {
+      "description": "Zero Trust Auth Gateway and Enterprise SSO",
+      "id": "7de3ca9e-8a3f-5cd4-a241-adca88b3e910",
+      "name": "Project Shield",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Security & IAM",
+     "label": "Team",
+     "properties": {
+      "department": "Information Security",
+      "id": "13ef364e-fda3-5c11-805b-1dd2ee615608",
+      "name": "Security & IAM"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Decision:dec_fda8c9b4e631",
+     "type": "supersedes",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Ticket:TICK-102",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "Ticket:TICK-101",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "Person:Julia Roberts",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "Person:Julia Roberts",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "System:Keycloak",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "Project:Project Shield",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "Team:Security & IAM",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_f564fcd15601"
+     },
+     "ms": 79.9
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_f564fcd15601"
+     },
+     "ms": 81.1
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_f564fcd15601"
+     },
+     "ms": 75.4
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_f564fcd15601"
+     },
+     "ms": 94.3
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_f564fcd15601"
+     },
+     "ms": 89.9
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_f564fcd15601"
+     },
+     "ms": 80.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_f17ee7ad31a2",
+       "dec_f564fcd15601",
+       "dec_f8a30e251e54",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 103.1
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_f564fcd15601",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 76.8
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_f564fcd15601",
+       "dec_fda8c9b4e631"
+      ]
+     },
+     "ms": 80.1
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Keycloak"
+      ]
+     },
+     "ms": 154.6
+    }
+   ],
+   "total_ms": 915.2
+  }
  },
  "dec_f8a30e251e54": {
   "id": "dec_f8a30e251e54",
@@ -362,6 +4093,7 @@
   "decided_on": "2026-05-24",
   "decided_by": "Julia Roberts",
   "people": [
+   "Alice Vance",
    "Julia Roberts"
   ],
   "systems": [
@@ -372,12 +4104,360 @@
     "type": "ticket",
     "id": "TICK-111",
     "title": "OAuth2 token issuance architecture for internal gateway",
-    "date": "2026-05-24"
+    "date": "2026-05-24",
+    "quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication.",
+  "deciders": [
+   {
+    "name": "Julia Roberts",
+    "role": "Identity & Access Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Keycloak"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_f17ee7ad31a2",
+    "decision_code": "DEC-02",
+    "title": "Adopt Keycloak for company-wide single sign-on",
+    "health": "active",
+    "decided_on": "2026-02-10",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f564fcd15601",
+    "decision_code": "DEC-11",
+    "title": "Migrate session storage to embedded Keycloak cache",
+    "health": "active",
+    "decided_on": "2026-05-12",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f8a30e251e54",
+    "decision_code": "DEC-12",
+    "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "health": "active",
+    "decided_on": "2026-05-24",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Security & IAM"
+   ],
+   "projects": [
+    "Project Shield"
+   ],
+   "people": [
+    {
+     "name": "Alice Vance",
+     "role": "Principal Platform Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Julia Roberts",
+     "role": "Identity & Access Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_f8a30e251e54",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f8a30e251e54",
+      "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+      "decided_on": "2026-05-24",
+      "status": "accepted",
+      "decision_code": "DEC-12",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Julia Roberts",
+     "label": "Person",
+     "properties": {
+      "name": "Julia Roberts",
+      "email": "julia.roberts@novascale.io",
+      "id": "9f04412b-7bb9-50c6-8c7b-644c6e18e8d2",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Identity & Access Lead",
+      "start_date": "2022-07-01"
+     }
+    },
+    {
+     "id": "System:Keycloak",
+     "label": "System",
+     "properties": {
+      "name": "Keycloak",
+      "id": "966e4c75-dd82-54d3-b9dd-1a89d3c6a06f",
+      "status": "active",
+      "system_type": "iam",
+      "vendor": "Red Hat"
+     }
+    },
+    {
+     "id": "Decision:dec_f17ee7ad31a2",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f17ee7ad31a2",
+      "title": "Adopt Keycloak for company-wide single sign-on",
+      "decided_on": "2026-02-10",
+      "status": "accepted",
+      "decision_code": "DEC-02",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Decision:dec_f564fcd15601",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_f564fcd15601",
+      "title": "Migrate session storage to embedded Keycloak cache",
+      "decided_on": "2026-05-12",
+      "status": "accepted",
+      "decision_code": "DEC-11",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-111",
+     "label": "Ticket",
+     "properties": {
+      "id": "f88fb560-84ff-5be2-9de2-1422f0dbae7d",
+      "ticket_id": "TICK-111",
+      "title": "OAuth2 token issuance architecture for internal gateway",
+      "status": "closed",
+      "opened": "2026-05-22",
+      "closed": "2026-05-24",
+      "system": "Keycloak"
+     }
+    },
+    {
+     "id": "Person:Alice Vance",
+     "label": "Person",
+     "properties": {
+      "email": "alice.vance@novascale.io",
+      "id": "4b071cc6-857f-5465-8830-80bad4dd9efd",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Alice Vance",
+      "role": "Principal Platform Engineer",
+      "start_date": "2022-03-01"
+     }
+    },
+    {
+     "id": "Project:Project Shield",
+     "label": "Project",
+     "properties": {
+      "description": "Zero Trust Auth Gateway and Enterprise SSO",
+      "id": "7de3ca9e-8a3f-5cd4-a241-adca88b3e910",
+      "name": "Project Shield",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Security & IAM",
+     "label": "Team",
+     "properties": {
+      "department": "Information Security",
+      "id": "13ef364e-fda3-5c11-805b-1dd2ee615608",
+      "name": "Security & IAM"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "Person:Julia Roberts",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "System:Keycloak",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "Ticket:TICK-111",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f17ee7ad31a2",
+     "target": "Person:Julia Roberts",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "Person:Alice Vance",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "System:Keycloak",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "Project:Project Shield",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Julia Roberts",
+     "target": "Team:Security & IAM",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_f8a30e251e54"
+     },
+     "ms": 83.9
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_f8a30e251e54"
+     },
+     "ms": 90.3
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_f8a30e251e54"
+     },
+     "ms": 109.0
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_f8a30e251e54"
+     },
+     "ms": 304.4
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_f8a30e251e54"
+     },
+     "ms": 506.2
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_f8a30e251e54"
+     },
+     "ms": 629.5
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_f17ee7ad31a2",
+       "dec_f564fcd15601",
+       "dec_f8a30e251e54"
+      ]
+     },
+     "ms": 520.2
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_f8a30e251e54"
+      ]
+     },
+     "ms": 104.5
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_f8a30e251e54"
+      ]
+     },
+     "ms": 100.1
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Keycloak"
+      ]
+     },
+     "ms": 244.3
+    }
+   ],
+   "total_ms": 2692.4
+  }
  },
  "dec_d1d225a60971": {
   "id": "dec_d1d225a60971",
@@ -392,7 +4472,10 @@
   "decided_on": "2026-06-04",
   "decided_by": "Carlos Mendez",
   "people": [
-   "Carlos Mendez"
+   "Bob Martin",
+   "Carlos Mendez",
+   "Fiona Gallagher",
+   "Laura Croft"
   ],
   "systems": [
    "ClickHouse"
@@ -402,14 +4485,437 @@
     "type": "ticket",
     "id": "TICK-104",
     "title": "High compute credits on daily analytics warehouse rollups",
-    "date": "2026-06-04"
+    "date": "2026-06-04",
+    "quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster."
    }
   ],
   "supersedes": [
    "Adopt Snowflake for analytics ETL queries"
   ],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster.",
+  "deciders": [
+   {
+    "name": "Carlos Mendez",
+    "role": "Staff Data Engineer",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "ClickHouse"
+  ],
+  "lineage": {
+   "supersedes": [
+    {
+     "id": "dec_8c7075150849",
+     "decision_code": "DEC-03",
+     "title": "Adopt Snowflake for analytics ETL queries",
+     "health": "superseded",
+     "decided_on": "2026-02-18",
+     "deciders": [
+      "Fiona Gallagher"
+     ],
+     "systems": [
+      "Snowflake"
+     ],
+     "depth": 1
+    }
+   ],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_d1d225a60971",
+    "decision_code": "DEC-13",
+    "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "health": "active",
+    "decided_on": "2026-06-04",
+    "deciders": [
+     "Carlos Mendez"
+    ],
+    "systems": [
+     "ClickHouse"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Data Platform"
+   ],
+   "projects": [
+    "Project Titan"
+   ],
+   "people": [
+    {
+     "name": "Bob Martin",
+     "role": "Senior Staff SRE",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Carlos Mendez",
+     "role": "Staff Data Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Fiona Gallagher",
+     "role": "Lead Analytics Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Laura Croft",
+     "role": "Cloud Operations Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_d1d225a60971",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d1d225a60971",
+      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+      "decided_on": "2026-06-04",
+      "status": "accepted",
+      "decision_code": "DEC-13",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Carlos Mendez",
+     "label": "Person",
+     "properties": {
+      "name": "Carlos Mendez",
+      "email": "carlos.mendez@novascale.io",
+      "id": "9cd89920-ceae-5803-be17-b9ebd7cfb8b1",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Staff Data Engineer",
+      "start_date": "2023-01-10"
+     }
+    },
+    {
+     "id": "System:ClickHouse",
+     "label": "System",
+     "properties": {
+      "name": "ClickHouse",
+      "id": "c55cc515-a1c6-5c40-aaed-2bf9357cab7c",
+      "status": "active",
+      "system_type": "database",
+      "vendor": "ClickHouse Inc"
+     }
+    },
+    {
+     "id": "Decision:dec_8c7075150849",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_8c7075150849",
+      "title": "Adopt Snowflake for analytics ETL queries",
+      "decided_on": "2026-02-18",
+      "decision_code": "DEC-03",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Decision:dec_d09476870168",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d09476870168",
+      "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+      "decided_on": "2026-10-10",
+      "status": "accepted",
+      "decision_code": "DEC-17",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Ticket:TICK-103",
+     "label": "Ticket",
+     "properties": {
+      "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
+      "ticket_id": "TICK-103",
+      "title": "Slow analytical queries on historical clickstream datasets",
+      "status": "closed",
+      "opened": "2026-02-15",
+      "closed": "2026-02-18",
+      "system": "Snowflake"
+     }
+    },
+    {
+     "id": "Ticket:TICK-104",
+     "label": "Ticket",
+     "properties": {
+      "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
+      "ticket_id": "TICK-104",
+      "title": "High compute credits on daily analytics warehouse rollups",
+      "status": "closed",
+      "opened": "2026-06-01",
+      "closed": "2026-06-04",
+      "system": "ClickHouse"
+     }
+    },
+    {
+     "id": "Person:Laura Croft",
+     "label": "Person",
+     "properties": {
+      "email": "laura.croft@novascale.io",
+      "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Laura Croft",
+      "role": "Cloud Operations Lead",
+      "start_date": "2022-04-01"
+     }
+    },
+    {
+     "id": "Person:Fiona Gallagher",
+     "label": "Person",
+     "properties": {
+      "email": "fiona.gallagher@novascale.io",
+      "id": "0bb4c85f-396c-5a74-9978-e7c746d76489",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Fiona Gallagher",
+      "role": "Lead Analytics Engineer",
+      "start_date": "2022-11-01"
+     }
+    },
+    {
+     "id": "Person:Bob Martin",
+     "label": "Person",
+     "properties": {
+      "email": "bob.martin@novascale.io",
+      "id": "b372efab-4b32-5aa0-a154-edc0cd6a2100",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Bob Martin",
+      "role": "Senior Staff SRE",
+      "start_date": "2022-06-15"
+     }
+    },
+    {
+     "id": "Project:Project Titan",
+     "label": "Project",
+     "properties": {
+      "description": "Next-generation Analytics Warehouse and Aggregations",
+      "id": "4211b698-894c-5bda-844b-f50a183b883e",
+      "name": "Project Titan",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Data Platform",
+     "label": "Team",
+     "properties": {
+      "department": "Data & Analytics",
+      "id": "02efb04c-4926-52db-8c17-3fdca3b3cf74",
+      "name": "Data Platform"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "Person:Carlos Mendez",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "System:ClickHouse",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "System:ClickHouse",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "Decision:dec_8c7075150849",
+     "type": "supersedes",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_8c7075150849",
+     "target": "Ticket:TICK-103",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "Ticket:TICK-104",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Laura Croft",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Fiona Gallagher",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Bob Martin",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "System:ClickHouse",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "Project:Project Titan",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "Team:Data Platform",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "Team:Data Platform",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_d1d225a60971"
+     },
+     "ms": 76.5
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_d1d225a60971"
+     },
+     "ms": 151.4
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_d1d225a60971"
+     },
+     "ms": 82.9
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_d1d225a60971"
+     },
+     "ms": 85.6
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_d1d225a60971"
+     },
+     "ms": 82.2
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_d1d225a60971"
+     },
+     "ms": 80.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d09476870168",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 103.2
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 91.7
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 80.8
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "ClickHouse"
+      ]
+     },
+     "ms": 205.4
+    }
+   ],
+   "total_ms": 1039.7
+  }
  },
  "dec_ecd94c860f08": {
   "id": "dec_ecd94c860f08",
@@ -434,12 +4940,289 @@
     "type": "meeting",
     "id": "Security Architecture Review",
     "title": "Security Architecture Review",
-    "date": "2026-06-08"
+    "date": "2026-06-08",
+    "quote": "Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials.",
+  "deciders": [
+   {
+    "name": "Diana Prince",
+    "role": "Security Architect",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Vault"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_e287aa298850",
+    "decision_code": "DEC-05",
+    "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+    "health": "active",
+    "decided_on": "2026-03-14",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   },
+   {
+    "id": "dec_ecd94c860f08",
+    "decision_code": "DEC-14",
+    "title": "Rotate all database passwords into Vault dynamic secrets",
+    "health": "active",
+    "decided_on": "2026-06-08",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Security & IAM"
+   ],
+   "projects": [],
+   "people": [
+    {
+     "name": "Diana Prince",
+     "role": "Security Architect",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_ecd94c860f08",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_ecd94c860f08",
+      "title": "Rotate all database passwords into Vault dynamic secrets",
+      "decided_on": "2026-06-08",
+      "status": "accepted",
+      "decision_code": "DEC-14",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Diana Prince",
+     "label": "Person",
+     "properties": {
+      "name": "Diana Prince",
+      "email": "diana.prince@novascale.io",
+      "id": "48524af6-c1ee-5511-af18-71f4895e1ac5",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Security Architect",
+      "start_date": "2021-08-01"
+     }
+    },
+    {
+     "id": "System:Vault",
+     "label": "System",
+     "properties": {
+      "name": "Vault",
+      "id": "f555b55a-5dcc-5d37-891e-f655fdedb917",
+      "status": "active",
+      "system_type": "secrets-management",
+      "vendor": "HashiCorp"
+     }
+    },
+    {
+     "id": "Decision:dec_e287aa298850",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_e287aa298850",
+      "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+      "decided_on": "2026-03-14",
+      "status": "accepted",
+      "decision_code": "DEC-05",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Meeting:Security Architecture Review",
+     "label": "Meeting",
+     "properties": {
+      "id": "da360c0c-0d44-53d7-bc39-a71fe16a6a18",
+      "title": "Security Architecture Review",
+      "date": "2026-06-08",
+      "meeting_date": "2026-06-08",
+      "file_name": "2026-06-08_secrets_management.md"
+     }
+    },
+    {
+     "id": "Team:Security & IAM",
+     "label": "Team",
+     "properties": {
+      "department": "Information Security",
+      "id": "13ef364e-fda3-5c11-805b-1dd2ee615608",
+      "name": "Security & IAM"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_ecd94c860f08",
+     "target": "Person:Diana Prince",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_ecd94c860f08",
+     "target": "System:Vault",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_e287aa298850",
+     "target": "System:Vault",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_ecd94c860f08",
+     "target": "Meeting:Security Architecture Review",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_e287aa298850",
+     "target": "Person:Diana Prince",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Diana Prince",
+     "target": "System:Vault",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Diana Prince",
+     "target": "Team:Security & IAM",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Diana Prince",
+     "target": "Team:Security & IAM",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_ecd94c860f08"
+     },
+     "ms": 134.4
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_ecd94c860f08"
+     },
+     "ms": 190.3
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_ecd94c860f08"
+     },
+     "ms": 444.2
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_ecd94c860f08"
+     },
+     "ms": 110.9
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_ecd94c860f08"
+     },
+     "ms": 101.1
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_ecd94c860f08"
+     },
+     "ms": 105.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_e287aa298850",
+       "dec_ecd94c860f08"
+      ]
+     },
+     "ms": 515.6
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_ecd94c860f08"
+      ]
+     },
+     "ms": 111.3
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_ecd94c860f08"
+      ]
+     },
+     "ms": 84.6
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Vault"
+      ]
+     },
+     "ms": 158.4
+    }
+   ],
+   "total_ms": 1955.8
+  }
  },
  "dec_53d51a7d4549": {
   "id": "dec_53d51a7d4549",
@@ -464,12 +5247,247 @@
     "type": "ticket",
     "id": "TICK-112",
     "title": "Replication lag and connection pool contention on primary database",
-    "date": "2026-06-18"
+    "date": "2026-06-18",
+    "quote": "Upgrade all production Postgres instances to version 16."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Upgrade all production Postgres instances to version 16.",
+  "deciders": [
+   {
+    "name": "Evan Wright",
+    "role": "Senior Backend Engineer",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Postgres"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_53d51a7d4549",
+    "decision_code": "DEC-15",
+    "title": "Upgrade all production Postgres instances to version 16",
+    "health": "active",
+    "decided_on": "2026-06-18",
+    "deciders": [
+     "Evan Wright"
+    ],
+    "systems": [
+     "Postgres"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [],
+   "people": [
+    {
+     "name": "Evan Wright",
+     "role": "Senior Backend Engineer",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_53d51a7d4549",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_53d51a7d4549",
+      "title": "Upgrade all production Postgres instances to version 16",
+      "decided_on": "2026-06-18",
+      "status": "accepted",
+      "decision_code": "DEC-15",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Evan Wright",
+     "label": "Person",
+     "properties": {
+      "name": "Evan Wright",
+      "email": "evan.wright@novascale.io",
+      "id": "d144ad7b-97e7-5540-b57c-4c07e2d4f501",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Senior Backend Engineer",
+      "start_date": "2023-04-12"
+     }
+    },
+    {
+     "id": "System:Postgres",
+     "label": "System",
+     "properties": {
+      "name": "Postgres",
+      "id": "0a778edb-e92d-511f-a498-ee5ed29ea0f3",
+      "status": "active",
+      "system_type": "database",
+      "vendor": "PostgreSQL Global Development Group"
+     }
+    },
+    {
+     "id": "Ticket:TICK-112",
+     "label": "Ticket",
+     "properties": {
+      "id": "c910f3a2-50ee-5608-8821-5b47d0d3f857",
+      "ticket_id": "TICK-112",
+      "title": "Replication lag and connection pool contention on primary database",
+      "status": "closed",
+      "opened": "2026-06-15",
+      "closed": "2026-06-18",
+      "system": "Postgres"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_53d51a7d4549",
+     "target": "Person:Evan Wright",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_53d51a7d4549",
+     "target": "System:Postgres",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_53d51a7d4549",
+     "target": "Ticket:TICK-112",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Person:Evan Wright",
+     "target": "System:Postgres",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Evan Wright",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_53d51a7d4549"
+     },
+     "ms": 356.7
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_53d51a7d4549"
+     },
+     "ms": 581.4
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_53d51a7d4549"
+     },
+     "ms": 113.7
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_53d51a7d4549"
+     },
+     "ms": 80.1
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_53d51a7d4549"
+     },
+     "ms": 80.9
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_53d51a7d4549"
+     },
+     "ms": 85.5
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_53d51a7d4549"
+      ]
+     },
+     "ms": 90.2
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_53d51a7d4549"
+      ]
+     },
+     "ms": 84.7
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_53d51a7d4549"
+      ]
+     },
+     "ms": 104.4
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Postgres"
+      ]
+     },
+     "ms": 107.5
+    }
+   ],
+   "total_ms": 1685.1
+  }
  },
  "dec_04ed8d5c10ae": {
   "id": "dec_04ed8d5c10ae",
@@ -494,12 +5512,245 @@
     "type": "meeting",
     "id": "Container Platform Strategy",
     "title": "Container Platform Strategy",
-    "date": "2026-08-20"
+    "date": "2026-08-20",
+    "quote": "Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers.",
+  "deciders": [
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "Kubernetes"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_04ed8d5c10ae",
+    "decision_code": "DEC-16",
+    "title": "Standardize on Kubernetes 1.30 across all production regions",
+    "health": "active",
+    "decided_on": "2026-08-20",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Kubernetes"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Core Infrastructure"
+   ],
+   "projects": [],
+   "people": [
+    {
+     "name": "Laura Croft",
+     "role": "Cloud Operations Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_04ed8d5c10ae",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_04ed8d5c10ae",
+      "title": "Standardize on Kubernetes 1.30 across all production regions",
+      "decided_on": "2026-08-20",
+      "status": "accepted",
+      "decision_code": "DEC-16",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Laura Croft",
+     "label": "Person",
+     "properties": {
+      "name": "Laura Croft",
+      "email": "laura.croft@novascale.io",
+      "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Cloud Operations Lead",
+      "start_date": "2022-04-01"
+     }
+    },
+    {
+     "id": "System:Kubernetes",
+     "label": "System",
+     "properties": {
+      "name": "Kubernetes",
+      "id": "674d1c14-d794-5111-85ff-710e68f75ffe",
+      "status": "active",
+      "system_type": "container-orchestration",
+      "vendor": "Cloud Native Computing Foundation"
+     }
+    },
+    {
+     "id": "Meeting:Container Platform Strategy",
+     "label": "Meeting",
+     "properties": {
+      "id": "730eebe4-956c-501b-838d-34aca3eea565",
+      "title": "Container Platform Strategy",
+      "date": "2026-08-20",
+      "meeting_date": "2026-08-20",
+      "file_name": "2026-08-20_container_platform_upgrade.md"
+     }
+    },
+    {
+     "id": "Team:Core Infrastructure",
+     "label": "Team",
+     "properties": {
+      "department": "Engineering",
+      "id": "07c688b6-c3e6-5534-8721-7d08c551694d",
+      "name": "Core Infrastructure"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_04ed8d5c10ae",
+     "target": "Person:Laura Croft",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_04ed8d5c10ae",
+     "target": "System:Kubernetes",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_04ed8d5c10ae",
+     "target": "Meeting:Container Platform Strategy",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Person:Laura Croft",
+     "target": "System:Kubernetes",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Laura Croft",
+     "target": "Team:Core Infrastructure",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_04ed8d5c10ae"
+     },
+     "ms": 103.4
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_04ed8d5c10ae"
+     },
+     "ms": 84.0
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_04ed8d5c10ae"
+     },
+     "ms": 93.0
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_04ed8d5c10ae"
+     },
+     "ms": 79.6
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_04ed8d5c10ae"
+     },
+     "ms": 91.1
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_04ed8d5c10ae"
+     },
+     "ms": 68.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_04ed8d5c10ae"
+      ]
+     },
+     "ms": 104.3
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_04ed8d5c10ae"
+      ]
+     },
+     "ms": 76.9
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_04ed8d5c10ae"
+      ]
+     },
+     "ms": 80.0
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "Kubernetes"
+      ]
+     },
+     "ms": 110.8
+    }
+   ],
+   "total_ms": 891.1
+  }
  },
  "dec_d09476870168": {
   "id": "dec_d09476870168",
@@ -512,9 +5763,10 @@
   "health": "active",
   "health_reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
   "decided_on": "2026-10-10",
-  "decided_by": "Bob Martin",
+  "decided_by": "Bob Martin, Fiona Gallagher, Laura Croft",
   "people": [
    "Bob Martin",
+   "Carlos Mendez",
    "Fiona Gallagher",
    "Laura Croft"
   ],
@@ -527,11 +5779,459 @@
     "type": "meeting",
     "id": "Cloud Cost Optimization Taskforce",
     "title": "Cloud Cost Optimization Taskforce",
-    "date": "2026-10-10"
+    "date": "2026-10-10",
+    "quote": "decommissioning Snowflake warehouses in favor of ClickHouse."
    }
   ],
   "supersedes": [],
   "superseded_by": [],
-  "contradicts": []
+  "contradicts": [],
+  "evidence_quote": "decommissioning Snowflake warehouses in favor of ClickHouse.",
+  "deciders": [
+   {
+    "name": "Bob Martin",
+    "role": "Senior Staff SRE",
+    "departed": false,
+    "leave_date": null
+   },
+   {
+    "name": "Fiona Gallagher",
+    "role": "Lead Analytics Engineer",
+    "departed": false,
+    "leave_date": null
+   },
+   {
+    "name": "Laura Croft",
+    "role": "Cloud Operations Lead",
+    "departed": false,
+    "leave_date": null
+   }
+  ],
+  "system_names": [
+   "ClickHouse",
+   "Snowflake"
+  ],
+  "lineage": {
+   "supersedes": [],
+   "superseded_by": [],
+   "contradicts": [],
+   "contradicted_by": []
+  },
+  "timeline": [
+   {
+    "id": "dec_8c7075150849",
+    "decision_code": "DEC-03",
+    "title": "Adopt Snowflake for analytics ETL queries",
+    "health": "superseded",
+    "decided_on": "2026-02-18",
+    "deciders": [
+     "Fiona Gallagher"
+    ],
+    "systems": [
+     "Snowflake"
+    ]
+   },
+   {
+    "id": "dec_d1d225a60971",
+    "decision_code": "DEC-13",
+    "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "health": "active",
+    "decided_on": "2026-06-04",
+    "deciders": [
+     "Carlos Mendez"
+    ],
+    "systems": [
+     "ClickHouse"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "impact": {
+   "teams": [
+    "Data Platform"
+   ],
+   "projects": [
+    "Project Titan"
+   ],
+   "people": [
+    {
+     "name": "Bob Martin",
+     "role": "Senior Staff SRE",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Carlos Mendez",
+     "role": "Staff Data Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Fiona Gallagher",
+     "role": "Lead Analytics Engineer",
+     "departed": false,
+     "leave_date": null
+    },
+    {
+     "name": "Laura Croft",
+     "role": "Cloud Operations Lead",
+     "departed": false,
+     "leave_date": null
+    }
+   ]
+  },
+  "subgraph": {
+   "nodes": [
+    {
+     "id": "Decision:dec_d09476870168",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d09476870168",
+      "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+      "decided_on": "2026-10-10",
+      "status": "accepted",
+      "decision_code": "DEC-17",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Person:Bob Martin",
+     "label": "Person",
+     "properties": {
+      "name": "Bob Martin",
+      "email": "bob.martin@novascale.io",
+      "id": "b372efab-4b32-5aa0-a154-edc0cd6a2100",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Senior Staff SRE",
+      "start_date": "2022-06-15"
+     }
+    },
+    {
+     "id": "Person:Fiona Gallagher",
+     "label": "Person",
+     "properties": {
+      "name": "Fiona Gallagher",
+      "email": "fiona.gallagher@novascale.io",
+      "id": "0bb4c85f-396c-5a74-9978-e7c746d76489",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Lead Analytics Engineer",
+      "start_date": "2022-11-01"
+     }
+    },
+    {
+     "id": "Person:Laura Croft",
+     "label": "Person",
+     "properties": {
+      "name": "Laura Croft",
+      "email": "laura.croft@novascale.io",
+      "id": "5a242d25-3634-50e5-8386-9332f81a2f95",
+      "is_active": true,
+      "leave_date": "",
+      "role": "Cloud Operations Lead",
+      "start_date": "2022-04-01"
+     }
+    },
+    {
+     "id": "System:ClickHouse",
+     "label": "System",
+     "properties": {
+      "name": "ClickHouse",
+      "id": "c55cc515-a1c6-5c40-aaed-2bf9357cab7c",
+      "status": "active",
+      "system_type": "database",
+      "vendor": "ClickHouse Inc"
+     }
+    },
+    {
+     "id": "System:Snowflake",
+     "label": "System",
+     "properties": {
+      "name": "Snowflake",
+      "id": "7c54b083-1145-52f5-8c0c-1b7377ac839e",
+      "status": "active",
+      "system_type": "data-warehouse",
+      "vendor": "Snowflake Inc"
+     }
+    },
+    {
+     "id": "Decision:dec_d1d225a60971",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d1d225a60971",
+      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+      "decided_on": "2026-06-04",
+      "status": "accepted",
+      "decision_code": "DEC-13",
+      "health": "active"
+     }
+    },
+    {
+     "id": "Decision:dec_8c7075150849",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_8c7075150849",
+      "title": "Adopt Snowflake for analytics ETL queries",
+      "decided_on": "2026-02-18",
+      "status": "accepted",
+      "decision_code": "DEC-03",
+      "health": "superseded"
+     }
+    },
+    {
+     "id": "Meeting:Cloud Cost Optimization Taskforce",
+     "label": "Meeting",
+     "properties": {
+      "id": "d7e0c9f8-1205-5d1a-9ce8-97679bc5bb8a",
+      "title": "Cloud Cost Optimization Taskforce",
+      "date": "2026-10-10",
+      "meeting_date": "2026-10-10",
+      "file_name": "2026-10-10_cloud_cost_optimization.md"
+     }
+    },
+    {
+     "id": "Person:Carlos Mendez",
+     "label": "Person",
+     "properties": {
+      "email": "carlos.mendez@novascale.io",
+      "id": "9cd89920-ceae-5803-be17-b9ebd7cfb8b1",
+      "is_active": true,
+      "leave_date": "",
+      "name": "Carlos Mendez",
+      "role": "Staff Data Engineer",
+      "start_date": "2023-01-10"
+     }
+    },
+    {
+     "id": "Project:Project Titan",
+     "label": "Project",
+     "properties": {
+      "description": "Next-generation Analytics Warehouse and Aggregations",
+      "id": "4211b698-894c-5bda-844b-f50a183b883e",
+      "name": "Project Titan",
+      "status": "active"
+     }
+    },
+    {
+     "id": "Team:Data Platform",
+     "label": "Team",
+     "properties": {
+      "department": "Data & Analytics",
+      "id": "02efb04c-4926-52db-8c17-3fdca3b3cf74",
+      "name": "Data Platform"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Bob Martin",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Fiona Gallagher",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Person:Laura Croft",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "System:ClickHouse",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "System:Snowflake",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "System:ClickHouse",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_8c7075150849",
+     "target": "System:Snowflake",
+     "type": "about_system",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d09476870168",
+     "target": "Meeting:Cloud Cost Optimization Taskforce",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "Person:Carlos Mendez",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "System:ClickHouse",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "Project:Project Titan",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "Team:Data Platform",
+     "type": "leads",
+     "properties": {}
+    },
+    {
+     "source": "Person:Carlos Mendez",
+     "target": "Team:Data Platform",
+     "type": "member_of",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_8c7075150849",
+     "target": "Person:Fiona Gallagher",
+     "type": "decided_by",
+     "properties": {}
+    },
+    {
+     "source": "Person:Fiona Gallagher",
+     "target": "System:Snowflake",
+     "type": "owns",
+     "properties": {}
+    },
+    {
+     "source": "Person:Fiona Gallagher",
+     "target": "Team:Data Platform",
+     "type": "member_of",
+     "properties": {}
+    }
+   ]
+  },
+  "cypher": {
+   "queries": [
+    {
+     "name": "resolve",
+     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
+     "params": {
+      "ref": "dec_d09476870168"
+     },
+     "ms": 86.2
+    },
+    {
+     "name": "decision",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "params": {
+      "id": "dec_d09476870168"
+     },
+     "ms": 86.6
+    },
+    {
+     "name": "supersedes_chain",
+     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_d09476870168"
+     },
+     "ms": 99.4
+    },
+    {
+     "name": "superseded_by_chain",
+     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
+     "params": {
+      "id": "dec_d09476870168"
+     },
+     "ms": 72.7
+    },
+    {
+     "name": "contradictions",
+     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
+     "params": {
+      "id": "dec_d09476870168"
+     },
+     "ms": 77.3
+    },
+    {
+     "name": "system_timeline",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
+     "params": {
+      "id": "dec_d09476870168"
+     },
+     "ms": 90.0
+    },
+    {
+     "name": "decision_attributes",
+     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
+     "params": {
+      "ids": [
+       "dec_8c7075150849",
+       "dec_d09476870168",
+       "dec_d1d225a60971"
+      ]
+     },
+     "ms": 312.5
+    },
+    {
+     "name": "lineage_edges",
+     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
+     "params": {
+      "ids": [
+       "dec_d09476870168"
+      ]
+     },
+     "ms": 147.4
+    },
+    {
+     "name": "sources",
+     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
+     "params": {
+      "ids": [
+       "dec_d09476870168"
+      ]
+     },
+     "ms": 74.8
+    },
+    {
+     "name": "impact",
+     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "params": {
+      "systems": [
+       "ClickHouse",
+       "Snowflake"
+      ]
+     },
+     "ms": 132.6
+    }
+   ],
+   "total_ms": 1179.5
+  }
  }
 }

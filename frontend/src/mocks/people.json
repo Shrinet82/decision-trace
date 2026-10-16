@@ -1,0 +1,189 @@
+[
+ {
+  "name": "Alice Vance",
+  "role": "Principal Platform Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Kafka",
+   "Redis"
+  ],
+  "decision_count": 3
+ },
+ {
+  "name": "Laura Croft",
+  "role": "Cloud Operations Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Kubernetes"
+  ],
+  "decision_count": 3
+ },
+ {
+  "name": "Bob Martin",
+  "role": "Senior Staff SRE",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "RabbitMQ"
+  ],
+  "decision_count": 2
+ },
+ {
+  "name": "Diana Prince",
+  "role": "Security Architect",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Security & IAM"
+  ],
+  "systems_owned": [
+   "Vault"
+  ],
+  "decision_count": 2
+ },
+ {
+  "name": "Fiona Gallagher",
+  "role": "Lead Analytics Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Data Platform"
+  ],
+  "systems_owned": [
+   "Snowflake"
+  ],
+  "decision_count": 2
+ },
+ {
+  "name": "Julia Roberts",
+  "role": "Identity & Access Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Security & IAM"
+  ],
+  "systems_owned": [
+   "Keycloak"
+  ],
+  "decision_count": 2
+ },
+ {
+  "name": "Kevin Flynn",
+  "role": "Observability Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Datadog",
+   "Prometheus"
+  ],
+  "decision_count": 2
+ },
+ {
+  "name": "Carlos Mendez",
+  "role": "Staff Data Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Data Platform"
+  ],
+  "systems_owned": [
+   "ClickHouse"
+  ],
+  "decision_count": 1
+ },
+ {
+  "name": "Evan Wright",
+  "role": "Senior Backend Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Postgres"
+  ],
+  "decision_count": 1
+ },
+ {
+  "name": "Ian Malcolm",
+  "role": "Distributed Systems Architect",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [],
+  "decision_count": 1
+ },
+ {
+  "name": "George Clark",
+  "role": "DevOps Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Developer Experience"
+  ],
+  "systems_owned": [],
+  "decision_count": 0
+ },
+ {
+  "name": "Hannah Abbott",
+  "role": "Frontend Tech Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Developer Experience"
+  ],
+  "systems_owned": [],
+  "decision_count": 0
+ },
+ {
+  "name": "Marcus Aurelius",
+  "role": "Former Staff Architect",
+  "departed": true,
+  "leave_date": "2025-11-30",
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Elasticsearch"
+  ],
+  "decision_count": 0
+ },
+ {
+  "name": "Nina Simone",
+  "role": "Data Pipeline Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Data Platform"
+  ],
+  "systems_owned": [],
+  "decision_count": 0
+ },
+ {
+  "name": "Oliver Queen",
+  "role": "CI/CD Specialist",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Developer Experience"
+  ],
+  "systems_owned": [],
+  "decision_count": 0
+ }
+]

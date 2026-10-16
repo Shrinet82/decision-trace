@@ -1,0 +1,1103 @@
+{
+ "Alice Vance": {
+  "name": "Alice Vance",
+  "role": "Principal Platform Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Kafka",
+   "Redis"
+  ],
+  "decision_count": 3,
+  "start_date": "2022-03-01",
+  "email": "alice.vance@novascale.io",
+  "teams_led": [
+   "Core Infrastructure"
+  ],
+  "projects_led": [
+   "Project Horizon"
+  ],
+  "owned": [
+   {
+    "name": "Kafka",
+    "orphaned": false
+   },
+   {
+    "name": "Redis",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_fda8c9b4e631",
+    "decision_code": "DEC-01",
+    "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+    "health": "superseded",
+    "decided_on": "2026-02-03",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   },
+   {
+    "id": "dec_76772c5b323f",
+    "decision_code": "DEC-04",
+    "title": "Adopt Kafka for all event messaging across services",
+    "health": "contradicted",
+    "decided_on": "2026-03-04",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Kafka"
+    ]
+   },
+   {
+    "id": "dec_f564fcd15601",
+    "decision_code": "DEC-11",
+    "title": "Migrate session storage to embedded Keycloak cache",
+    "health": "active",
+    "decided_on": "2026-05-12",
+    "deciders": [
+     "Alice Vance"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   }
+  ],
+  "tickets_raised": 11,
+  "tickets_assigned": 8,
+  "meetings_attended": 6,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Alice Vance"
+     },
+     "ms": 244.8
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Alice Vance"
+     },
+     "ms": 205.8
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Alice Vance"
+     },
+     "ms": 205.8
+    }
+   ],
+   "total_ms": 656.4
+  }
+ },
+ "Laura Croft": {
+  "name": "Laura Croft",
+  "role": "Cloud Operations Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Kubernetes"
+  ],
+  "decision_count": 3,
+  "start_date": "2022-04-01",
+  "email": "laura.croft@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [
+   {
+    "name": "Kubernetes",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_091c86e8e476",
+    "decision_code": "DEC-09",
+    "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+    "health": "active",
+    "decided_on": "2026-04-22",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   },
+   {
+    "id": "dec_04ed8d5c10ae",
+    "decision_code": "DEC-16",
+    "title": "Standardize on Kubernetes 1.30 across all production regions",
+    "health": "active",
+    "decided_on": "2026-08-20",
+    "deciders": [
+     "Laura Croft"
+    ],
+    "systems": [
+     "Kubernetes"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "tickets_raised": 9,
+  "tickets_assigned": 10,
+  "meetings_attended": 5,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Laura Croft"
+     },
+     "ms": 197.6
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Laura Croft"
+     },
+     "ms": 204.2
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Laura Croft"
+     },
+     "ms": 204.2
+    }
+   ],
+   "total_ms": 606.0
+  }
+ },
+ "Bob Martin": {
+  "name": "Bob Martin",
+  "role": "Senior Staff SRE",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "RabbitMQ"
+  ],
+  "decision_count": 2,
+  "start_date": "2022-06-15",
+  "email": "bob.martin@novascale.io",
+  "teams_led": [],
+  "projects_led": [
+   "Project Nexus"
+  ],
+  "owned": [
+   {
+    "name": "RabbitMQ",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_98a223fad745",
+    "decision_code": "DEC-07",
+    "title": "Adopt RabbitMQ for all event messaging across services",
+    "health": "contradicted",
+    "decided_on": "2026-04-08",
+    "deciders": [
+     "Bob Martin"
+    ],
+    "systems": [
+     "RabbitMQ"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "tickets_raised": 11,
+  "tickets_assigned": 10,
+  "meetings_attended": 3,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Bob Martin"
+     },
+     "ms": 198.9
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Bob Martin"
+     },
+     "ms": 204.5
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Bob Martin"
+     },
+     "ms": 204.8
+    }
+   ],
+   "total_ms": 608.2
+  }
+ },
+ "Diana Prince": {
+  "name": "Diana Prince",
+  "role": "Security Architect",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Security & IAM"
+  ],
+  "systems_owned": [
+   "Vault"
+  ],
+  "decision_count": 2,
+  "start_date": "2021-08-01",
+  "email": "diana.prince@novascale.io",
+  "teams_led": [
+   "Security & IAM"
+  ],
+  "projects_led": [],
+  "owned": [
+   {
+    "name": "Vault",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_e287aa298850",
+    "decision_code": "DEC-05",
+    "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+    "health": "active",
+    "decided_on": "2026-03-14",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   },
+   {
+    "id": "dec_ecd94c860f08",
+    "decision_code": "DEC-14",
+    "title": "Rotate all database passwords into Vault dynamic secrets",
+    "health": "active",
+    "decided_on": "2026-06-08",
+    "deciders": [
+     "Diana Prince"
+    ],
+    "systems": [
+     "Vault"
+    ]
+   }
+  ],
+  "tickets_raised": 4,
+  "tickets_assigned": 5,
+  "meetings_attended": 4,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Diana Prince"
+     },
+     "ms": 198.6
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Diana Prince"
+     },
+     "ms": 204.6
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Diana Prince"
+     },
+     "ms": 205.1
+    }
+   ],
+   "total_ms": 608.3
+  }
+ },
+ "Fiona Gallagher": {
+  "name": "Fiona Gallagher",
+  "role": "Lead Analytics Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Data Platform"
+  ],
+  "systems_owned": [
+   "Snowflake"
+  ],
+  "decision_count": 2,
+  "start_date": "2022-11-01",
+  "email": "fiona.gallagher@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [
+   {
+    "name": "Snowflake",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_8c7075150849",
+    "decision_code": "DEC-03",
+    "title": "Adopt Snowflake for analytics ETL queries",
+    "health": "superseded",
+    "decided_on": "2026-02-18",
+    "deciders": [
+     "Fiona Gallagher"
+    ],
+    "systems": [
+     "Snowflake"
+    ]
+   },
+   {
+    "id": "dec_d09476870168",
+    "decision_code": "DEC-17",
+    "title": "Decommission Snowflake warehouses in favor of ClickHouse",
+    "health": "active",
+    "decided_on": "2026-10-10",
+    "deciders": [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    "systems": [
+     "ClickHouse",
+     "Snowflake"
+    ]
+   }
+  ],
+  "tickets_raised": 4,
+  "tickets_assigned": 5,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Fiona Gallagher"
+     },
+     "ms": 198.0
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Fiona Gallagher"
+     },
+     "ms": 207.3
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Fiona Gallagher"
+     },
+     "ms": 202.6
+    }
+   ],
+   "total_ms": 607.9
+  }
+ },
+ "Julia Roberts": {
+  "name": "Julia Roberts",
+  "role": "Identity & Access Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Security & IAM"
+  ],
+  "systems_owned": [
+   "Keycloak"
+  ],
+  "decision_count": 2,
+  "start_date": "2022-07-01",
+  "email": "julia.roberts@novascale.io",
+  "teams_led": [],
+  "projects_led": [
+   "Project Shield"
+  ],
+  "owned": [
+   {
+    "name": "Keycloak",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_f17ee7ad31a2",
+    "decision_code": "DEC-02",
+    "title": "Adopt Keycloak for company-wide single sign-on",
+    "health": "active",
+    "decided_on": "2026-02-10",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   },
+   {
+    "id": "dec_f8a30e251e54",
+    "decision_code": "DEC-12",
+    "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "health": "active",
+    "decided_on": "2026-05-24",
+    "deciders": [
+     "Julia Roberts"
+    ],
+    "systems": [
+     "Keycloak"
+    ]
+   }
+  ],
+  "tickets_raised": 0,
+  "tickets_assigned": 6,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Julia Roberts"
+     },
+     "ms": 198.2
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Julia Roberts"
+     },
+     "ms": 204.6
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Julia Roberts"
+     },
+     "ms": 204.8
+    }
+   ],
+   "total_ms": 607.6
+  }
+ },
+ "Kevin Flynn": {
+  "name": "Kevin Flynn",
+  "role": "Observability Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Datadog",
+   "Prometheus"
+  ],
+  "decision_count": 2,
+  "start_date": "2023-02-15",
+  "email": "kevin.flynn@novascale.io",
+  "teams_led": [],
+  "projects_led": [
+   "Project Beacon"
+  ],
+  "owned": [
+   {
+    "name": "Datadog",
+    "orphaned": false
+   },
+   {
+    "name": "Prometheus",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_5b196394600e",
+    "decision_code": "DEC-06",
+    "title": "Standardize application traces on Datadog APM across all production services",
+    "health": "superseded",
+    "decided_on": "2026-03-28",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Datadog"
+    ]
+   },
+   {
+    "id": "dec_21a4de59b886",
+    "decision_code": "DEC-08",
+    "title": "Migrate application metrics from Datadog to Prometheus Operator",
+    "health": "active",
+    "decided_on": "2026-04-12",
+    "deciders": [
+     "Kevin Flynn"
+    ],
+    "systems": [
+     "Prometheus"
+    ]
+   }
+  ],
+  "tickets_raised": 5,
+  "tickets_assigned": 11,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Kevin Flynn"
+     },
+     "ms": 198.9
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Kevin Flynn"
+     },
+     "ms": 205.3
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Kevin Flynn"
+     },
+     "ms": 113.9
+    }
+   ],
+   "total_ms": 518.1
+  }
+ },
+ "Carlos Mendez": {
+  "name": "Carlos Mendez",
+  "role": "Staff Data Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Data Platform"
+  ],
+  "systems_owned": [
+   "ClickHouse"
+  ],
+  "decision_count": 1,
+  "start_date": "2023-01-10",
+  "email": "carlos.mendez@novascale.io",
+  "teams_led": [
+   "Data Platform"
+  ],
+  "projects_led": [
+   "Project Titan"
+  ],
+  "owned": [
+   {
+    "name": "ClickHouse",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_d1d225a60971",
+    "decision_code": "DEC-13",
+    "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "health": "active",
+    "decided_on": "2026-06-04",
+    "deciders": [
+     "Carlos Mendez"
+    ],
+    "systems": [
+     "ClickHouse"
+    ]
+   }
+  ],
+  "tickets_raised": 1,
+  "tickets_assigned": 14,
+  "meetings_attended": 4,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Carlos Mendez"
+     },
+     "ms": 101.0
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Carlos Mendez"
+     },
+     "ms": 183.5
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Carlos Mendez"
+     },
+     "ms": 204.8
+    }
+   ],
+   "total_ms": 489.3
+  }
+ },
+ "Evan Wright": {
+  "name": "Evan Wright",
+  "role": "Senior Backend Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Postgres"
+  ],
+  "decision_count": 1,
+  "start_date": "2023-04-12",
+  "email": "evan.wright@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [
+   {
+    "name": "Postgres",
+    "orphaned": false
+   }
+  ],
+  "decisions": [
+   {
+    "id": "dec_53d51a7d4549",
+    "decision_code": "DEC-15",
+    "title": "Upgrade all production Postgres instances to version 16",
+    "health": "active",
+    "decided_on": "2026-06-18",
+    "deciders": [
+     "Evan Wright"
+    ],
+    "systems": [
+     "Postgres"
+    ]
+   }
+  ],
+  "tickets_raised": 8,
+  "tickets_assigned": 6,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Evan Wright"
+     },
+     "ms": 199.0
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Evan Wright"
+     },
+     "ms": 203.8
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Evan Wright"
+     },
+     "ms": 205.4
+    }
+   ],
+   "total_ms": 608.2
+  }
+ },
+ "Ian Malcolm": {
+  "name": "Ian Malcolm",
+  "role": "Distributed Systems Architect",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [],
+  "decision_count": 1,
+  "start_date": "2021-05-10",
+  "email": "ian.malcolm@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [],
+  "decisions": [
+   {
+    "id": "dec_2c6a03017923",
+    "decision_code": "DEC-10",
+    "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+    "health": "active",
+    "decided_on": "2026-05-05",
+    "deciders": [
+     "Ian Malcolm"
+    ],
+    "systems": [
+     "Redis"
+    ]
+   }
+  ],
+  "tickets_raised": 0,
+  "tickets_assigned": 1,
+  "meetings_attended": 1,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Ian Malcolm"
+     },
+     "ms": 100.2
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Ian Malcolm"
+     },
+     "ms": 99.6
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Ian Malcolm"
+     },
+     "ms": 70.0
+    }
+   ],
+   "total_ms": 269.8
+  }
+ },
+ "George Clark": {
+  "name": "George Clark",
+  "role": "DevOps Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Developer Experience"
+  ],
+  "systems_owned": [],
+  "decision_count": 0,
+  "start_date": "2023-09-01",
+  "email": "george.clark@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [],
+  "decisions": [],
+  "tickets_raised": 6,
+  "tickets_assigned": 0,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "George Clark"
+     },
+     "ms": 68.9
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "George Clark"
+     },
+     "ms": 83.4
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "George Clark"
+     },
+     "ms": 81.2
+    }
+   ],
+   "total_ms": 233.5
+  }
+ },
+ "Hannah Abbott": {
+  "name": "Hannah Abbott",
+  "role": "Frontend Tech Lead",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Developer Experience"
+  ],
+  "systems_owned": [],
+  "decision_count": 0,
+  "start_date": "2022-01-20",
+  "email": "hannah.abbott@novascale.io",
+  "teams_led": [
+   "Developer Experience"
+  ],
+  "projects_led": [],
+  "owned": [],
+  "decisions": [],
+  "tickets_raised": 11,
+  "tickets_assigned": 0,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Hannah Abbott"
+     },
+     "ms": 84.1
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Hannah Abbott"
+     },
+     "ms": 63.5
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Hannah Abbott"
+     },
+     "ms": 208.9
+    }
+   ],
+   "total_ms": 356.5
+  }
+ },
+ "Marcus Aurelius": {
+  "name": "Marcus Aurelius",
+  "role": "Former Staff Architect",
+  "departed": true,
+  "leave_date": "2025-11-30",
+  "teams": [
+   "Core Infrastructure"
+  ],
+  "systems_owned": [
+   "Elasticsearch"
+  ],
+  "decision_count": 0,
+  "start_date": "2021-01-10",
+  "email": "marcus.aurelius@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [
+   {
+    "name": "Elasticsearch",
+    "orphaned": true
+   }
+  ],
+  "decisions": [],
+  "tickets_raised": 0,
+  "tickets_assigned": 0,
+  "meetings_attended": 0,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Marcus Aurelius"
+     },
+     "ms": 97.2
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Marcus Aurelius"
+     },
+     "ms": 94.7
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Marcus Aurelius"
+     },
+     "ms": 79.3
+    }
+   ],
+   "total_ms": 271.2
+  }
+ },
+ "Nina Simone": {
+  "name": "Nina Simone",
+  "role": "Data Pipeline Engineer",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Data Platform"
+  ],
+  "systems_owned": [],
+  "decision_count": 0,
+  "start_date": "2023-08-15",
+  "email": "nina.simone@novascale.io",
+  "teams_led": [],
+  "projects_led": [],
+  "owned": [],
+  "decisions": [],
+  "tickets_raised": 5,
+  "tickets_assigned": 0,
+  "meetings_attended": 1,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Nina Simone"
+     },
+     "ms": 74.4
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Nina Simone"
+     },
+     "ms": 104.7
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Nina Simone"
+     },
+     "ms": 100.0
+    }
+   ],
+   "total_ms": 279.1
+  }
+ },
+ "Oliver Queen": {
+  "name": "Oliver Queen",
+  "role": "CI/CD Specialist",
+  "departed": false,
+  "leave_date": null,
+  "teams": [
+   "Developer Experience"
+  ],
+  "systems_owned": [],
+  "decision_count": 0,
+  "start_date": "2023-03-01",
+  "email": "oliver.queen@novascale.io",
+  "teams_led": [],
+  "projects_led": [
+   "Project Velocity"
+  ],
+  "owned": [],
+  "decisions": [],
+  "tickets_raised": 5,
+  "tickets_assigned": 4,
+  "meetings_attended": 2,
+  "cypher": {
+   "queries": [
+    {
+     "name": "person",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
+     "params": {
+      "name": "Oliver Queen"
+     },
+     "ms": 79.8
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Oliver Queen"
+     },
+     "ms": 98.8
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "params": {
+      "name": "Oliver Queen"
+     },
+     "ms": 105.0
+    }
+   ],
+   "total_ms": 283.6
+  }
+ }
+}

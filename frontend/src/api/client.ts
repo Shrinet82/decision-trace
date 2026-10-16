@@ -4,6 +4,10 @@ import type {
   DecisionDetail,
   DecisionSummary,
   GraphResponse,
+  PersonDetail,
+  PersonSummary,
+  SystemDetail,
+  SystemSummary,
 } from './types';
 // Fixtures are loaded on demand so they stay out of the production bundle.
 const loadMocks = () => import('./mocks');
@@ -64,12 +68,12 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
 }
 
 /**
- * Fetch detailed decision by ID.
+ * Fetch a full decision page by DEC code (DEC-11), id, or exact title.
  */
 export async function getDecision(decisionId: string): Promise<DecisionDetail> {
   if (USE_MOCKS) {
-    const { MOCK_DECISION_DETAILS } = await loadMocks();
-    const mock = MOCK_DECISION_DETAILS[decisionId];
+    const { findDecisionDetail } = await loadMocks();
+    const mock = findDecisionDetail(decisionId);
     if (!mock) throw new ApiError(`Decision ${decisionId} not found`, 404);
     return mock;
   }
@@ -123,4 +127,34 @@ export async function listDecisions(): Promise<DecisionSummary[]> {
 export async function getGraph(): Promise<GraphResponse> {
   if (USE_MOCKS) return (await loadMocks()).MOCK_GRAPH;
   return getJson<GraphResponse>('/graph?limit=500', 'Failed to load graph');
+}
+
+export async function listSystems(): Promise<SystemSummary[]> {
+  if (USE_MOCKS) return (await loadMocks()).MOCK_SYSTEMS;
+  return getJson<SystemSummary[]>('/systems', 'Failed to load systems');
+}
+
+export async function getSystem(name: string): Promise<SystemDetail> {
+  if (USE_MOCKS) {
+    const { MOCK_SYSTEM_DETAILS, findByName } = await loadMocks();
+    const mock = findByName(MOCK_SYSTEM_DETAILS, name);
+    if (!mock) throw new ApiError(`System ${name} not found`, 404);
+    return mock;
+  }
+  return getJson<SystemDetail>(`/systems/${encodeURIComponent(name)}`, `Failed to load system ${name}`);
+}
+
+export async function listPeople(): Promise<PersonSummary[]> {
+  if (USE_MOCKS) return (await loadMocks()).MOCK_PEOPLE;
+  return getJson<PersonSummary[]>('/people', 'Failed to load people');
+}
+
+export async function getPerson(name: string): Promise<PersonDetail> {
+  if (USE_MOCKS) {
+    const { MOCK_PERSON_DETAILS, findByName } = await loadMocks();
+    const mock = findByName(MOCK_PERSON_DETAILS, name);
+    if (!mock) throw new ApiError(`Person ${name} not found`, 404);
+    return mock;
+  }
+  return getJson<PersonDetail>(`/people/${encodeURIComponent(name)}`, `Failed to load ${name}`);
 }

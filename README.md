@@ -57,7 +57,7 @@ company-brain/
 │       ├── main.py         # FastAPI entrypoint
 │       ├── config.py       # Pydantic settings & environment validation
 │       ├── schemas.py      # Request/response DTOs
-│       ├── api/            # API endpoints (/ask, /graph, /decisions, /ingest, /health)
+│       ├── api/            # API endpoints (/ask, /graph, /decisions[/{code}], /systems, /people, /health)
 │       ├── brain/          # Memory layer, graph models, and Cypher traversals
 │       └── ingest/         # Source processors (SQL DB, tickets, meeting notes)
 ├── data/                   # Synthetic enterprise dataset (SQL, tickets, notes)

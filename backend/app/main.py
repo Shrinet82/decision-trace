@@ -22,6 +22,8 @@ from app.api.admin import router as admin_router
 from app.api.ask import router as ask_router
 from app.api.decisions import router as decisions_router
 from app.api.graph import router as graph_router
+from app.api.people import router as people_router
+from app.api.systems import router as systems_router
 from app.brain.memory import ping_falkordb
 from app.config import get_settings
 
@@ -71,6 +73,8 @@ app.add_middleware(
 app.include_router(decisions_router)
 app.include_router(ask_router)
 app.include_router(graph_router)
+app.include_router(systems_router)
+app.include_router(people_router)
 app.include_router(admin_router)
 
 

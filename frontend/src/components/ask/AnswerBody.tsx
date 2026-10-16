@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { decisionHref, splitDecisionCodes } from '../../utils/links';
 import type { Citation } from '../../api/types';
 import {
   citeAnchor,
@@ -64,7 +66,19 @@ export const AnswerBody: React.FC<AnswerBodyProps> = ({ answer, citations, turnK
             </sup>
           );
         default:
-          return <React.Fragment key={i}>{token.text}</React.Fragment>;
+          return (
+            <React.Fragment key={i}>
+              {splitDecisionCodes(token.text).map((part, j) =>
+                part.code ? (
+                  <Link key={j} to={decisionHref(part.code)} className="font-medium text-accent hover:underline">
+                    {part.text}
+                  </Link>
+                ) : (
+                  <React.Fragment key={j}>{part.text}</React.Fragment>
+                )
+              )}
+            </React.Fragment>
+          );
       }
     });
 

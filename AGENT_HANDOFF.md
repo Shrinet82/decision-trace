@@ -51,7 +51,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 | :--- | :--- | :--- | :--- | :--- |
 | **Frontend Web App** | Production | Cloudflare Pages | `https://decision-trace.pages.dev` | React SPA dashboard with graph explorer |
 | **Edge API Proxy** | Production | Cloudflare Pages Functions | `https://decision-trace.pages.dev/api/*` | Hardened reverse proxy to Railway backend |
-| **Backend REST API** | Production | Railway Cloud | `https://decision-trace-api-production.up.railway.app` | FastAPI application (`/health`, `/ask`, `/decisions`, `/graph`) |
+| **Backend REST API** | Production | Railway Cloud | `https://decision-trace-api-production.up.railway.app` | FastAPI application (`/health`, `/ask`, `/decisions`, `/decisions/{code}`, `/graph`, `/systems`, `/people`) |
 | **Primary Graph DB** | Production | FalkorDB Cloud | Host: port 62360 (TCP) | FalkorDB instance housing graph topology |
 | **Keepalive Cron** | Automation | GitHub Actions | Scheduled every 6 hours | Pings FalkorDB to prevent cloud free-tier idle sleeping |
 
@@ -82,6 +82,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
   * **Possibly stale**: a person who DECIDED it has left (`is_active = false` or a past `leave_date`), or it is older than 180 days with no newer decision about its systems. Superseded and contradicted decisions are never stale.
   * Every decision also exposes `decider_departed` (true if any decider left), whatever its health. The UI's "decider still on team" check and "decider left the company" hint use it.
 * **Why 0 stale:** no Elasticsearch decision exists in the corpus. The 2026-07-14 meeting note only says ownership "needs reassignment"; it names no decider and no decision verb, and the quote in `data/GROUND_TRUTH_ADDENDUM.md` ("Alice Vance decided: ...") does not appear in the file, so the verified extractor correctly does not emit it. Marcus Aurelius (left 2025-11-30) owns Elasticsearch but decided nothing. The orphaned-system fact is still visible: `evaluate.py` reports it and `/ask "Who owns Elasticsearch?"` states he departed.
+* **Orphaned systems:** a system whose `owns` person has left (`evaluate_system_orphans` in `health.py`). Today: Elasticsearch (Marcus Aurelius, left 2025-11-30). Exposed as `orphaned` on `/systems`.
 * **Decision codes:** `/decisions`, `/ask` (graph_path Decision nodes) and `/graph` (Decision node properties) carry `decision_code` (`DEC-01`..`DEC-17`), numbered by decision date, then title (`backend/app/brain/codes.py`, computed on read). `/ask` also returns `primary_decision_id`, chosen server-side (`backend/app/api/primary.py`), or null if the answer found nothing.
 
 ## 4. Citation Integrity & Contradiction Resolution
@@ -125,7 +126,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
    * Credentials belong strictly to environment variables and GitHub Secrets (`RAILWAY_TOKEN`).
 2. **Cloudflare Reverse Proxy Guardrails** (`frontend/functions/api/[[path]].ts`):
    * URL decodes paths and blocks directory traversal (`..`, `\`, `//`). Tested: `/decisions/../admin` returns HTTP 404.
-   * Strict endpoint whitelist: `GET /health`, `GET /decisions`, `GET /decisions/:id`, `GET /graph`, `POST /ask`. All other routes return HTTP 404.
+   * Strict endpoint whitelist: `GET /health`, `GET /decisions`, `GET /decisions/:ref`, `GET /graph`, `GET /systems`, `GET /systems/:name`, `GET /people`, `GET /people/:name`, `POST /ask`. Names are limited to `[A-Za-z0-9 _.&'-]{1,80}` and re-encoded before forwarding. All other routes return HTTP 404.
 3. **Backend Rate Limiting** (`backend/app/api/rate_limiter.py`):
    * Per-IP in-memory sliding window: 20 requests/minute, 200 requests/day.
    * Global LLM daily cost ceiling: 500 calls/day. Returns HTTP 429 when exceeded.
@@ -141,7 +142,9 @@ The system prompt in `backend/app/api/ask.py` instructs:
 
 * **Stack**: React 18, Vite 6, TypeScript 5.7, Tailwind CSS 3.4, TanStack Query, Cytoscape.js.
 * **Design**: Linear-style, light only (Geist via Google Fonts, 13px base). Tokens are in `src/styles/tokens.css`. The mockups are in `frontend/design-ref/`.
-* **Pages**: Ask (`/`), Decisions (`/decisions`), Graph (`/graph`), plus a command palette (Cmd/Ctrl+K). `/sources` is a placeholder.
+* **Pages**: Ask (`/`), Decisions (`/decisions`, `/decisions/:code`), Systems (`/systems`, `/systems/:name`), People (`/people`, `/people/:name`), Explore (`/explore`, the full map; `/graph` redirects there), plus a command palette (Cmd/Ctrl+K) over decisions, systems and people. `/sources` is a placeholder.
+* **Decision page** (`/decisions/DEC-11`): header (code, title, status + health reason, deciders with a "Left company" badge, date, systems), a Lineage graph (dagre left to right; top to bottom under 600px; sources -> decision, supersedes drawn old -> new dashed, contradicts dashed red, at most 25 nodes, click to navigate), system timeline, sources with quotes, impact, and a properties panel with "Show Cypher" (every query + ms).
+* **Sidebar views**: Conflicts, Superseded, Orphaned systems (count from `/systems`).
 * **Data**: `useDecisions`, `useGraph`, `useDecisionDetail`, `useAsk` in `src/api/hooks.ts`. Mock mode (localhost / port 4173) serves frozen fixtures from `src/mocks/`, loaded lazily.
 * **Testing**: Vitest unit tests (54), Playwright journey plus axe on every page at 1440 and 390px (zero serious/critical violations), and `e2e/design-compare.spec.ts`, which renders the mockups next to the app.
 * **Screenshots**: `frontend/screenshots/{ask,decisions,graph}-{1440,390}.png` and `compare-*.png` (design on the left, implementation on the right).
@@ -170,6 +173,8 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   ├── config.py                 # Pydantic Settings & environment validation
 │   │   ├── api/
 │   │   │   ├── ask.py                # POST /ask endpoint (graph retrieval, one LLM call, citations, primary decision)
+│   │   │   ├── systems.py            # GET /systems, /systems/{name} (owner, orphaned, timeline, people)
+│   │   │   ├── people.py             # GET /people, /people/{name} (decisions, systems owned, teams)
 │   │   │   ├── primary.py            # Server-side choice of the answer's primary decision
 │   │   │   ├── decisions.py          # GET /decisions and GET /decisions/{id}
 │   │   │   ├── graph.py              # GET /graph full topology extraction
@@ -181,6 +186,9 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   │   ├── names.py              # Splits list-valued names ("A, B and C")
 │   │   │   ├── health.py             # Decision health rules (decider-based staleness)
 │   │   │   ├── reconciliation.py     # Decision dedupe + split_composite_nodes
+│   │   │   ├── lineage.py            # Decision page: chains, timeline, impact, subgraph (all Cypher)
+│   │   │   ├── trace.py              # CypherTrace: records each query + ms for "Show Cypher"
+│   │   │   ├── cache.py              # 5-minute cache for the health map and decision codes
 │   │   │   └── models.py             # Graph Node & Relationship Pydantic definitions
 │   │   └── ingest/
 │   │       ├── decisions_extractor.py# Decision extraction & verb-based status derivation
@@ -204,8 +212,8 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   ├── src/
 │   │   ├── api/                      # Client, hooks, types (generated schema.d.ts), mock loader
 │   │   ├── components/               # AppShell, PageFrame, CommandPalette, CytoscapeGraph, StatusIcon, ask/*
-│   │   ├── pages/                    # AskPage, DecisionsPage, GraphPage
-│   │   ├── utils/                    # model, answer, evidence, graphConverter, format
+│   │   ├── pages/                    # Ask, Decisions, Decision, Systems, System, People, Person, Graph (Explore)
+│   │   ├── utils/                    # model, answer, evidence, graphConverter, lineage, links, format
 │   │   ├── mocks/                    # Frozen /ask, /decisions, /decisions/{id}, /graph responses
 │   │   └── test/                     # Vitest unit tests
 │   ├── e2e/                          # Playwright: app.spec.ts (journey, axe, screenshots), design-compare.spec.ts

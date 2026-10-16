@@ -1,0 +1,209 @@
+[
+ {
+  "name": "Elasticsearch",
+  "system_type": "search-engine",
+  "vendor": "Elastic NV",
+  "owner": {
+   "name": "Marcus Aurelius",
+   "role": "Former Staff Architect",
+   "departed": true,
+   "leave_date": "2025-11-30"
+  },
+  "orphaned": true,
+  "decision_count": 0,
+  "ticket_count": 4,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "Keycloak",
+  "system_type": "iam",
+  "vendor": "Red Hat",
+  "owner": {
+   "name": "Julia Roberts",
+   "role": "Identity & Access Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 3,
+  "ticket_count": 7,
+  "teams": [
+   "Core Infrastructure",
+   "Security & IAM"
+  ]
+ },
+ {
+  "name": "ClickHouse",
+  "system_type": "database",
+  "vendor": "ClickHouse Inc",
+  "owner": {
+   "name": "Carlos Mendez",
+   "role": "Staff Data Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 5,
+  "teams": [
+   "Core Infrastructure",
+   "Data Platform"
+  ]
+ },
+ {
+  "name": "Prometheus",
+  "system_type": "monitoring",
+  "vendor": "Cloud Native Computing Foundation",
+  "owner": {
+   "name": "Kevin Flynn",
+   "role": "Observability Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "Redis",
+  "system_type": "cache",
+  "vendor": "Redis Ltd",
+  "owner": {
+   "name": "Alice Vance",
+   "role": "Principal Platform Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 7,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "Snowflake",
+  "system_type": "data-warehouse",
+  "vendor": "Snowflake Inc",
+  "owner": {
+   "name": "Fiona Gallagher",
+   "role": "Lead Analytics Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 5,
+  "teams": [
+   "Core Infrastructure",
+   "Data Platform"
+  ]
+ },
+ {
+  "name": "Vault",
+  "system_type": "secrets-management",
+  "vendor": "HashiCorp",
+  "owner": {
+   "name": "Diana Prince",
+   "role": "Security Architect",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 2,
+  "ticket_count": 5,
+  "teams": [
+   "Security & IAM"
+  ]
+ },
+ {
+  "name": "Datadog",
+  "system_type": "observability",
+  "vendor": "Datadog Inc",
+  "owner": {
+   "name": "Kevin Flynn",
+   "role": "Observability Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "Kafka",
+  "system_type": "event-streaming",
+  "vendor": "Apache Software Foundation",
+  "owner": {
+   "name": "Alice Vance",
+   "role": "Principal Platform Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "Kubernetes",
+  "system_type": "container-orchestration",
+  "vendor": "Cloud Native Computing Foundation",
+  "owner": {
+   "name": "Laura Croft",
+   "role": "Cloud Operations Lead",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 18,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "Postgres",
+  "system_type": "database",
+  "vendor": "PostgreSQL Global Development Group",
+  "owner": {
+   "name": "Evan Wright",
+   "role": "Senior Backend Engineer",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 6,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ },
+ {
+  "name": "RabbitMQ",
+  "system_type": "message-broker",
+  "vendor": "VMware",
+  "owner": {
+   "name": "Bob Martin",
+   "role": "Senior Staff SRE",
+   "departed": false,
+   "leave_date": null
+  },
+  "orphaned": false,
+  "decision_count": 1,
+  "ticket_count": 5,
+  "teams": [
+   "Core Infrastructure"
+  ]
+ }
+]

@@ -24,7 +24,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/decisions/{decision_id}": {
+    "/decisions/{decision_ref}": {
         parameters: {
             query?: never;
             header?: never;
@@ -33,9 +33,11 @@ export interface paths {
         };
         /**
          * Get Decision
-         * @description Retrieve detailed decision profile with full lineage, people, systems, and evidence sources.
+         * @description Full decision page: health, deciders, sources, lineage chains, system timeline, impact,
+         *     the deduplicated subgraph, and the Cypher that produced it. Accepts a DEC code (DEC-11),
+         *     a decision id, or an exact title.
          */
-        get: operations["get_decision_decisions__decision_id__get"];
+        get: operations["get_decision_decisions__decision_ref__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -76,6 +78,87 @@ export interface paths {
          * @description Retrieve nodes and edges with optional type filters and node limits for visualization.
          */
         get: operations["get_graph_graph_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/systems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Systems
+         * @description Every system with its owner, orphaned flag, and decision/ticket counts.
+         *     Orphaned systems first, then by number of decisions.
+         */
+        get: operations["list_systems_systems_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/systems/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get System
+         * @description A system's owner, orphaned flag, decisions (oldest first), people and teams.
+         */
+        get: operations["get_system_systems__name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List People
+         * @description Everyone, with teams, systems owned, decision count and whether they have left.
+         */
+        get: operations["list_people_people_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/people/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Person
+         * @description A person's decisions (oldest first), systems owned, teams led or joined, and activity.
+         */
+        get: operations["get_person_people__name__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -214,6 +297,32 @@ export interface components {
              */
             title: string;
         };
+        /** CypherQuery */
+        CypherQuery: {
+            /** Name */
+            name: string;
+            /** Query */
+            query: string;
+            /** Params */
+            params?: {
+                [key: string]: unknown;
+            };
+            /** Ms */
+            ms: number;
+        };
+        /**
+         * CypherTraceOut
+         * @description The exact Cypher statements that produced a response, with timings.
+         */
+        CypherTraceOut: {
+            /** Queries */
+            queries?: components["schemas"]["CypherQuery"][];
+            /**
+             * Total Ms
+             * @default 0
+             */
+            total_ms: number;
+        };
         /**
          * DecisionDetail
          * @description Detailed decision view including graph connections and health audit.
@@ -292,7 +401,7 @@ export interface components {
              * Sources
              * @description Originating tickets or meetings
              */
-            sources?: components["schemas"]["SourceRef"][];
+            sources?: components["schemas"]["SourceDetail"][];
             /**
              * Supersedes
              * @description Decisions superseded by this decision
@@ -308,6 +417,54 @@ export interface components {
              * @description Decisions contradicted by or contradicting this decision
              */
             contradicts?: string[];
+            /**
+             * Evidence Quote
+             * @description Verbatim evidence quote
+             */
+            evidence_quote?: string | null;
+            /**
+             * Deciders
+             * @description Each decider
+             */
+            deciders?: components["schemas"]["PersonRef"][];
+            /**
+             * System Names
+             * @description Systems it is about
+             */
+            system_names?: string[];
+            lineage?: components["schemas"]["Lineage"];
+            /**
+             * Timeline
+             * @description Every decision on the same system(s), oldest first, including this one
+             */
+            timeline?: components["schemas"]["DecisionRef"][];
+            impact?: components["schemas"]["Impact"];
+            subgraph?: components["schemas"]["SubgraphOut"];
+            cypher?: components["schemas"]["CypherTraceOut"];
+        };
+        /**
+         * DecisionRef
+         * @description Compact decision reference used in lineage, timelines and entity pages.
+         */
+        DecisionRef: {
+            /** Id */
+            id: string;
+            /** Decision Code */
+            decision_code?: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Health
+             * @default active
+             * @enum {string}
+             */
+            health: "active" | "superseded" | "contradicted" | "possibly_stale";
+            /** Decided On */
+            decided_on?: string | null;
+            /** Deciders */
+            deciders?: string[];
+            /** Systems */
+            systems?: string[];
         };
         /**
          * DecisionSummary
@@ -484,6 +641,204 @@ export interface components {
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
+         * Impact
+         * @description Teams, projects and people within two hops of the decision's systems.
+         */
+        Impact: {
+            /** Teams */
+            teams?: string[];
+            /** Projects */
+            projects?: string[];
+            /** People */
+            people?: components["schemas"]["PersonRef"][];
+        };
+        /**
+         * Lineage
+         * @description Full supersedes chains (both directions) and contradiction links of a decision.
+         */
+        Lineage: {
+            /**
+             * Supersedes
+             * @description Older decisions this one replaces, transitively
+             */
+            supersedes?: components["schemas"]["LineageItem"][];
+            /**
+             * Superseded By
+             * @description Newer decisions that replace this one, transitively
+             */
+            superseded_by?: components["schemas"]["LineageItem"][];
+            /**
+             * Contradicts
+             * @description Decisions this one contradicts (outgoing edge)
+             */
+            contradicts?: components["schemas"]["DecisionRef"][];
+            /**
+             * Contradicted By
+             * @description Decisions that contradict this one (incoming edge)
+             */
+            contradicted_by?: components["schemas"]["DecisionRef"][];
+        };
+        /**
+         * LineageItem
+         * @description A decision in a supersedes chain; depth 1 is the direct neighbour.
+         */
+        LineageItem: {
+            /** Id */
+            id: string;
+            /** Decision Code */
+            decision_code?: string | null;
+            /** Title */
+            title: string;
+            /**
+             * Health
+             * @default active
+             * @enum {string}
+             */
+            health: "active" | "superseded" | "contradicted" | "possibly_stale";
+            /** Decided On */
+            decided_on?: string | null;
+            /** Deciders */
+            deciders?: string[];
+            /** Systems */
+            systems?: string[];
+            /**
+             * Depth
+             * @default 1
+             */
+            depth: number;
+        };
+        /** OwnedSystem */
+        OwnedSystem: {
+            /** Name */
+            name: string;
+            /**
+             * Orphaned
+             * @default false
+             */
+            orphaned: boolean;
+        };
+        /** PersonDetail */
+        PersonDetail: {
+            /** Name */
+            name: string;
+            /** Role */
+            role?: string | null;
+            /**
+             * Departed
+             * @default false
+             */
+            departed: boolean;
+            /** Leave Date */
+            leave_date?: string | null;
+            /** Teams */
+            teams?: string[];
+            /** Systems Owned */
+            systems_owned?: string[];
+            /**
+             * Decision Count
+             * @default 0
+             */
+            decision_count: number;
+            /** Start Date */
+            start_date?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Teams Led */
+            teams_led?: string[];
+            /** Projects Led */
+            projects_led?: string[];
+            /** Owned */
+            owned?: components["schemas"]["OwnedSystem"][];
+            /**
+             * Decisions
+             * @description Oldest first
+             */
+            decisions?: components["schemas"]["DecisionRef"][];
+            /**
+             * Tickets Raised
+             * @default 0
+             */
+            tickets_raised: number;
+            /**
+             * Tickets Assigned
+             * @default 0
+             */
+            tickets_assigned: number;
+            /**
+             * Meetings Attended
+             * @default 0
+             */
+            meetings_attended: number;
+            cypher?: components["schemas"]["CypherTraceOut"];
+        };
+        /**
+         * PersonInvolvement
+         * @description A person connected to a system, and how.
+         */
+        PersonInvolvement: {
+            /** Name */
+            name: string;
+            /** Role */
+            role?: string | null;
+            /**
+             * Departed
+             * @default false
+             */
+            departed: boolean;
+            /** Leave Date */
+            leave_date?: string | null;
+            /**
+             * Roles
+             * @description owner, decider, and/or tickets (raised or assigned)
+             */
+            roles?: string[];
+            /**
+             * Ticket Count
+             * @default 0
+             */
+            ticket_count: number;
+        };
+        /**
+         * PersonRef
+         * @description A person, with whether they have left the company.
+         */
+        PersonRef: {
+            /** Name */
+            name: string;
+            /** Role */
+            role?: string | null;
+            /**
+             * Departed
+             * @default false
+             */
+            departed: boolean;
+            /** Leave Date */
+            leave_date?: string | null;
+        };
+        /** PersonSummary */
+        PersonSummary: {
+            /** Name */
+            name: string;
+            /** Role */
+            role?: string | null;
+            /**
+             * Departed
+             * @default false
+             */
+            departed: boolean;
+            /** Leave Date */
+            leave_date?: string | null;
+            /** Teams */
+            teams?: string[];
+            /** Systems Owned */
+            systems_owned?: string[];
+            /**
+             * Decision Count
+             * @default 0
+             */
+            decision_count: number;
+        };
+        /**
          * ResetResponse
          * @description Administrative reset response.
          */
@@ -505,31 +860,106 @@ export interface components {
             message: string;
         };
         /**
-         * SourceRef
-         * @description Reference to evidence sources (Ticket or Meeting).
+         * SourceDetail
+         * @description An evidence source of a decision.
          */
-        SourceRef: {
+        SourceDetail: {
             /**
              * Type
-             * @description Source entity type
              * @enum {string}
              */
             type: "ticket" | "meeting" | "document";
             /**
              * Id
-             * @description Identifier (e.g. TICK-101 or meeting title)
+             * @description Ticket ID or meeting title
              */
             id: string;
-            /**
-             * Title
-             * @description Title or summary
-             */
+            /** Title */
             title?: string | null;
-            /**
-             * Date
-             * @description Date of the source
-             */
+            /** Date */
             date?: string | null;
+            /**
+             * Quote
+             * @description Verbatim evidence quote. Quotes are stored per decision, so this is set only when the decision has a single source; otherwise see DecisionDetail.evidence_quote.
+             */
+            quote?: string | null;
+        };
+        /**
+         * SubgraphOut
+         * @description Deduplicated nodes and edges touched by a detail response. Node ids are 'Label:key'.
+         */
+        SubgraphOut: {
+            /** Nodes */
+            nodes?: components["schemas"]["GraphNode"][];
+            /** Edges */
+            edges?: components["schemas"]["GraphEdge"][];
+        };
+        /** SystemDetail */
+        SystemDetail: {
+            /** Name */
+            name: string;
+            /** System Type */
+            system_type?: string | null;
+            /** Vendor */
+            vendor?: string | null;
+            owner?: components["schemas"]["PersonRef"] | null;
+            /**
+             * Orphaned
+             * @description True if the owner has left the company
+             * @default false
+             */
+            orphaned: boolean;
+            /**
+             * Decision Count
+             * @default 0
+             */
+            decision_count: number;
+            /**
+             * Ticket Count
+             * @default 0
+             */
+            ticket_count: number;
+            /** Teams */
+            teams?: string[];
+            /**
+             * Decisions
+             * @description Oldest first
+             */
+            decisions?: components["schemas"]["DecisionRef"][];
+            /** People */
+            people?: components["schemas"]["PersonInvolvement"][];
+            cypher?: components["schemas"]["CypherTraceOut"];
+        };
+        /**
+         * SystemSummary
+         * @description A system with its owner and whether it is orphaned (owner has left).
+         */
+        SystemSummary: {
+            /** Name */
+            name: string;
+            /** System Type */
+            system_type?: string | null;
+            /** Vendor */
+            vendor?: string | null;
+            owner?: components["schemas"]["PersonRef"] | null;
+            /**
+             * Orphaned
+             * @description True if the owner has left the company
+             * @default false
+             */
+            orphaned: boolean;
+            /**
+             * Decision Count
+             * @default 0
+             */
+            decision_count: number;
+            /**
+             * Ticket Count
+             * @default 0
+             */
+            ticket_count: number;
+            /** Teams */
+            teams?: string[];
         };
         /** ValidationError */
         ValidationError: {
@@ -593,7 +1023,7 @@ export interface operations {
             };
         };
     };
-    get_decision_decisions__decision_id__get: {
+    get_decision_decisions__decision_ref__get: {
         parameters: {
             query?: {
                 /** @description Target dataset name */
@@ -601,7 +1031,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                decision_id: string;
+                decision_ref: string;
             };
             cookie?: never;
         };
@@ -683,6 +1113,138 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GraphResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_systems_systems_get: {
+        parameters: {
+            query?: {
+                /** @description Target dataset name */
+                dataset_name?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_system_systems__name__get: {
+        parameters: {
+            query?: {
+                /** @description Target dataset name */
+                dataset_name?: string | null;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SystemDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_people_people_get: {
+        parameters: {
+            query?: {
+                /** @description Target dataset name */
+                dataset_name?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_person_people__name__get: {
+        parameters: {
+            query?: {
+                /** @description Target dataset name */
+                dataset_name?: string | null;
+            };
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonDetail"];
                 };
             };
             /** @description Validation Error */
