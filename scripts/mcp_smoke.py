@@ -9,6 +9,7 @@ Read-only: add_source is not called.
 import asyncio
 import json
 import sys
+import urllib.request
 
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
@@ -27,7 +28,19 @@ async def call(session: ClientSession, name: str, args: dict) -> dict:
     return data
 
 
+def demo_data_present(url: str) -> bool:
+    """A visitor's live ingest can change health (e.g. resolve the Kafka conflict) for ten minutes."""
+    try:
+        with urllib.request.urlopen(url.rsplit("/mcp", 1)[0] + "/ingest/status", timeout=20) as r:
+            return bool(json.load(r).get("has_demo_data"))
+    except Exception:  # noqa: BLE001 - assume the frozen graph
+        return False
+
+
 async def main(url: str) -> None:
+    demo = demo_data_present(url)
+    if demo:
+        print("Demo data from a live ingest is present: skipping the assertions that depend on frozen health")
     # The header marks these calls as tests so they stay out of the Home change feed
     async with streamablehttp_client(url, headers={"X-DT-Smoke": "1"}) as (read, write, _):
         async with ClientSession(read, write) as session:
@@ -50,11 +63,11 @@ async def main(url: str) -> None:
             assert decision["code"] == "DEC-11" and decision["sources"]
 
             listing = await call(session, "list_decisions", {"status": "contradicted"})
-            assert listing["count"] >= 1
+            assert demo or listing["count"] >= 1
 
             conflicts = await call(session, "find_conflicts", {})
             codes = {d["code"] for c in conflicts["conflicts"] for d in c["decisions"]}
-            assert {"DEC-04", "DEC-07"} <= codes, codes
+            assert demo or {"DEC-04", "DEC-07"} <= codes, codes
     print("\nMCP smoke test passed")
 
 
