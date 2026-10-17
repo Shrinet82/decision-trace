@@ -217,14 +217,16 @@ docker run -d --name falkordb -p 6379:6379 -e REDIS_ARGS="--requirepass localpas
 
 # 2. Configure
 cp .env.example .env
-#    FALKORDB_HOST=localhost  FALKORDB_PORT=6379  FALKORDB_USERNAME=default  FALKORDB_PASSWORD=localpass
-#    FALKORDB_GRAPH_NAME=company_brain  DATASET_NAME=company_brain
-#    LLM: BEDROCK_API_KEY=...  (or USE_GROQ=1 LLM_API_KEY=... LLM_MODEL=groq/...)
+#    Fill in:        FALKORDB_HOST=localhost   FALKORDB_PASSWORD=localpass   LLM_API_KEY=<your key>
+#    Uncomment:      FALKORDB_USERNAME=default   FALKORDB_GRAPH_NAME=company_brain   DATASET_NAME=company_brain
+#    Bedrock key:    also uncomment BEDROCK_API_KEY=<the same key>
+#    Groq or other:  USE_GROQ=1  LLM_MODEL=groq/...  (see .env.example)
 #    LLM_API_KEY must be non-empty even to just browse; Ask and ingest need a working key.
 
 # 3. Install, then load the frozen 146-node graph (no LLM calls)
 uv venv && source .venv/bin/activate
-uv pip install -r backend/pyproject.toml
+uv pip install -r backend/pyproject.toml -r backend/requirements-mcp.txt --extra dev
+#    Using Amazon Bedrock as the model? also: uv pip install boto3
 PYTHONPATH=backend python scripts/restore_snapshot.py restore company_brain \
     --i-know-this-deletes-all-graphs        # then type the graph name when asked
 

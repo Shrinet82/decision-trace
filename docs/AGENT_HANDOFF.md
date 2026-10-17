@@ -378,3 +378,9 @@ Scoring is per decision (rows are grouped by decision id/title). The holdout scr
 1. **Orphaned Elasticsearch has no decision in the corpus** (see 3C). If a stale-by-departed-decider demo is wanted, add a source document in which a departed person decides something; do not edit extraction to invent one.
 2. The FalkorDB keepalive workflow fails: the repo's Actions secrets lack the FalkorDB credentials it reads.
 3. The intent classifier is rule-based. Phrasings outside its patterns fall back to the why retrieval, which still answers but without impact or expertise sections.
+
+## 11. Submission package (Phase 6)
+
+* Repository history was rewritten once (git filter-repo) to remove two API keys that early commits had hard-coded as `os.getenv` defaults (`backend/app/config.py`, `backend/app/brain/memory.py`); the keys must be treated as compromised and rotated. A full-history `gitleaks` scan now reports no leaks.
+* `README.md` is the judge-facing document (links, track mapping, architecture, schema and Cypher, evaluation, run-locally steps verified from a fresh clone against a throwaway local FalkorDB container). `LICENSE` is MIT. `.env.example` lists every variable; optional ones are commented out because an empty value is read as "set to empty".
+* Local setup needs two installs: `backend/pyproject.toml` (Docker caches that layer) and `backend/requirements-mcp.txt`; `boto3` is only needed for Amazon Bedrock. The Vite dev server now uses port 5173 to match the backend's default CORS origin.
