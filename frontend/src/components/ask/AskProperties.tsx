@@ -18,11 +18,13 @@ export interface AskPropertiesProps {
   loading: boolean;
   /** Shown at the top of the panel (the "How I found this" trace). */
   before?: React.ReactNode;
+  /** Replaces the "ask a question" hint when an answer has no primary decision. */
+  emptyText?: string;
 }
 
 const None = () => <span className="text-muted">None</span>;
 
-export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading, before }) => {
+export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading, before, emptyText }) => {
   const top = before ? (
     <>
       {before}
@@ -47,8 +49,8 @@ export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading, b
         {top}
         <div className="font-semibold">Decision properties</div>
         <p className="m-0 text-muted">
-          Ask a question to see the status, owner, and validity checks of the decision behind the
-          answer.
+          {emptyText ??
+            'Ask a question to see the status, owner, and validity checks of the decision behind the answer.'}
         </p>
       </SidePanel>
     );

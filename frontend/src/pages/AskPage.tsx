@@ -118,7 +118,7 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
                 </span>
               </summary>
               <div className="border-t border-divider bg-surface px-3 py-2">
-                <HowIFound run={run} headingLevel="h3" />
+                <HowIFound run={run} headingLevel="h3" showTitle={false} />
               </div>
             </details>
           )}
@@ -307,6 +307,11 @@ export const AskPage: React.FC = () => {
       before={lastRun ? <div className="max-[899px]:hidden"><HowIFound run={lastRun} /></div> : undefined}
       detail={lastDetail.data}
       loading={Boolean(lastMain) && lastDetail.isLoading}
+      emptyText={
+        lastRun?.result && !lastMain
+          ? 'This answer is not about a single decision, so there are no decision properties to show.'
+          : undefined
+      }
     />
   );
 

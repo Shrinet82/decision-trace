@@ -26,7 +26,7 @@ const EntityChip: React.FC<{ entity: MatchedEntity }> = ({ entity }) => (
   >
     {entity.label === 'System' && <SystemSquare system={entity.name} />}
     {entity.label === 'Decision' && entity.decision_code && (
-      <span className="font-medium text-accent">{entity.decision_code}</span>
+      <span className="shrink-0 whitespace-nowrap font-medium text-accent">{entity.decision_code}</span>
     )}
     <span className="truncate">
       {entity.label === 'Decision' ? entity.name.split(' ').slice(0, 4).join(' ') + '…' : entity.name}
@@ -38,10 +38,12 @@ const EntityChip: React.FC<{ entity: MatchedEntity }> = ({ entity }) => (
  * The live trace of one answer: each step with its time, the entities the question matched, and
  * every Cypher query (collapsible) with its row count. Total time at the bottom.
  */
-export const HowIFound: React.FC<{ run: AskRunState | null; headingLevel?: 'h2' | 'h3' }> = ({
-  run,
-  headingLevel: Heading = 'h2',
-}) => {
+export const HowIFound: React.FC<{
+  run: AskRunState | null;
+  headingLevel?: 'h2' | 'h3';
+  /** Hide the visible title (the phone disclosure's summary already shows it). */
+  showTitle?: boolean;
+}> = ({ run, headingLevel: Heading = 'h2', showTitle = true }) => {
   if (!run) return null;
   const running = run.steps.find((s) => s.status === 'running');
   const finished = Boolean(run.result || run.error);
@@ -49,7 +51,7 @@ export const HowIFound: React.FC<{ run: AskRunState | null; headingLevel?: 'h2' 
   return (
     <section aria-label="How I found this" className="flex min-w-0 flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
-        <Heading className="m-0 text-sm font-semibold">How I found this</Heading>
+        <Heading className={showTitle ? 'm-0 text-sm font-semibold' : 'sr-only'}>How I found this</Heading>
         {run.intent && <span className="truncate text-xs text-muted">{INTENT_LABEL[run.intent]}</span>}
       </div>
       <p className="sr-only" aria-live="polite">
@@ -111,7 +113,7 @@ const QueryList: React.FC<{ queries: AskRunState['queries'] }> = ({ queries }) =
         <details className="group rounded-control border border-divider bg-subtle">
           <summary className="flex cursor-pointer list-none items-center gap-2 px-2 py-1 text-xs">
             <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-90">›</span>
-            <code className="min-w-0 flex-1 truncate font-mono text-text-2">{q.name}</code>
+            <code className="min-w-0 flex-1 break-all font-mono text-text-2">{q.name}</code>
             <span className="shrink-0 tabular-nums text-muted">
               {q.rows} {q.rows === 1 ? 'row' : 'rows'} · {formatMs(q.ms)}
             </span>
