@@ -1,10 +1,10 @@
 {
   "dataset_name": "company_brain",
-  "exported_at": "2026-10-16T18:59:14Z",
+  "exported_at": "2026-10-17T20:04:54Z",
   "falkordb_memory": {
-    "used_memory": 4909528,
-    "used_memory_human": "4.68M",
-    "used_memory_peak_human": "6.79M"
+    "used_memory": 5734456,
+    "used_memory_human": "5.47M",
+    "used_memory_peak_human": "7.79M"
   },
   "nodes_count": 146,
   "edges_count": 374,
