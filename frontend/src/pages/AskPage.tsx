@@ -1,18 +1,25 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowUp, User } from 'lucide-react';
-import type { AskResponse, GraphNode } from '../api/types';
-import { useAsk, useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
+import { useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
 import { AnswerBody } from '../components/ask/AnswerBody';
+import { AnswerSections } from '../components/ask/AnswerSections';
 import { AskProperties } from '../components/ask/AskProperties';
 import { EvidencePathCard } from '../components/ask/EvidencePathCard';
+import { ExpertList } from '../components/ask/ExpertList';
+import { HowIFound } from '../components/ask/HowIFound';
 import { SourceCards } from '../components/ask/SourceCards';
 import { PageFrame } from '../components/PageFrame';
 import { StatusIcon } from '../components/StatusIcon';
 import { btnOutline, btnPrimary } from '../components/ui';
+import { SUGGESTED_QUESTIONS } from '../config/questions';
+import { useAskRun } from '../hooks/useAskRun';
+import type { AskResponse } from '../api/types';
 import { isNotFoundAnswer } from '../utils/answer';
-import { decisionHref } from '../utils/links';
+import { formatMs } from '../utils/format';
+import { answerIsSubstantive, primaryNode, type AskRunState } from '../utils/askRun';
 import { buildEvidencePath } from '../utils/evidence';
+import { decisionHref } from '../utils/links';
 import {
   buildGraphIndex,
   healthToStatus,
@@ -21,14 +28,6 @@ import {
   type StatusKind,
 } from '../utils/model';
 
-const EXAMPLE_QUESTIONS = [
-  'Why did we choose Kafka over RabbitMQ?',
-  'Who owns Elasticsearch?',
-  'What replaced Redis for session storage?',
-  'Who decided to adopt Prometheus?',
-  'Why did we choose Vault for secret management?',
-];
-
 const VERDICT: Record<StatusKind, string> = {
   active: 'Still valid',
   conflict: 'Conflicting decisions',
@@ -36,20 +35,31 @@ const VERDICT: Record<StatusKind, string> = {
   superseded: STATUS_LABEL.superseded,
 };
 
-/** The decision node the server marked as the answer's primary one. */
-function primaryNode(data: AskResponse): GraphNode | undefined {
-  return data.graph_path.nodes.find((n) => n.id === data.primary_decision_id);
-}
-
 const AnswerSkeleton: React.FC = () => (
   <div role="status" aria-label="Searching the Company Brain" className="flex flex-col gap-3">
     <div className="skeleton h-[22px] w-28" />
     <div className="skeleton h-4 w-full" />
     <div className="skeleton h-4 w-11/12" />
     <div className="skeleton h-4 w-3/4" />
-    <div className="skeleton mt-2 h-40 w-full" />
   </div>
 );
+
+/** What a run currently shows: the answer text, the structured results, and the primary decision. */
+function viewOf(run: AskRunState | null) {
+  const result = run?.result ?? null;
+  const notFound = result ? isNotFoundAnswer(result.answer) : false;
+  const streaming = run && !result && answerIsSubstantive(run.answer) ? run.answer : null;
+  return {
+    result,
+    notFound,
+    answer: result && !notFound ? result.answer : streaming,
+    sections: notFound ? [] : (result?.sections ?? run?.path?.sections ?? []),
+    experts: notFound ? [] : (result?.experts ?? run?.path?.experts ?? []),
+    main: notFound ? undefined : primaryNode(run),
+    graphPath: result?.graph_path ?? run?.path?.graph_path,
+    busy: Boolean(run && !result && !run.error),
+  };
+}
 
 interface TurnProps {
   question: string;
@@ -60,10 +70,9 @@ interface TurnProps {
 }
 
 const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, statusById }) => {
-  const ask = useAsk(question);
-  const data = ask.data;
-  const notFound = data ? isNotFoundAnswer(data.answer) : false;
-  const main = data && !notFound ? primaryNode(data) : undefined;
+  const { run, retry } = useAskRun(question);
+  const view = viewOf(run);
+  const { main } = view;
   const detail = useDecisionDetail(main?.id);
 
   const scrollTo = (anchorId: string) => {
@@ -72,8 +81,12 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
     el?.focus({ preventScroll: true });
   };
 
-  const verdict = detail.data ? VERDICT[healthToStatus(detail.data.health)] : null;
   const verdictStatus = detail.data ? healthToStatus(detail.data.health) : null;
+  const subject = run?.entities.find((e) => e.label === 'System')?.name;
+  const evidence =
+    main && view.graphPath
+      ? buildEvidencePath({ graph_path: view.graphPath } as AskResponse, main.id)
+      : null;
 
   return (
     <>
@@ -95,9 +108,22 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
           DT
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-4">
-          {ask.isLoading && <AnswerSkeleton />}
+          {/* On narrow screens the trace sits above the answer; on wide screens it is in the side panel */}
+          {run && (
+            <details className="rounded-panel border border-divider bg-subtle min-[900px]:hidden">
+              <summary className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm font-medium">
+                How I found this
+                <span className="text-xs font-normal text-muted">
+                  {run.totalMs !== null ? formatMs(run.totalMs) : (run.steps.find((s) => s.status === 'running')?.label ?? '')}
+                </span>
+              </summary>
+              <div className="border-t border-divider bg-surface px-3 py-2">
+                <HowIFound run={run} headingLevel="h3" />
+              </div>
+            </details>
+          )}
 
-          {ask.isError && !ask.isLoading && (
+          {run?.error && (
             <div
               role="alert"
               className="flex flex-col gap-2 rounded-panel border border-status-conflict-border bg-status-conflict-bg p-3"
@@ -106,22 +132,19 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
                 <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 Search failed
               </div>
-              <p className="m-0 text-text-2">
-                {ask.error?.message || 'An error occurred while querying the Company Brain.'}
-              </p>
+              <p className="m-0 text-text-2">{run.error}</p>
               <div>
-                <button type="button" onClick={() => ask.refetch()} className={btnOutline}>
+                <button type="button" onClick={retry} className={btnOutline}>
                   Retry
                 </button>
               </div>
             </div>
           )}
 
-          {data && notFound && (
-            <div
-              role="status"
-              className="flex flex-col gap-1 rounded-panel border border-divider bg-subtle px-4 py-5"
-            >
+          {!run?.error && !view.answer && !view.notFound && <AnswerSkeleton />}
+
+          {view.notFound && (
+            <div role="status" className="flex flex-col gap-1 rounded-panel border border-divider bg-subtle px-4 py-5">
               <h2 className="m-0 text-lg font-semibold">No decision found</h2>
               <p className="m-0 text-muted">
                 Nothing in the indexed tickets, notes, and records answers this question.
@@ -129,50 +152,54 @@ const Turn: React.FC<TurnProps> = ({ question, turnKey, index, decisionCount, st
             </div>
           )}
 
-          {data && !notFound && (
-            <>
-              <div className="flex flex-wrap items-center gap-2">
-                {verdict && verdictStatus && (
-                  <span className="inline-flex h-[22px] items-center gap-1.5 rounded-chip border border-border px-2 text-xs font-medium">
-                    <StatusIcon status={verdictStatus} size={12} />
-                    {verdict}
-                  </span>
-                )}
-                {main && (
-                  <Link
-                    to={decisionHref(String(main.properties.decision_code ?? main.id))}
-                    title={String(main.properties.title ?? '')}
-                    className="inline-flex h-[22px] max-w-full items-center gap-1 truncate rounded-chip border border-border px-2 text-xs text-accent hover:bg-subtle"
-                  >
-                    {String(main.properties.decision_code ?? 'Decision')}
-                    <span className="truncate text-text-2">· {String(main.properties.title ?? '')}</span>
-                  </Link>
-                )}
-                {main && decisionCount !== undefined && (
-                  <span className="text-xs text-muted">
-                    Health checked across {decisionCount} decisions
-                  </span>
-                )}
-              </div>
+          {main && (
+            <div className="flex flex-wrap items-center gap-2">
+              {verdictStatus && (
+                <span className="inline-flex h-[22px] items-center gap-1.5 rounded-chip border border-border px-2 text-xs font-medium">
+                  <StatusIcon status={verdictStatus} size={12} />
+                  {VERDICT[verdictStatus]}
+                </span>
+              )}
+              <Link
+                to={decisionHref(String(main.properties.decision_code ?? main.id))}
+                title={String(main.properties.title ?? '')}
+                className="inline-flex h-[22px] max-w-full items-center gap-1 truncate rounded-chip border border-border px-2 text-xs text-accent hover:bg-subtle"
+              >
+                {String(main.properties.decision_code ?? 'Decision')}
+                <span className="truncate text-text-2">· {String(main.properties.title ?? '')}</span>
+              </Link>
+              {decisionCount !== undefined && (
+                <span className="text-xs text-muted">Health checked across {decisionCount} decisions</span>
+              )}
+            </div>
+          )}
 
+          {view.answer && (
+            <div aria-busy={view.busy || undefined}>
               <AnswerBody
-                answer={data.answer}
-                citations={data.citations}
+                answer={view.answer}
+                citations={view.result?.citations ?? []}
                 turnKey={turnKey}
                 onCite={scrollTo}
               />
+            </div>
+          )}
 
-              {main && (
-                <EvidencePathCard
-                  path={buildEvidencePath(data, main.id)}
-                  statusOf={(id) => statusById.get(id) ?? 'active'}
-                />
-              )}
+          {view.experts.length > 0 && <ExpertList experts={view.experts} subject={subject} />}
 
-              {data.citations.length > 0 && (
-                <SourceCards citations={data.citations} turnKey={turnKey} index={index} />
-              )}
-            </>
+          {view.sections.length > 0 && (
+            <AnswerSections
+              sections={view.sections}
+              label={run?.intent === 'impact' ? `Impact of changing ${subject ?? 'this system'}` : 'Health results'}
+            />
+          )}
+
+          {main && evidence && evidence.rows.length > 0 && (
+            <EvidencePathCard path={evidence} statusOf={(id) => statusById.get(id) ?? 'active'} animate />
+          )}
+
+          {view.result && view.result.citations.length > 0 && !view.notFound && (
+            <SourceCards citations={view.result.citations} turnKey={turnKey} index={index} />
           )}
         </div>
       </div>
@@ -221,9 +248,9 @@ export const AskPage: React.FC = () => {
   }, [params]);
 
   const lastQuestion = turns.length > 0 ? turns[turns.length - 1] : null;
-  const lastAsk = useAsk(lastQuestion);
-  const lastNotFound = lastAsk.data ? isNotFoundAnswer(lastAsk.data.answer) : false;
-  const lastMain = lastAsk.data && !lastNotFound ? primaryNode(lastAsk.data) : undefined;
+  const { run: lastRun } = useAskRun(lastQuestion);
+  const lastView = viewOf(lastRun);
+  const lastMain = lastView.main;
   const lastDetail = useDecisionDetail(lastMain?.id);
 
   useEffect(() => {
@@ -277,12 +304,11 @@ export const AskPage: React.FC = () => {
 
   const panel = (
     <AskProperties
+      before={lastRun ? <div className="max-[899px]:hidden"><HowIFound run={lastRun} /></div> : undefined}
       detail={lastDetail.data}
-      loading={lastAsk.isLoading || (Boolean(lastMain) && lastDetail.isLoading)}
+      loading={Boolean(lastMain) && lastDetail.isLoading}
     />
   );
-
-  const busy = lastAsk.isLoading;
 
   return (
     <PageFrame header={header} actions={actions} panel={panel}>
@@ -290,27 +316,10 @@ export const AskPage: React.FC = () => {
         <h1 className={turns.length > 0 ? 'sr-only' : 'm-0 text-[20px] font-semibold'}>Ask</h1>
 
         {turns.length === 0 && (
-          <div className="flex flex-col gap-3">
-            <p className="m-0 max-w-prose text-muted">
-              Ask why a decision was made, who decided it, what it is based on, and whether it is
-              still valid. Every answer cites its sources.
-            </p>
-            <div className="flex flex-col items-start gap-1.5">
-              <span className="text-xs font-medium text-muted">Example questions</span>
-              <div className="flex flex-wrap gap-2">
-                {EXAMPLE_QUESTIONS.map((example) => (
-                  <button
-                    key={example}
-                    type="button"
-                    onClick={() => submit(example)}
-                    className="rounded-chip border border-border bg-surface px-3 py-1 text-left text-sm text-text-2 transition-colors hover:bg-subtle"
-                  >
-                    {example}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <p className="m-0 max-w-prose text-muted">
+            Ask why a decision was made, what a change would affect, who knows a system, or which
+            decisions conflict. Every answer shows the graph steps behind it and cites its sources.
+          </p>
         )}
 
         {turns.map((q, i) => (
@@ -324,11 +333,8 @@ export const AskPage: React.FC = () => {
           />
         ))}
 
-        <form
-          onSubmit={onSubmit}
-          className="sticky bottom-0 z-10 mt-auto flex items-center gap-2 bg-surface pb-4 pt-2"
-        >
-          <div className="flex flex-1 items-center gap-2 rounded-[10px] border border-border bg-surface py-2 pl-3.5 pr-2 shadow-composer">
+        <form onSubmit={onSubmit} className="sticky bottom-0 z-10 mt-auto flex flex-col gap-2.5 bg-surface pb-4 pt-2">
+          <div className="flex items-center gap-2 rounded-[10px] border border-border bg-surface py-2 pl-3.5 pr-2 shadow-composer">
             <label htmlFor="question-input" className="sr-only">
               {turns.length > 0 ? 'Ask a follow-up' : 'Ask a question'}
             </label>
@@ -349,13 +355,33 @@ export const AskPage: React.FC = () => {
             <button
               type="submit"
               id="ask-submit-button"
-              disabled={busy || input.trim().length < 2}
+              disabled={lastView.busy || input.trim().length < 2}
               className={btnPrimary}
             >
               <ArrowUp className="h-3.5 w-3.5 sm:hidden" aria-hidden="true" />
               <span className="max-sm:sr-only">Ask</span>
             </button>
           </div>
+          {turns.length === 0 && (
+            <div className="flex flex-col items-start gap-1.5">
+              <span id="suggested-label" className="text-xs font-medium text-muted">
+                Suggested questions
+              </span>
+              <ul aria-labelledby="suggested-label" className="m-0 flex list-none flex-wrap gap-2 p-0">
+                {SUGGESTED_QUESTIONS.map((q) => (
+                  <li key={q}>
+                    <button
+                      type="button"
+                      onClick={() => submit(q)}
+                      className="rounded-chip border border-border bg-surface px-3 py-1 text-left text-sm text-text-2 transition-colors hover:bg-subtle"
+                    >
+                      {q}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </form>
       </div>
     </PageFrame>

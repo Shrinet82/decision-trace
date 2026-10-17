@@ -82,26 +82,26 @@
      "params": {
       "name": "Alice Vance"
      },
-     "ms": 244.8
+     "ms": 307.1
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Alice Vance"
      },
-     "ms": 205.8
+     "ms": 311.7
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Alice Vance"
      },
-     "ms": 205.8
+     "ms": 328.7
     }
    ],
-   "total_ms": 656.4
+   "total_ms": 331.0
   }
  },
  "Laura Croft": {
@@ -181,26 +181,26 @@
      "params": {
       "name": "Laura Croft"
      },
-     "ms": 197.6
+     "ms": 243.7
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Laura Croft"
      },
-     "ms": 204.2
+     "ms": 246.5
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Laura Croft"
      },
-     "ms": 204.2
+     "ms": 250.7
     }
    ],
-   "total_ms": 606.0
+   "total_ms": 253.2
   }
  },
  "Bob Martin": {
@@ -269,26 +269,26 @@
      "params": {
       "name": "Bob Martin"
      },
-     "ms": 198.9
+     "ms": 82.7
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Bob Martin"
      },
-     "ms": 204.5
+     "ms": 86.9
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Bob Martin"
      },
-     "ms": 204.8
+     "ms": 110.1
     }
    ],
-   "total_ms": 608.2
+   "total_ms": 112.6
   }
  },
  "Diana Prince": {
@@ -354,26 +354,26 @@
      "params": {
       "name": "Diana Prince"
      },
-     "ms": 198.6
+     "ms": 71.9
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Diana Prince"
      },
-     "ms": 204.6
+     "ms": 81.7
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Diana Prince"
      },
-     "ms": 205.1
+     "ms": 105.9
     }
    ],
-   "total_ms": 608.3
+   "total_ms": 108.3
   }
  },
  "Fiona Gallagher": {
@@ -435,31 +435,31 @@
   "cypher": {
    "queries": [
     {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Fiona Gallagher"
+     },
+     "ms": 107.4
+    },
+    {
      "name": "person",
      "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
      "params": {
       "name": "Fiona Gallagher"
      },
-     "ms": 198.0
-    },
-    {
-     "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
-     "params": {
-      "name": "Fiona Gallagher"
-     },
-     "ms": 207.3
+     "ms": 131.3
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Fiona Gallagher"
      },
-     "ms": 202.6
+     "ms": 154.8
     }
    ],
-   "total_ms": 607.9
+   "total_ms": 157.2
   }
  },
  "Julia Roberts": {
@@ -525,26 +525,26 @@
      "params": {
       "name": "Julia Roberts"
      },
-     "ms": 198.2
+     "ms": 82.2
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Julia Roberts"
      },
-     "ms": 204.6
+     "ms": 101.0
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Julia Roberts"
      },
-     "ms": 204.8
+     "ms": 111.2
     }
    ],
-   "total_ms": 607.6
+   "total_ms": 113.4
   }
  },
  "Kevin Flynn": {
@@ -615,26 +615,26 @@
      "params": {
       "name": "Kevin Flynn"
      },
-     "ms": 198.9
+     "ms": 77.8
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Kevin Flynn"
      },
-     "ms": 205.3
+     "ms": 105.5
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Kevin Flynn"
      },
-     "ms": 113.9
+     "ms": 124.4
     }
    ],
-   "total_ms": 518.1
+   "total_ms": 126.7
   }
  },
  "Carlos Mendez": {
@@ -689,26 +689,26 @@
      "params": {
       "name": "Carlos Mendez"
      },
-     "ms": 101.0
+     "ms": 83.0
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Carlos Mendez"
      },
-     "ms": 183.5
+     "ms": 96.6
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Carlos Mendez"
      },
-     "ms": 204.8
+     "ms": 135.6
     }
    ],
-   "total_ms": 489.3
+   "total_ms": 137.8
   }
  },
  "Evan Wright": {
@@ -759,26 +759,26 @@
      "params": {
       "name": "Evan Wright"
      },
-     "ms": 199.0
+     "ms": 84.6
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Evan Wright"
      },
-     "ms": 203.8
+     "ms": 116.5
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Evan Wright"
      },
-     "ms": 205.4
+     "ms": 130.5
     }
    ],
-   "total_ms": 608.2
+   "total_ms": 132.4
   }
  },
  "Ian Malcolm": {
@@ -822,26 +822,26 @@
      "params": {
       "name": "Ian Malcolm"
      },
-     "ms": 100.2
-    },
-    {
-     "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
-     "params": {
-      "name": "Ian Malcolm"
-     },
-     "ms": 99.6
+     "ms": 87.7
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Ian Malcolm"
      },
-     "ms": 70.0
+     "ms": 100.6
+    },
+    {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "Ian Malcolm"
+     },
+     "ms": 121.4
     }
    ],
-   "total_ms": 269.8
+   "total_ms": 123.1
   }
  },
  "George Clark": {
@@ -866,31 +866,31 @@
   "cypher": {
    "queries": [
     {
+     "name": "person_decisions",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "George Clark"
+     },
+     "ms": 81.4
+    },
+    {
+     "name": "person_activity",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
+     "params": {
+      "name": "George Clark"
+     },
+     "ms": 100.8
+    },
+    {
      "name": "person",
      "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:member_of]->(t:Team) OPTIONAL MATCH (p)-[:owns]->(s:System) OPTIONAL MATCH (d:Decision)-[:decided_by]->(p) RETURN properties(p), collect(DISTINCT t.name), collect(DISTINCT s.name), count(DISTINCT d)",
      "params": {
       "name": "George Clark"
      },
-     "ms": 68.9
-    },
-    {
-     "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
-     "params": {
-      "name": "George Clark"
-     },
-     "ms": 83.4
-    },
-    {
-     "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
-     "params": {
-      "name": "George Clark"
-     },
-     "ms": 81.2
+     "ms": 117.3
     }
    ],
-   "total_ms": 233.5
+   "total_ms": 117.8
   }
  },
  "Hannah Abbott": {
@@ -922,26 +922,26 @@
      "params": {
       "name": "Hannah Abbott"
      },
-     "ms": 84.1
+     "ms": 99.3
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Hannah Abbott"
      },
-     "ms": 63.5
+     "ms": 106.8
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Hannah Abbott"
      },
-     "ms": 208.9
+     "ms": 122.4
     }
    ],
-   "total_ms": 356.5
+   "total_ms": 124.1
   }
  },
  "Marcus Aurelius": {
@@ -978,26 +978,26 @@
      "params": {
       "name": "Marcus Aurelius"
      },
-     "ms": 97.2
+     "ms": 97.1
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Marcus Aurelius"
      },
-     "ms": 94.7
+     "ms": 96.1
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Marcus Aurelius"
      },
-     "ms": 79.3
+     "ms": 118.9
     }
    ],
-   "total_ms": 271.2
+   "total_ms": 121.2
   }
  },
  "Nina Simone": {
@@ -1027,26 +1027,26 @@
      "params": {
       "name": "Nina Simone"
      },
-     "ms": 74.4
+     "ms": 126.0
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Nina Simone"
      },
-     "ms": 104.7
+     "ms": 125.3
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Nina Simone"
      },
-     "ms": 100.0
+     "ms": 136.8
     }
    ],
-   "total_ms": 279.1
+   "total_ms": 139.2
   }
  },
  "Oliver Queen": {
@@ -1078,26 +1078,26 @@
      "params": {
       "name": "Oliver Queen"
      },
-     "ms": 79.8
+     "ms": 86.9
     },
     {
      "name": "person_decisions",
-     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person {name: $name}) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT co.name), collect(DISTINCT s.name) ORDER BY d.decided_on",
+     "query": "MATCH (d:Decision)-[:decided_by]->(p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(co:Person) WITH d, collect(DISTINCT co.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s.name) ORDER BY d.decided_on",
      "params": {
       "name": "Oliver Queen"
      },
-     "ms": 98.8
+     "ms": 98.3
     },
     {
      "name": "person_activity",
-     "query": "MATCH (p:Person {name: $name}) OPTIONAL MATCH (p)-[:leads]->(lt:Team) OPTIONAL MATCH (p)-[:leads]->(lp:Project) OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN collect(DISTINCT lt.name), collect(DISTINCT lp.name), count(DISTINCT raised), count(DISTINCT assigned), count(DISTINCT m)",
+     "query": "MATCH (p:Person) WHERE toLower(p.name) = toLower($name) OPTIONAL MATCH (p)-[:leads]->(lt:Team) WITH p, collect(DISTINCT lt.name) AS teams_led OPTIONAL MATCH (p)-[:leads]->(lp:Project) WITH p, teams_led, collect(DISTINCT lp.name) AS projects_led OPTIONAL MATCH (raised:Ticket)-[:raised_by]->(p) WITH p, teams_led, projects_led, count(DISTINCT raised) AS raised OPTIONAL MATCH (assigned:Ticket)-[:assigned_to]->(p) WITH p, teams_led, projects_led, raised, count(DISTINCT assigned) AS assigned OPTIONAL MATCH (m:Meeting)-[:attended_by]->(p) RETURN teams_led, projects_led, raised, assigned, count(DISTINCT m)",
      "params": {
       "name": "Oliver Queen"
      },
-     "ms": 105.0
+     "ms": 123.8
     }
    ],
-   "total_ms": 283.6
+   "total_ms": 126.1
   }
  }
 }

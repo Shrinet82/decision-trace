@@ -1,234 +1,105 @@
 {
   "answer": "The answer is not found in the Company Brain.",
   "citations": [],
-  "people": [
-    "Alice Vance",
-    "Evan Wright",
-    "Julia Roberts",
-    "Kevin Flynn"
-  ],
+  "people": [],
   "primary_decision_id": null,
   "graph_path": {
-    "nodes": [
+    "nodes": [],
+    "edges": [],
+    "omitted_count": 0
+  },
+  "intent": "why",
+  "entities": [
+    {
+      "label": "Decision",
+      "name": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+      "id": "dec_fda8c9b4e631",
+      "decision_code": "DEC-01"
+    },
+    {
+      "label": "Decision",
+      "name": "Migrate session storage to embedded Keycloak cache",
+      "id": "dec_f564fcd15601",
+      "decision_code": "DEC-11"
+    },
+    {
+      "label": "Decision",
+      "name": "Standardize application traces on Datadog APM across all production services",
+      "id": "dec_5b196394600e",
+      "decision_code": "DEC-06"
+    },
+    {
+      "label": "Decision",
+      "name": "Upgrade all production Postgres instances to version 16",
+      "id": "dec_53d51a7d4549",
+      "decision_code": "DEC-15"
+    }
+  ],
+  "sections": [],
+  "experts": [],
+  "trace": {
+    "steps": [
       {
-        "id": "dec_f564fcd15601",
-        "label": "Decision",
-        "properties": {
-          "title": "Migrate session storage to embedded Keycloak cache",
-          "status": "accepted",
-          "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
-          "decision_code": "DEC-11"
-        }
+        "step": "understanding",
+        "label": "Understanding the question",
+        "status": "done",
+        "ms": 0.9,
+        "detail": "why"
       },
       {
-        "id": "dec_fda8c9b4e631",
-        "label": "Decision",
-        "properties": {
-          "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
-          "decision_code": "DEC-01"
-        }
+        "step": "matching",
+        "label": "Matching people, systems and decisions",
+        "status": "done",
+        "ms": 277.0,
+        "detail": "4 matched"
       },
       {
-        "id": "dec_53d51a7d4549",
-        "label": "Decision",
-        "properties": {
-          "title": "Upgrade all production Postgres instances to version 16",
-          "status": "accepted",
-          "rationale": "The quote explicitly states a version upgrade action for a system, made by a known person.",
-          "decision_code": "DEC-15"
-        }
+        "step": "traversal",
+        "label": "Traversing the graph",
+        "status": "done",
+        "ms": 145.3,
+        "detail": "1 query \u00b7 4 rows"
       },
       {
-        "id": "dec_5b196394600e",
-        "label": "Decision",
-        "properties": {
-          "title": "Standardize application traces on Datadog APM across all production services",
-          "status": "accepted",
-          "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
-          "decision_code": "DEC-06"
-        }
+        "step": "health",
+        "label": "Checking decision health",
+        "status": "done",
+        "ms": 0.5,
+        "detail": "5 decisions \u00b7 3 active, 2 superseded"
       },
       {
-        "id": "Alice Vance",
-        "label": "Person",
-        "properties": {
-          "name": "Alice Vance"
-        }
-      },
-      {
-        "id": "Keycloak",
-        "label": "System",
-        "properties": {
-          "name": "Keycloak"
-        }
-      },
-      {
-        "id": "Evan Wright",
-        "label": "Person",
-        "properties": {
-          "name": "Evan Wright"
-        }
-      },
-      {
-        "id": "Postgres",
-        "label": "System",
-        "properties": {
-          "name": "Postgres"
-        }
-      },
-      {
-        "id": "Kevin Flynn",
-        "label": "Person",
-        "properties": {
-          "name": "Kevin Flynn"
-        }
-      },
-      {
-        "id": "Datadog",
-        "label": "System",
-        "properties": {
-          "name": "Datadog"
-        }
-      },
-      {
-        "id": "Redis",
-        "label": "System",
-        "properties": {
-          "name": "Redis"
-        }
-      },
-      {
-        "id": "Julia Roberts",
-        "label": "Person",
-        "properties": {
-          "name": "Julia Roberts",
-          "is_active": true,
-          "leave_date": null
-        }
-      },
-      {
-        "id": "TICK-102",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-102",
-          "title": "Redis session cluster operational maintenance and failover complexity"
-        }
-      },
-      {
-        "id": "TICK-112",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-112",
-          "title": "Replication lag and connection pool contention on primary database"
-        }
-      },
-      {
-        "id": "TICK-108",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-108",
-          "title": "Inconsistent distributed trace propagation in checkout services"
-        }
+        "step": "composing",
+        "label": "Composing the answer",
+        "status": "done",
+        "ms": 14.4,
+        "detail": "Streamed from the model"
       }
     ],
-    "edges": [
+    "queries": [
       {
-        "source": "dec_f564fcd15601",
-        "target": "Alice Vance",
-        "type": "decided_by",
-        "properties": {}
+        "step": "matching",
+        "name": "roster",
+        "query": "MATCH (n) WHERE n:Person OR n:System OR n:Decision RETURN labels(n)[0], coalesce(n.name, n.title), n.id",
+        "params": {},
+        "rows": 44,
+        "ms": 82.0
       },
       {
-        "source": "dec_f564fcd15601",
-        "target": "Keycloak",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Julia Roberts",
-        "target": "Keycloak",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_f564fcd15601",
-        "target": "TICK-102",
-        "type": "based_on",
-        "properties": {}
-      },
-      {
-        "source": "dec_f564fcd15601",
-        "target": "dec_fda8c9b4e631",
-        "type": "supersedes",
-        "properties": {}
-      },
-      {
-        "source": "dec_53d51a7d4549",
-        "target": "Evan Wright",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_53d51a7d4549",
-        "target": "Postgres",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Evan Wright",
-        "target": "Postgres",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_53d51a7d4549",
-        "target": "TICK-112",
-        "type": "based_on",
-        "properties": {}
-      },
-      {
-        "source": "dec_5b196394600e",
-        "target": "Kevin Flynn",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_5b196394600e",
-        "target": "Datadog",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Kevin Flynn",
-        "target": "Datadog",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_5b196394600e",
-        "target": "TICK-108",
-        "type": "based_on",
-        "properties": {}
-      },
-      {
-        "source": "dec_fda8c9b4e631",
-        "target": "Alice Vance",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_fda8c9b4e631",
-        "target": "Redis",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Alice Vance",
-        "target": "Redis",
-        "type": "owns",
-        "properties": {}
+        "step": "traversal",
+        "name": "decisions_by_id",
+        "query": "MATCH (d:Decision) WHERE d.id IN $decision_ids OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+        "params": {
+          "decision_ids": [
+            "dec_fda8c9b4e631",
+            "dec_f564fcd15601",
+            "dec_5b196394600e",
+            "dec_53d51a7d4549"
+          ]
+        },
+        "rows": 4,
+        "ms": 144.8
       }
     ],
-    "omitted_count": 2
+    "total_ms": 440.8
   }
 }

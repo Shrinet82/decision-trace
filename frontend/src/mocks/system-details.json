@@ -51,39 +51,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Elasticsearch"
      },
-     "ms": 196.6
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Elasticsearch"
-     },
-     "ms": 107.3
+     "ms": 158.0
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Elasticsearch"
      },
-     "ms": 118.0
+     "ms": 157.6
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Elasticsearch"
      },
-     "ms": 146.3
+     "ms": 195.0
     }
    ],
-   "total_ms": 568.2
+   "total_ms": 197.4
   }
  },
  "Keycloak": {
@@ -202,39 +194,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Keycloak"
      },
-     "ms": 105.4
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Keycloak"
-     },
-     "ms": 97.6
+     "ms": 106.4
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Keycloak"
      },
-     "ms": 80.1
+     "ms": 125.4
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Keycloak"
      },
-     "ms": 99.6
+     "ms": 162.5
     }
    ],
-   "total_ms": 382.7
+   "total_ms": 165.4
   }
  },
  "ClickHouse": {
@@ -342,39 +326,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "ClickHouse"
      },
-     "ms": 93.2
+     "ms": 102.3
     },
     {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
+     "name": "system_decisions",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "ClickHouse"
      },
      "ms": 102.5
     },
     {
-     "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
-     "params": {
-      "name": "ClickHouse"
-     },
-     "ms": 159.6
-    },
-    {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "ClickHouse"
      },
-     "ms": 124.1
+     "ms": 136.3
     }
    ],
-   "total_ms": 479.4
+   "total_ms": 138.2
   }
  },
  "Prometheus": {
@@ -459,39 +435,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Prometheus"
      },
-     "ms": 206.6
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Prometheus"
-     },
-     "ms": 307.8
+     "ms": 146.0
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Prometheus"
      },
-     "ms": 117.5
+     "ms": 146.6
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Prometheus"
      },
-     "ms": 102.6
+     "ms": 145.6
     }
    ],
-   "total_ms": 734.5
+   "total_ms": 148.2
   }
  },
  "Redis": {
@@ -586,39 +554,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
-     "params": {
-      "name": "Redis"
-     },
-     "ms": 107.4
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Redis"
-     },
-     "ms": 99.4
-    },
-    {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Redis"
      },
-     "ms": 311.2
+     "ms": 92.8
+    },
+    {
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
+     "params": {
+      "name": "Redis"
+     },
+     "ms": 95.2
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Redis"
      },
-     "ms": 359.1
+     "ms": 119.2
     }
    ],
-   "total_ms": 877.1
+   "total_ms": 122.3
   }
  },
  "Snowflake": {
@@ -716,39 +676,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Snowflake"
      },
-     "ms": 166.0
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Snowflake"
-     },
-     "ms": 97.2
+     "ms": 86.1
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Snowflake"
      },
-     "ms": 101.2
+     "ms": 115.0
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Snowflake"
      },
-     "ms": 113.3
+     "ms": 125.5
     }
    ],
-   "total_ms": 477.7
+   "total_ms": 127.8
   }
  },
  "Vault": {
@@ -822,39 +774,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Vault"
      },
-     "ms": 82.5
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Vault"
-     },
-     "ms": 79.9
+     "ms": 91.5
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Vault"
      },
-     "ms": 79.6
+     "ms": 110.9
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Vault"
      },
-     "ms": 200.1
+     "ms": 124.7
     }
    ],
-   "total_ms": 442.1
+   "total_ms": 126.6
   }
  },
  "Datadog": {
@@ -915,39 +859,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Datadog"
      },
-     "ms": 97.7
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Datadog"
-     },
-     "ms": 460.0
+     "ms": 306.5
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Datadog"
      },
-     "ms": 82.5
+     "ms": 320.2
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Datadog"
      },
-     "ms": 309.9
+     "ms": 344.7
     }
    ],
-   "total_ms": 950.1
+   "total_ms": 347.4
   }
  },
  "Kafka": {
@@ -1028,39 +964,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Kafka"
      },
-     "ms": 597.9
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Kafka"
-     },
-     "ms": 111.3
+     "ms": 518.4
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Kafka"
      },
-     "ms": 97.9
+     "ms": 536.0
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Kafka"
      },
-     "ms": 108.6
+     "ms": 544.9
     }
    ],
-   "total_ms": 915.7
+   "total_ms": 547.2
   }
  },
  "Kubernetes": {
@@ -1151,39 +1079,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Kubernetes"
      },
-     "ms": 117.6
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Kubernetes"
-     },
-     "ms": 142.2
+     "ms": 830.7
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Kubernetes"
      },
-     "ms": 92.6
+     "ms": 831.1
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Kubernetes"
      },
-     "ms": 166.9
+     "ms": 832.2
     }
    ],
-   "total_ms": 519.3
+   "total_ms": 834.5
   }
  },
  "Postgres": {
@@ -1244,39 +1164,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "Postgres"
      },
-     "ms": 118.2
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "Postgres"
-     },
-     "ms": 95.2
+     "ms": 275.4
     },
     {
      "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
      "params": {
       "name": "Postgres"
      },
-     "ms": 94.6
+     "ms": 293.2
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "Postgres"
      },
-     "ms": 103.4
+     "ms": 307.9
     }
    ],
-   "total_ms": 411.4
+   "total_ms": 310.2
   }
  },
  "RabbitMQ": {
@@ -1337,39 +1249,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "systems",
-     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) RETURN s.name, s.system_type, s.vendor, collect(DISTINCT o {.name, .role, .is_active, .leave_date}), count(DISTINCT d), count(DISTINCT t)",
+     "name": "system",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(d:Decision) WITH s, owners, count(DISTINCT d) AS decisions OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket) WITH s, owners, decisions, count(DISTINCT t) AS tickets OPTIONAL MATCH (s)<-[:owns|about_system]-(x) OPTIONAL MATCH (x)-[:decided_by*0..1]->(:Person)-[:member_of|leads]->(team:Team) RETURN s.name, s.system_type, s.vendor, owners, decisions, tickets, collect(DISTINCT team.name)",
      "params": {
       "name": "RabbitMQ"
      },
-     "ms": 110.7
-    },
-    {
-     "name": "system_teams",
-     "query": "MATCH (s:System)<-[:owns|about_system]-(x) WHERE toLower(s.name) = toLower($name) MATCH (x)-[:decided_by*0..1]->(p:Person)-[:member_of|leads]->(team:Team) RETURN s.name, collect(DISTINCT team.name)",
-     "params": {
-      "name": "RabbitMQ"
-     },
-     "ms": 86.1
-    },
-    {
-     "name": "system_decisions",
-     "query": "MATCH (s:System {name: $name})<-[:about_system]-(d:Decision) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, collect(DISTINCT p.name), collect(DISTINCT s2.name) ORDER BY d.decided_on",
-     "params": {
-      "name": "RabbitMQ"
-     },
-     "ms": 122.6
+     "ms": 262.8
     },
     {
      "name": "system_people",
-     "query": "MATCH (s:System {name: $name}) OPTIONAL MATCH (s)<-[:owns]-(o:Person) OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN collect(DISTINCT o {.name, .role, .is_active, .leave_date}), collect(DISTINCT dp {.name, .role, .is_active, .leave_date}), collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
+     "query": "MATCH (s:System) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (s)<-[:owns]-(o:Person) WITH s, collect(DISTINCT o {.name, .role, .is_active, .leave_date}) AS owners OPTIONAL MATCH (s)<-[:about_system]-(:Decision)-[:decided_by]->(dp:Person) WITH s, owners, collect(DISTINCT dp {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (s)<-[:mentions]-(t:Ticket)-[:raised_by|assigned_to]->(tp:Person) RETURN owners, deciders, collect(DISTINCT [tp.name, tp.role, tp.is_active, tp.leave_date, t.ticket_id])",
      "params": {
       "name": "RabbitMQ"
      },
-     "ms": 285.0
+     "ms": 269.0
+    },
+    {
+     "name": "system_decisions",
+     "query": "MATCH (s:System)<-[:about_system]-(d:Decision) WHERE toLower(s.name) = toLower($name) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p.name) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s2:System) RETURN d.id, d.title, d.decided_on, deciders, collect(DISTINCT s2.name) ORDER BY d.decided_on",
+     "params": {
+      "name": "RabbitMQ"
+     },
+     "ms": 285.4
     }
    ],
-   "total_ms": 604.4
+   "total_ms": 287.0
   }
  }
 }

@@ -11,8 +11,11 @@
  *    - GET  /systems, /systems/:name
  *    - GET  /people,  /people/:name
  *    - POST /ask
+ *    - POST /ask/stream       (text/event-stream response, streamed through unbuffered)
+ *    - GET  /sources, /sources/:kind/:key
  *    - POST /ingest           (text/event-stream response, streamed through unbuffered)
  *    - POST /ingest/reset
+ *    - GET  /ingest/status
  *    - GET  /changes
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
  *    and unwhitelisted routes.
@@ -60,6 +63,10 @@ export async function onRequest(context: {
   // Entity names: letters, digits, spaces and a few punctuation marks only
   const NAME = "[A-Za-z0-9 _.&'-]{1,80}";
   const entityDetail = new RegExp(`^/(systems|people)/${NAME}$`);
+  // Source keys are ticket IDs, meeting / document titles or record names (titles may hold : , ( ))
+  const sourceDetail = new RegExp(
+    "^/sources/(ticket|meeting|document|person|team|project|system)/[A-Za-z0-9 _.&'(),:-]{1,120}$"
+  );
 
   // Strict whitelist check
   const isWhitelisted =
@@ -70,6 +77,10 @@ export async function onRequest(context: {
     (method === 'GET' && (normalizedPath === '/systems' || normalizedPath === '/people')) ||
     (method === 'GET' && entityDetail.test(normalizedPath)) ||
     (method === 'POST' && normalizedPath === '/ask') ||
+    (method === 'POST' && normalizedPath === '/ask/stream') ||
+    (method === 'GET' && normalizedPath === '/sources') ||
+    (method === 'GET' && sourceDetail.test(normalizedPath)) ||
+    (method === 'GET' && normalizedPath === '/ingest/status') ||
     (method === 'POST' && normalizedPath === '/ingest') ||
     (method === 'POST' && normalizedPath === '/ingest/reset') ||
     (method === 'GET' && normalizedPath === '/changes');

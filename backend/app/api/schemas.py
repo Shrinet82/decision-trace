@@ -246,6 +246,94 @@ class AskResponse(BaseModel):
     graph_path: GraphPath = Field(
         default_factory=GraphPath, description="Exact subgraph used to answer"
     )
+    intent: Literal["why", "impact", "expertise", "status", "other"] = Field(
+        default="other", description="How the question was understood"
+    )
+    entities: list["MatchedEntity"] = Field(
+        default_factory=list, description="People, systems and decisions the question matched"
+    )
+    sections: list["AnswerSection"] = Field(
+        default_factory=list, description="Grouped results (impact and status questions)"
+    )
+    experts: list["Expert"] = Field(
+        default_factory=list, description="People ranked by evidence (expertise questions)"
+    )
+    trace: Optional["AskTrace"] = Field(
+        default=None, description="Every step with its time and every Cypher query with its row count"
+    )
+
+
+class MatchedEntity(BaseModel):
+    label: Literal["Person", "System", "Decision"]
+    name: str
+    id: Optional[str] = None
+    decision_code: Optional[str] = None
+
+
+class SectionItem(BaseModel):
+    kind: Literal["decision", "person", "system", "team", "project", "ticket", "meeting"]
+    name: str
+    id: Optional[str] = None
+    code: Optional[str] = Field(default=None, description="DEC code (decisions)")
+    health: Optional[HealthStatus] = None
+    detail: Optional[str] = None
+    role: Optional[str] = None
+    departed: bool = False
+    leave_date: Optional[str] = None
+    status: Optional[str] = Field(default=None, description="Ticket status (open / closed)")
+    date: Optional[str] = None
+
+
+class AnswerSection(BaseModel):
+    key: str
+    title: str
+    items: list[SectionItem] = Field(default_factory=list)
+    total: int = Field(default=0, description="Items found; items may be a shortened list")
+
+
+class ExpertEvidence(BaseModel):
+    decided: int = 0
+    owns: int = 0
+    meetings: int = 0
+    tickets: int = 0
+
+
+class Expert(BaseModel):
+    name: str
+    role: Optional[str] = None
+    departed: bool = False
+    leave_date: Optional[str] = None
+    score: int = Field(..., description="Weighted evidence: decided x3, owns x3, meetings x2, tickets x1")
+    evidence: ExpertEvidence
+    decisions: list[str] = Field(default_factory=list, description="DEC codes decided")
+    meetings: list[str] = Field(default_factory=list)
+    tickets: list[str] = Field(default_factory=list)
+
+
+class AskStep(BaseModel):
+    step: Literal["understanding", "matching", "traversal", "health", "composing"]
+    label: str
+    status: Literal["done", "skipped", "error"]
+    ms: float = 0.0
+    detail: Optional[str] = None
+
+
+class AskQuery(BaseModel):
+    step: str
+    name: str
+    query: str
+    params: dict[str, Any] = Field(default_factory=dict)
+    rows: int
+    ms: float
+
+
+class AskTrace(BaseModel):
+    steps: list[AskStep] = Field(default_factory=list)
+    queries: list[AskQuery] = Field(default_factory=list)
+    total_ms: float = 0.0
+
+
+AskResponse.model_rebuild()
 
 
 class GraphResponse(BaseModel):

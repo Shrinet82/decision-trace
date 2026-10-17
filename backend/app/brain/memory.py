@@ -683,6 +683,38 @@ async def list_falkordb_graphs() -> list[str]:
         return []
 
 
+# The live demo graph. Deleting it (or every graph) needs an explicit, confirmed opt-in.
+PRODUCTION_GRAPH = "c87aa0cf-1c09-5296-8518-a3e8b9a1e744"
+ALLOW_DESTRUCTIVE_RESET_ENV = "DECISION_TRACE_ALLOW_DESTRUCTIVE_RESET"
+
+
+class DestructiveResetRefused(PermissionError):
+    """reset() would delete every graph or the production graph without a confirmed opt-in."""
+
+
+async def check_reset_allowed(dataset_name: Optional[str], delete_all_graphs: bool) -> None:
+    """Refuse a reset that deletes every graph, or the production / configured graph, unless the
+    caller went through the confirmation guard (scripts/destructive_guard.py), which sets
+    DECISION_TRACE_ALLOW_DESTRUCTIVE_RESET=1 for its own process only."""
+    if os.environ.get(ALLOW_DESTRUCTIVE_RESET_ENV) == "1":
+        return
+    if delete_all_graphs:
+        raise DestructiveResetRefused(
+            "reset(delete_all_graphs=True) deletes every graph on the instance. Run it through "
+            "scripts/seed.py or scripts/restore_snapshot.py with --i-know-this-deletes-all-graphs."
+        )
+    protected = {PRODUCTION_GRAPH, _settings.FALKORDB_GRAPH_NAME or PRODUCTION_GRAPH}
+    target = dataset_name or _settings.DATASET_NAME
+    targets = {target}
+    try:
+        targets.add(await resolve_active_graph_name(target))
+    except Exception:  # noqa: BLE001 - an unresolvable dataset cannot map to a protected graph
+        pass
+    hit = sorted(t for t in targets if t in protected)
+    if hit:
+        raise DestructiveResetRefused(f"Refusing to reset the production graph {hit[0]}.")
+
+
 async def reset(dataset_name: Optional[str] = None, delete_all_graphs: bool = False) -> list[str]:
     """Reset the knowledge base, clearing graph nodes in FalkorDB and local vector indexes.
 
@@ -694,6 +726,7 @@ async def reset(dataset_name: Optional[str] = None, delete_all_graphs: bool = Fa
     Returns:
         list[str]: Remaining graphs in FalkorDB after deletion.
     """
+    await check_reset_allowed(dataset_name, delete_all_graphs)
     target_dataset = dataset_name or _settings.DATASET_NAME
     logger.warning(
         "Resetting Company Brain knowledge base (dataset: %s, delete_all_graphs: %s)...",

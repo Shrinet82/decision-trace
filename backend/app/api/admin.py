@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from app.api.schemas import ResetResponse
-from app.brain.memory import reset
+from app.brain.memory import DestructiveResetRefused, reset
 from app.config import get_settings
 
 logger = logging.getLogger("decision_trace.api.admin")
@@ -53,6 +53,8 @@ async def reset_database(
             dataset=target_dataset,
             message=f"Dataset '{target_dataset}' successfully reset.",
         )
+    except DestructiveResetRefused as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     except Exception as exc:
         logger.error("Admin reset failed: %s", exc)
         raise HTTPException(

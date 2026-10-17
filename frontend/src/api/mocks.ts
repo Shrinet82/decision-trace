@@ -16,6 +16,11 @@ import ingestKafkaFixture from '../mocks/ingest-kafka.json';
 import ingestAliceFixture from '../mocks/ingest-alice-leaves.json';
 import type {
   AskResponse,
+  AskStreamEvent,
+  DemoStatus,
+  SourceDocument,
+  SourceKind,
+  SourceList,
   ChangeEntry,
   DecisionDetail,
   DecisionSummary,
@@ -158,7 +163,10 @@ let mockChanges: ChangeEntry[] = [];
 let mockIngestedNodes = 0;
 let mockIngestedEdges = 0;
 
+let mockLastIngestAt: string | null = null;
+
 export function recordMockIngest(request: IngestRequest, diff: IngestDiff): void {
+  mockLastIngestAt = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
   mockIngestedNodes += diff.nodes_added.length;
   mockIngestedEdges += diff.edges_added.length;
   mockChanges = [
@@ -208,4 +216,62 @@ export function resetMockIngest(): ResetResult {
 
 export function listMockChanges(limit: number): ChangeEntry[] {
   return mockChanges.slice(0, limit);
+}
+
+/** Mirrors GET /ingest/status: demo data resets 10 minutes after the latest mock ingest. */
+export function getMockDemoStatus(now: Date = new Date()): DemoStatus {
+  const has = mockIngestedNodes + mockIngestedEdges > 0;
+  const due = has && mockLastIngestAt ? new Date(Date.parse(mockLastIngestAt) + 10 * 60_000) : null;
+  return {
+    has_demo_data: has,
+    tagged_nodes: mockIngestedNodes,
+    tagged_edges: mockIngestedEdges,
+    last_ingest_at: mockLastIngestAt,
+    resets_at: due ? due.toISOString().replace(/\.\d{3}Z$/, 'Z') : null,
+    seconds_left: due ? Math.max(0, Math.round((due.getTime() - now.getTime()) / 1000)) : null,
+    auto_reset_minutes: 10,
+  };
+}
+
+/* Streamed Ask ------------------------------------------------------------------------------- */
+
+/** Keyword routes from a typed question to a recorded stream (first match wins). */
+const STREAM_ROUTES: [RegExp, string][] = [
+  [/knows|expert|familiar/i, 'Who knows the most about Kafka?'],
+  [/affected|impact|drop|if we /i, "What's affected if we drop Snowflake?"],
+  [/conflict|contradict/i, 'Do any decisions conflict?'],
+  [/owner|orphan/i, 'Which systems have no owner?'],
+  [/keycloak/i, 'Why did we move sessions to Keycloak?'],
+  [/redis|session storage/i, 'What replaced Redis for session storage?'],
+  [/prometheus|metrics/i, 'Who decided to adopt Prometheus?'],
+  [/vault|secret/i, 'Why did we choose Vault for secret management?'],
+  [/rabbitmq|kafka/i, 'Why did we choose Kafka over RabbitMQ?'],
+  [/elasticsearch/i, 'Who owns Elasticsearch?'],
+  [/oracle/i, 'What replaced Oracle DB for payment transactions?'],
+];
+const UNANSWERABLE = 'Why did we choose quantum encryption for database backups?';
+
+/** A stream recorded from the live API (scripts/capture_fixtures.py) for the question. */
+export async function getMockAskStream(question: string): Promise<AskStreamEvent[]> {
+  const streams = (await import('../mocks/ask-stream.json')).default as unknown as Record<
+    string,
+    AskStreamEvent[]
+  >;
+  const exact = Object.keys(streams).find((q) => q.toLowerCase() === question.trim().toLowerCase());
+  const routed = STREAM_ROUTES.find(([pattern]) => pattern.test(question))?.[1];
+  return streams[exact ?? routed ?? UNANSWERABLE] ?? streams[UNANSWERABLE];
+}
+
+/* Sources ------------------------------------------------------------------------------------ */
+
+export async function getMockSources(): Promise<SourceList> {
+  return (await import('../mocks/sources.json')).default as unknown as SourceList;
+}
+
+export async function getMockSource(kind: SourceKind, key: string): Promise<SourceDocument | undefined> {
+  const all = (await import('../mocks/source-details.json')).default as unknown as Record<
+    string,
+    SourceDocument
+  >;
+  return all[`${kind}/${key}`];
 }

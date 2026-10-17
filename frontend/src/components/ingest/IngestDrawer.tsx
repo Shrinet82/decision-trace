@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query';
 import { RotateCcw } from 'lucide-react';
 import { resetIngest, streamIngest } from '../../api/client';
-import { invalidateGraphQueries } from '../../api/hooks';
+import { invalidateGraphQueries, useDemoStatus } from '../../api/hooks';
 import type { IngestRequest, IngestSourceType, ResetResult } from '../../api/types';
+import { resetCountdownText } from '../../utils/demo';
 import { emptyForm, MAX_TEXT, PRESETS, toIngestRequest, TYPE_LABEL, type IngestForm } from './ingestForm';
 import { formatLongDate } from '../../utils/format';
 import { applyIngestEvent, initialRun, miniGraphElements, type RunState } from '../../utils/ingestRun';
@@ -19,6 +20,21 @@ const fieldClass =
 const labelClass = 'text-xs font-medium text-text-2';
 
 type Phase = 'form' | 'running' | 'done' | 'error';
+
+const ResetCountdown: React.FC = () => {
+  const ingest = useIngest();
+  const status = useDemoStatus(ingest?.drawerOpen ?? true);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return (
+    <span data-testid="reset-countdown" className="text-xs text-muted">
+      {resetCountdownText(status.data, now)}
+    </span>
+  );
+};
 
 const ResetControl: React.FC<{ disabled: boolean; onReset: () => void }> = ({ disabled, onReset }) => {
   const queryClient = useQueryClient();
@@ -73,7 +89,7 @@ const ResetControl: React.FC<{ disabled: boolean; onReset: () => void }> = ({ di
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs text-muted">Demo sources stay until you reset them.</span>
+        <ResetCountdown />
         <button
           type="button"
           className={btnOutline}

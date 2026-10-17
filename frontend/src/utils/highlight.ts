@@ -29,3 +29,32 @@ export function findQuote(text: string, quote: string | null | undefined): Quote
   }
   return null;
 }
+
+export interface Segment {
+  text: string;
+  /** Index into the quotes array when this segment is a highlighted quote. */
+  quote?: number;
+}
+
+/**
+ * Splits `text` into plain and highlighted segments, one highlight per quote found (case and
+ * whitespace insensitive, as findQuote). Overlapping matches keep the earlier one.
+ */
+export function highlightAll(text: string, quotes: (string | null | undefined)[]): Segment[] {
+  const ranges: { start: number; end: number; quote: number }[] = [];
+  quotes.forEach((q, i) => {
+    const m = findQuote(text, q);
+    if (m) ranges.push({ start: m.before.length, end: m.before.length + m.match.length, quote: i });
+  });
+  ranges.sort((a, b) => a.start - b.start);
+  const segments: Segment[] = [];
+  let at = 0;
+  for (const r of ranges) {
+    if (r.start < at) continue;
+    if (r.start > at) segments.push({ text: text.slice(at, r.start) });
+    segments.push({ text: text.slice(r.start, r.end), quote: r.quote });
+    at = r.end;
+  }
+  if (at < text.length) segments.push({ text: text.slice(at) });
+  return segments;
+}

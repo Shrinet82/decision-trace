@@ -11,6 +11,8 @@ export interface EvidencePathCardProps {
   path: EvidencePath;
   /** Status of a decision node by id (health), used for decision rows. */
   statusOf: (nodeId: string) => StatusKind;
+  /** Rows slide in one after another when they first appear. */
+  animate?: boolean;
 }
 
 const RowIcon: React.FC<{ row: EvidenceRow; status: StatusKind }> = ({ row, status }) => {
@@ -29,7 +31,7 @@ const Connector: React.FC<{ label: string | null }> = ({ label }) => (
   </li>
 );
 
-export const EvidencePathCard: React.FC<EvidencePathCardProps> = ({ path, statusOf }) => {
+export const EvidencePathCard: React.FC<EvidencePathCardProps> = ({ path, statusOf, animate = false }) => {
   const { rows } = path;
   const mainIndex = rows.findIndex((r) => r.isMain);
 
@@ -58,7 +60,8 @@ export const EvidencePathCard: React.FC<EvidencePathCardProps> = ({ path, status
               {i > 0 && <Connector label={connectorLabel} />}
               <li
                 aria-current={row.isMain ? 'true' : undefined}
-                className={`flex min-h-[34px] min-w-0 items-center gap-x-2.5 px-3 ${row.isMain ? 'bg-selected' : ''}`}
+                className={`flex min-h-[34px] min-w-0 items-center gap-x-2.5 px-3 ${row.isMain ? 'bg-selected' : ''} ${animate ? 'evidence-row-in' : ''}`}
+                style={animate ? { animationDelay: `${i * 60}ms` } : undefined}
               >
                 <span className="flex w-[18px] justify-center">
                   <RowIcon row={row} status={status} />

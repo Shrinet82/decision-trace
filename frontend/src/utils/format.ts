@@ -70,3 +70,9 @@ export function questionAboutDecision(title: string): string {
 export function askHref(question: string): string {
   return `/?q=${encodeURIComponent(question)}`;
 }
+
+/** "212 ms" below a second, "1.4 s" above. */
+export function formatMs(ms: number | undefined | null): string {
+  if (ms === undefined || ms === null) return '';
+  return ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(1)} s`;
+}

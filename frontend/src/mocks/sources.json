@@ -1,0 +1,1173 @@
+{
+ "items": [
+  {
+   "kind": "ticket",
+   "key": "TICK-119",
+   "title": "Rate limit threshold tuning for public signup endpoints - Incident #119",
+   "detail": "closed",
+   "date": "2026-08-20",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-143",
+   "title": "High CPU utilization on worker pods during scheduled sync - Incident #143",
+   "detail": "open",
+   "date": "2026-08-19",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-167",
+   "title": "Cluster disk watermark alert on log aggregation index - Incident #167",
+   "detail": "closed",
+   "date": "2026-08-18",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-135",
+   "title": "Consumer lag spike on payments topic during month-end - Incident #135",
+   "detail": "closed",
+   "date": "2026-08-11",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-159",
+   "title": "SSL certificate renewal for internal load balancers - Incident #159",
+   "detail": "closed",
+   "date": "2026-08-10",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-127",
+   "title": "Node pool autoscaling delay during morning burst - Incident #127",
+   "detail": "open",
+   "date": "2026-08-03",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-151",
+   "title": "Dead letter queue alert triggered on inventory notifications - Incident #151",
+   "detail": "closed",
+   "date": "2026-08-02",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-175",
+   "title": "Optimize slow B-tree index on user accounts table - Incident #175",
+   "detail": "closed",
+   "date": "2026-08-01",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-174",
+   "title": "SSL certificate renewal for internal load balancers - Incident #174",
+   "detail": "closed",
+   "date": "2026-07-25",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-118",
+   "title": "Update CORS headers for mobile client authentication - Incident #118",
+   "detail": "closed",
+   "date": "2026-07-19",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-142",
+   "title": "Node pool autoscaling delay during morning burst - Incident #142",
+   "detail": "open",
+   "date": "2026-07-18",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-166",
+   "title": "Dead letter queue alert triggered on inventory notifications - Incident #166",
+   "detail": "closed",
+   "date": "2026-07-17",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-134",
+   "title": "Rate limit threshold tuning for public signup endpoints - Incident #134",
+   "detail": "closed",
+   "date": "2026-07-10",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-158",
+   "title": "High CPU utilization on worker pods during scheduled sync - Incident #158",
+   "detail": "open",
+   "date": "2026-07-09",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-126",
+   "title": "Add automated linter step to deployment pipeline - Incident #126",
+   "detail": "closed",
+   "date": "2026-07-02",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-150",
+   "title": "Consumer lag spike on payments topic during month-end - Incident #150",
+   "detail": "closed",
+   "date": "2026-07-01",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-149",
+   "title": "Rate limit threshold tuning for public signup endpoints - Incident #149",
+   "detail": "closed",
+   "date": "2026-06-25",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-173",
+   "title": "High CPU utilization on worker pods during scheduled sync - Incident #173",
+   "detail": "open",
+   "date": "2026-06-24",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-117",
+   "title": "Missing traces on checkout service downstream call - Incident #117",
+   "detail": "closed",
+   "date": "2026-06-18",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-141",
+   "title": "Add automated linter step to deployment pipeline - Incident #141",
+   "detail": "closed",
+   "date": "2026-06-17",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-165",
+   "title": "Consumer lag spike on payments topic during month-end - Incident #165",
+   "detail": "closed",
+   "date": "2026-06-16",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-112",
+   "title": "Replication lag and connection pool contention on primary database",
+   "detail": "closed",
+   "date": "2026-06-15",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-133",
+   "title": "Update CORS headers for mobile client authentication - Incident #133",
+   "detail": "closed",
+   "date": "2026-06-09",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-157",
+   "title": "Node pool autoscaling delay during morning burst - Incident #157",
+   "detail": "open",
+   "date": "2026-06-08",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-104",
+   "title": "High compute credits on daily analytics warehouse rollups",
+   "detail": "closed",
+   "date": "2026-06-01",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-125",
+   "title": "Partition pruning failure on daily analytics rollup view - Incident #125",
+   "detail": "closed",
+   "date": "2026-06-01",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-124",
+   "title": "Rotate root token for transit secrets engine - Incident #124",
+   "detail": "closed",
+   "date": "2026-05-25",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-148",
+   "title": "Update CORS headers for mobile client authentication - Incident #148",
+   "detail": "closed",
+   "date": "2026-05-24",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-172",
+   "title": "Node pool autoscaling delay during morning burst - Incident #172",
+   "detail": "open",
+   "date": "2026-05-23",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-111",
+   "title": "OAuth2 token issuance architecture for internal gateway",
+   "detail": "closed",
+   "date": "2026-05-22",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-116",
+   "title": "Connection timeout when scraping staging metric endpoints - Incident #116",
+   "detail": "closed",
+   "date": "2026-05-17",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-140",
+   "title": "Partition pruning failure on daily analytics rollup view - Incident #140",
+   "detail": "closed",
+   "date": "2026-05-16",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-164",
+   "title": "Rate limit threshold tuning for public signup endpoints - Incident #164",
+   "detail": "closed",
+   "date": "2026-05-15",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-102",
+   "title": "Redis session cluster operational maintenance and failover complexity",
+   "detail": "closed",
+   "date": "2026-05-10",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-132",
+   "title": "Missing traces on checkout service downstream call - Incident #132",
+   "detail": "closed",
+   "date": "2026-05-08",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-156",
+   "title": "Add automated linter step to deployment pipeline - Incident #156",
+   "detail": "closed",
+   "date": "2026-05-07",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-180",
+   "title": "Consumer lag spike on payments topic during month-end - Incident #180",
+   "detail": "closed",
+   "date": "2026-05-06",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-110",
+   "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
+   "detail": "closed",
+   "date": "2026-05-02",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-123",
+   "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #123",
+   "detail": "closed",
+   "date": "2026-04-24",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-147",
+   "title": "Missing traces on checkout service downstream call - Incident #147",
+   "detail": "closed",
+   "date": "2026-04-23",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-171",
+   "title": "Add automated linter step to deployment pipeline - Incident #171",
+   "detail": "closed",
+   "date": "2026-04-22",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-109",
+   "title": "Cluster-wide metrics collection and automated alerts",
+   "detail": "closed",
+   "date": "2026-04-20",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-115",
+   "title": "Optimize slow B-tree index on user accounts table - Incident #115",
+   "detail": "closed",
+   "date": "2026-04-16",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-139",
+   "title": "Rotate root token for transit secrets engine - Incident #139",
+   "detail": "closed",
+   "date": "2026-04-15",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-163",
+   "title": "Update CORS headers for mobile client authentication - Incident #163",
+   "detail": "closed",
+   "date": "2026-04-14",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-131",
+   "title": "Connection timeout when scraping staging metric endpoints - Incident #131",
+   "detail": "closed",
+   "date": "2026-04-07",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-155",
+   "title": "Partition pruning failure on daily analytics rollup view - Incident #155",
+   "detail": "closed",
+   "date": "2026-04-06",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-106",
+   "title": "Lightweight pubsub requirements for async background tasks",
+   "detail": "closed",
+   "date": "2026-04-05",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-179",
+   "title": "Rate limit threshold tuning for public signup endpoints - Incident #179",
+   "detail": "closed",
+   "date": "2026-04-05",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-108",
+   "title": "Inconsistent distributed trace propagation in checkout services",
+   "detail": "closed",
+   "date": "2026-03-25",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-122",
+   "title": "Cluster disk watermark alert on log aggregation index - Incident #122",
+   "detail": "closed",
+   "date": "2026-03-23",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-146",
+   "title": "Connection timeout when scraping staging metric endpoints - Incident #146",
+   "detail": "closed",
+   "date": "2026-03-22",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-170",
+   "title": "Partition pruning failure on daily analytics rollup view - Incident #170",
+   "detail": "closed",
+   "date": "2026-03-21",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-114",
+   "title": "SSL certificate renewal for internal load balancers - Incident #114",
+   "detail": "closed",
+   "date": "2026-03-15",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-138",
+   "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #138",
+   "detail": "closed",
+   "date": "2026-03-14",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-162",
+   "title": "Missing traces on checkout service downstream call - Incident #162",
+   "detail": "closed",
+   "date": "2026-03-13",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-107",
+   "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
+   "detail": "closed",
+   "date": "2026-03-12",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-130",
+   "title": "Optimize slow B-tree index on user accounts table - Incident #130",
+   "detail": "closed",
+   "date": "2026-03-06",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-154",
+   "title": "Rotate root token for transit secrets engine - Incident #154",
+   "detail": "closed",
+   "date": "2026-03-05",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-178",
+   "title": "Update CORS headers for mobile client authentication - Incident #178",
+   "detail": "closed",
+   "date": "2026-03-04",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-105",
+   "title": "Need enterprise event bus for asynchronous order processing",
+   "detail": "closed",
+   "date": "2026-03-01",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-121",
+   "title": "Dead letter queue alert triggered on inventory notifications - Incident #121",
+   "detail": "closed",
+   "date": "2026-02-22",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-145",
+   "title": "Optimize slow B-tree index on user accounts table - Incident #145",
+   "detail": "closed",
+   "date": "2026-02-21",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-169",
+   "title": "Rotate root token for transit secrets engine - Incident #169",
+   "detail": "closed",
+   "date": "2026-02-20",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-103",
+   "title": "Slow analytical queries on historical clickstream datasets",
+   "detail": "closed",
+   "date": "2026-02-15",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-113",
+   "title": "High CPU utilization on worker pods during scheduled sync - Incident #113",
+   "detail": "open",
+   "date": "2026-02-14",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-137",
+   "title": "Cluster disk watermark alert on log aggregation index - Incident #137",
+   "detail": "closed",
+   "date": "2026-02-13",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-161",
+   "title": "Connection timeout when scraping staging metric endpoints - Incident #161",
+   "detail": "closed",
+   "date": "2026-02-12",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-129",
+   "title": "SSL certificate renewal for internal load balancers - Incident #129",
+   "detail": "closed",
+   "date": "2026-02-05",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-153",
+   "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #153",
+   "detail": "closed",
+   "date": "2026-02-04",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-177",
+   "title": "Missing traces on checkout service downstream call - Incident #177",
+   "detail": "closed",
+   "date": "2026-02-03",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-101",
+   "title": "Severe latency on Postgres session store under peak load",
+   "detail": "closed",
+   "date": "2026-02-01",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-120",
+   "title": "Consumer lag spike on payments topic during month-end - Incident #120",
+   "detail": "closed",
+   "date": "2026-01-21",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-144",
+   "title": "SSL certificate renewal for internal load balancers - Incident #144",
+   "detail": "closed",
+   "date": "2026-01-20",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-168",
+   "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #168",
+   "detail": "closed",
+   "date": "2026-01-19",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-136",
+   "title": "Dead letter queue alert triggered on inventory notifications - Incident #136",
+   "detail": "closed",
+   "date": "2026-01-12",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-160",
+   "title": "Optimize slow B-tree index on user accounts table - Incident #160",
+   "detail": "closed",
+   "date": "2026-01-11",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-128",
+   "title": "High CPU utilization on worker pods during scheduled sync - Incident #128",
+   "detail": "open",
+   "date": "2026-01-04",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-152",
+   "title": "Cluster disk watermark alert on log aggregation index - Incident #152",
+   "detail": "closed",
+   "date": "2026-01-03",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "ticket",
+   "key": "TICK-176",
+   "title": "Connection timeout when scraping staging metric endpoints - Incident #176",
+   "detail": "closed",
+   "date": "2026-01-02",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Cloud Cost Optimization Taskforce",
+   "title": "Cloud Cost Optimization Taskforce",
+   "detail": null,
+   "date": "2026-10-10",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Q4 Engineering Roadmapping",
+   "title": "Q4 Engineering Roadmapping",
+   "detail": null,
+   "date": "2026-10-02",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Database Reliability Working Group",
+   "title": "Database Reliability Working Group",
+   "detail": null,
+   "date": "2026-09-28",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Developer Experience Sync",
+   "title": "Developer Experience Sync",
+   "detail": null,
+   "date": "2026-09-10",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Container Platform Strategy",
+   "title": "Container Platform Strategy",
+   "detail": null,
+   "date": "2026-08-20",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Search Infrastructure Review",
+   "title": "Search Infrastructure Review",
+   "detail": null,
+   "date": "2026-07-14",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Security Architecture Review",
+   "title": "Security Architecture Review",
+   "detail": null,
+   "date": "2026-06-08",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Core Messaging Architecture Sync",
+   "title": "Core Messaging Architecture Sync",
+   "detail": null,
+   "date": "2026-05-18",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Observability Platform Alignment",
+   "title": "Observability Platform Alignment",
+   "detail": null,
+   "date": "2026-04-12",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Data Platform Quarterly Review",
+   "title": "Data Platform Quarterly Review",
+   "detail": null,
+   "date": "2026-03-05",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "IAM Architecture Modernization",
+   "title": "IAM Architecture Modernization",
+   "detail": null,
+   "date": "2026-02-10",
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "meeting",
+   "key": "Q1 Infrastructure Kickoff",
+   "title": "Q1 Infrastructure Kickoff",
+   "detail": null,
+   "date": "2026-01-15",
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "ClickHouse",
+   "title": "ClickHouse",
+   "detail": "database",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Datadog",
+   "title": "Datadog",
+   "detail": "observability",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Elasticsearch",
+   "title": "Elasticsearch",
+   "detail": "search-engine",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Kafka",
+   "title": "Kafka",
+   "detail": "event-streaming",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Keycloak",
+   "title": "Keycloak",
+   "detail": "iam",
+   "date": null,
+   "linked_decisions": 3,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Kubernetes",
+   "title": "Kubernetes",
+   "detail": "container-orchestration",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Postgres",
+   "title": "Postgres",
+   "detail": "database",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Prometheus",
+   "title": "Prometheus",
+   "detail": "monitoring",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "RabbitMQ",
+   "title": "RabbitMQ",
+   "detail": "message-broker",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Redis",
+   "title": "Redis",
+   "detail": "cache",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Snowflake",
+   "title": "Snowflake",
+   "detail": "data-warehouse",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "system",
+   "key": "Vault",
+   "title": "Vault",
+   "detail": "secrets-management",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Alice Vance",
+   "title": "Alice Vance",
+   "detail": "Principal Platform Engineer",
+   "date": null,
+   "linked_decisions": 3,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Bob Martin",
+   "title": "Bob Martin",
+   "detail": "Senior Staff SRE",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Carlos Mendez",
+   "title": "Carlos Mendez",
+   "detail": "Staff Data Engineer",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Diana Prince",
+   "title": "Diana Prince",
+   "detail": "Security Architect",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Evan Wright",
+   "title": "Evan Wright",
+   "detail": "Senior Backend Engineer",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Fiona Gallagher",
+   "title": "Fiona Gallagher",
+   "detail": "Lead Analytics Engineer",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "George Clark",
+   "title": "George Clark",
+   "detail": "DevOps Engineer",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Hannah Abbott",
+   "title": "Hannah Abbott",
+   "detail": "Frontend Tech Lead",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Ian Malcolm",
+   "title": "Ian Malcolm",
+   "detail": "Distributed Systems Architect",
+   "date": null,
+   "linked_decisions": 1,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Julia Roberts",
+   "title": "Julia Roberts",
+   "detail": "Identity & Access Lead",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Kevin Flynn",
+   "title": "Kevin Flynn",
+   "detail": "Observability Lead",
+   "date": null,
+   "linked_decisions": 2,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Laura Croft",
+   "title": "Laura Croft",
+   "detail": "Cloud Operations Lead",
+   "date": null,
+   "linked_decisions": 3,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Marcus Aurelius",
+   "title": "Marcus Aurelius",
+   "detail": "Former Staff Architect",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Nina Simone",
+   "title": "Nina Simone",
+   "detail": "Data Pipeline Engineer",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "person",
+   "key": "Oliver Queen",
+   "title": "Oliver Queen",
+   "detail": "CI/CD Specialist",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "team",
+   "key": "Core Infrastructure",
+   "title": "Core Infrastructure",
+   "detail": "Engineering",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "team",
+   "key": "Data Platform",
+   "title": "Data Platform",
+   "detail": "Data & Analytics",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "team",
+   "key": "Developer Experience",
+   "title": "Developer Experience",
+   "detail": "Engineering",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "team",
+   "key": "Security & IAM",
+   "title": "Security & IAM",
+   "detail": "Information Security",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "project",
+   "key": "Project Beacon",
+   "title": "Project Beacon",
+   "detail": "active",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "project",
+   "key": "Project Horizon",
+   "title": "Project Horizon",
+   "detail": "active",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "project",
+   "key": "Project Nexus",
+   "title": "Project Nexus",
+   "detail": "active",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "project",
+   "key": "Project Shield",
+   "title": "Project Shield",
+   "detail": "active",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "project",
+   "key": "Project Titan",
+   "title": "Project Titan",
+   "detail": "active",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  },
+  {
+   "kind": "project",
+   "key": "Project Velocity",
+   "title": "Project Velocity",
+   "detail": "active",
+   "date": null,
+   "linked_decisions": 0,
+   "demo": false
+  }
+ ],
+ "counts": {
+  "ticket": 80,
+  "meeting": 12,
+  "system": 12,
+  "person": 15,
+  "team": 4,
+  "project": 6
+ }
+}

@@ -47,14 +47,14 @@ test.describe('journey', () => {
     await page.goto('/');
     await expect(page.locator('h1')).toHaveText('Ask');
 
-    await page.getByRole('button', { name: REDIS_Q }).click();
+    await ask(page, REDIS_Q);
 
     // Answer, evidence path, sources, and properties panel
     const evidence = page.getByRole('region', { name: 'Evidence path' });
     await expect(evidence).toBeVisible();
     await expect(evidence.getByText('Decision', { exact: true }).first()).toBeVisible();
     const sources = page.getByRole('region', { name: 'Sources' });
-    await expect(sources.getByText('TICK-101').first()).toBeVisible();
+    await expect(sources.getByText('TICK-102').first()).toBeVisible();
     const properties = page.getByRole('complementary', { name: 'Decision properties' });
     await expect(properties.getByText('Validity checks')).toBeVisible();
     await expect(properties.getByText('Decided by')).toBeVisible();
