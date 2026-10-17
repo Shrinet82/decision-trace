@@ -141,11 +141,18 @@ export const DecisionPage: React.FC = () => {
         <div role={notFound ? 'status' : 'alert'} className="m-5 flex flex-col items-start gap-2 rounded-panel border border-divider bg-subtle p-4">
           <h1 className="m-0 text-lg font-semibold">{notFound ? 'Decision not found' : 'Could not load decision'}</h1>
           <p className="m-0 text-muted">
-            {notFound ? `There is no decision ${code}.` : query.error?.message}
+            {notFound ? `There is no decision ${code}. Decision codes look like DEC-11.` : query.error?.message}
           </p>
-          <Link to="/decisions" className={btnOutline}>
-            All decisions
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            {!notFound && (
+              <button type="button" className={btnOutline} onClick={() => query.refetch()}>
+                Retry
+              </button>
+            )}
+            <Link to="/decisions" className={btnOutline}>
+              All decisions
+            </Link>
+          </div>
         </div>
       </PageFrame>
     );

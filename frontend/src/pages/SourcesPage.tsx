@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useChanges, useSources } from '../api/hooks';
 import type { SourceItem, SourceKind } from '../api/types';
 import { Badge } from '../components/entity/Badge';
-import { ListSkeleton } from '../components/entity/EntityStates';
+import { ErrorNotice, ListSkeleton } from '../components/entity/EntityStates';
 import { PageFrame } from '../components/PageFrame';
 import { SourceDocDrawer } from '../components/SourceDocDrawer';
 import { formatLongDate } from '../utils/format';
@@ -137,7 +137,7 @@ export const SourcesPage: React.FC = () => {
         </div>
 
         {sources.isLoading && <ListSkeleton label="Loading sources" />}
-        {sources.isError && <p role="alert" className="m-0 text-status-conflict-text">{sources.error.message}</p>}
+        {sources.isError && <ErrorNotice title="Could not load sources" message={sources.error.message} onRetry={() => sources.refetch()} className="" />}
         {sources.data && items.length === 0 && <p className="m-0 py-6 text-muted">No sources match.</p>}
 
         {items.length > 0 && (

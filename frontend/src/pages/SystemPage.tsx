@@ -37,7 +37,7 @@ export const SystemPage: React.FC = () => {
   if (query.isError || !s) {
     return (
       <PageFrame header={header}>
-        <LoadError notFound={query.error?.status === 404} what="System" message={query.error?.message} backTo="/systems" backLabel="All systems" />
+        <LoadError notFound={query.error?.status === 404} what="System" message={query.error?.status === 404 ? `There is no system named "${name}".` : query.error?.message} backTo="/systems" backLabel="All systems" onRetry={() => query.refetch()} />
       </PageFrame>
     );
   }

@@ -20,7 +20,13 @@ from typing import Any, AsyncIterator, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.api.rate_limiter import record_llm_call
+from app.api.rate_limiter import (
+    DEMO_LIMIT_MESSAGE,
+    budget_exceeded,
+    estimate_tokens,
+    record_llm_call,
+    record_tokens,
+)
 from app.brain import cache
 from app.brain.codes import get_decision_codes
 from app.brain.health import evaluate_graph_health, evaluate_system_orphans
@@ -153,13 +159,17 @@ async def _llm(system_prompt: str, text: str, model: type[BaseModel], max_tokens
     """Structured LLM call with a hard timeout, counted against the daily quota."""
     from cognee.infrastructure.llm.LLMGateway import LLMGateway
 
+    if budget_exceeded():
+        raise RuntimeError(DEMO_LIMIT_MESSAGE)
     record_llm_call()
-    return await asyncio.wait_for(
+    result = await asyncio.wait_for(
         LLMGateway.acreate_structured_output(
             text_input=text, system_prompt=system_prompt, response_model=model, max_tokens=max_tokens
         ),
         timeout=LLM_TIMEOUT_SECONDS,
     )
+    record_tokens(estimate_tokens(system_prompt, text) + max_tokens // 2, "ingest")
+    return result
 
 
 def changes_graph_name(main_graph: str) -> str:
@@ -650,11 +660,13 @@ async def record_change(dataset: str, entry: dict[str, Any]) -> None:
     )
 
 
-async def list_changes(dataset: str, limit: int = 20) -> list[dict[str, Any]]:
+async def list_changes(dataset: str, limit: int = 20, include_tests: bool = False) -> list[dict[str, Any]]:
+    """Newest first. Our own CI smoke-test calls (type 'smoke') are hidden unless include_tests."""
     graph = await _changes_graph(dataset)
+    where = "" if include_tests else "WHERE c.type <> 'smoke' "
     try:
         rows = await query_graph(
-            "MATCH (c:Change) RETURN c.id, c.kind, c.title, c.type, c.created_at, c.summary, c.diff_json, c.reverted "
+            f"MATCH (c:Change) {where}RETURN c.id, c.kind, c.title, c.type, c.created_at, c.summary, c.diff_json, c.reverted "
             "ORDER BY c.created_at DESC LIMIT $limit",
             dataset_name=graph,
             params={"limit": limit},

@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import { Bot, CheckCircle2, Home, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
 import { useDecisions, useGraph, usePeople, useSystems } from '../api/hooks';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { pageTitleForPath } from '../utils/pageTitle';
 import {
   buildDecisionRows,
   buildGraphIndex,
@@ -117,6 +119,7 @@ const GraphTypeFilters: React.FC<{ counts: Map<string, number> | null }> = ({ co
 
 export const AppShell: React.FC = () => {
   const location = useLocation();
+  useDocumentTitle(pageTitleForPath(location.pathname));
   const isDesktop = useMediaQuery('(min-width: 900px)');
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteTrigger = useRef<HTMLElement | null>(null);

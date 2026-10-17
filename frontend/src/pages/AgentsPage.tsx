@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { PageFrame } from '../components/PageFrame';
 import { btnOutline } from '../components/ui';
-import { CLIENT_SNIPPETS, MCP_TOOLS, MCP_URL } from '../config/mcp';
+import { CLIENT_SNIPPETS, CONNECTOR_DOCS, CONNECTOR_STEPS, MCP_TOOLS, MCP_URL } from '../config/mcp';
 
 const CopyButton: React.FC<{ text: string; label: string }> = ({ text, label }) => {
   const [copied, setCopied] = useState(false);
@@ -50,9 +50,23 @@ export const AgentsPage: React.FC = () => (
         <h2 id="clients-heading" className="m-0 text-sm font-semibold">
           Add it to your client
         </h2>
+        <div className="flex flex-col gap-1.5">
+          <h3 className="m-0 text-sm font-medium">Claude Desktop and claude.ai: custom connector (recommended)</h3>
+          <ol className="m-0 flex flex-col gap-1 pl-5 text-text-2">
+            {CONNECTOR_STEPS.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+          <p className="m-0 text-xs text-muted">
+            Steps from{' '}
+            <a href={CONNECTOR_DOCS.href} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+              {CONNECTOR_DOCS.label}
+            </a>
+          </p>
+        </div>
         {CLIENT_SNIPPETS.map((s) => (
           <div key={s.id} className="flex flex-col gap-1.5">
-            <h3 className="m-0 text-sm font-medium">{s.label}</h3>
+            <h3 className="m-0 text-sm font-medium">{s.heading ?? s.label}</h3>
             <p className="m-0 text-xs text-muted">{s.where}</p>
             <div className="flex items-start gap-2 rounded-panel border border-divider bg-subtle p-2 pl-3">
               <pre

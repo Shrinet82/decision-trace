@@ -46,6 +46,53 @@ export class ApiError extends Error {
   }
 }
 
+
+/* ------------------------------------------------------------------------------------------ */
+/* Requests: timeouts and readable errors                                                       */
+/* ------------------------------------------------------------------------------------------ */
+
+/** Plain requests give up after this long; streams get this long to start and between chunks. */
+export const REQUEST_TIMEOUT_MS = 25_000;
+export const STREAM_IDLE_MS = 60_000;
+export const NETWORK_MESSAGE = "Can't reach the server. Check your connection, then try again.";
+export const TIMEOUT_MESSAGE = 'The server took too long to respond. Try again in a moment.';
+
+/** What the user sees for a failed request: what went wrong and what to do about it. */
+export function httpErrorMessage(status: number, body: unknown, subject: string): string {
+  const detail = detailText(body);
+  if (status === 429) return detail ?? 'Too many requests from this address. Wait a minute and try again.';
+  if (status === 404) return `${subject} was not found.`;
+  if (status >= 500) return 'The server ran into a problem. Try again in a moment.';
+  return detail ?? `${subject} could not be loaded (the server responded with ${status}).`;
+}
+
+/**
+ * fetch with a timeout and readable failures: an unreachable server is an ApiError with status 0
+ * and a timeout one with status 408. The caller's own signal still cancels the request.
+ */
+async function apiFetch(url: string, init: RequestInit = {}, timeoutMs = REQUEST_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const outer = init.signal ?? undefined;
+  const onAbort = () => controller.abort();
+  if (outer?.aborted) controller.abort();
+  else outer?.addEventListener('abort', onAbort, { once: true });
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (timedOut) throw new ApiError(TIMEOUT_MESSAGE, 408);
+    if ((error as { name?: string } | null)?.name === 'AbortError') throw error;
+    throw new ApiError(NETWORK_MESSAGE, 0);
+  } finally {
+    clearTimeout(timer);
+    outer?.removeEventListener('abort', onAbort);
+  }
+}
+
 /**
  * Ask a natural language question about decisions and evidence paths.
  */
@@ -57,7 +104,7 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
     return getMockAskResponse(payload.question);
   }
 
-  const response = await fetch(`${API_BASE_URL}/ask`, {
+  const response = await apiFetch(`${API_BASE_URL}/ask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -68,11 +115,7 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new ApiError(
-      `Failed to get answer: ${response.statusText} (${response.status})`,
-      response.status,
-      errorBody
-    );
+    throw new ApiError(httpErrorMessage(response.status, errorBody, 'The answer'), response.status, errorBody);
   }
 
   return response.json();
@@ -89,7 +132,7 @@ export async function getDecision(decisionId: string): Promise<DecisionDetail> {
     return mock;
   }
 
-  const response = await fetch(`${API_BASE_URL}/decisions/${encodeURIComponent(decisionId)}`, {
+  const response = await apiFetch(`${API_BASE_URL}/decisions/${encodeURIComponent(decisionId)}`, {
     headers: {
       Accept: 'application/json',
     },
@@ -98,7 +141,7 @@ export async function getDecision(decisionId: string): Promise<DecisionDetail> {
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     throw new ApiError(
-      `Failed to load decision ${decisionId}: ${response.statusText} (${response.status})`,
+      httpErrorMessage(response.status, errorBody, `Decision ${decisionId}`),
       response.status,
       errorBody
     );
@@ -108,17 +151,13 @@ export async function getDecision(decisionId: string): Promise<DecisionDetail> {
 }
 
 async function getJson<T>(path: string, failure: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await apiFetch(`${API_BASE_URL}${path}`, {
     headers: { Accept: 'application/json' },
   });
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new ApiError(
-      `${failure}: ${response.statusText} (${response.status})`,
-      response.status,
-      errorBody
-    );
+    throw new ApiError(httpErrorMessage(response.status, errorBody, failure), response.status, errorBody);
   }
 
   return response.json();
@@ -192,15 +231,16 @@ export function ingestErrorMessage(status: number, body: unknown): string {
   const detail = detailText(body);
   switch (status) {
     case 429:
-      return 'Too many ingests from this address. You can run 3 per minute; wait a moment and try again.';
+      return detail && /demo limit/i.test(detail)
+        ? detail
+        : 'Too many ingests from this address. You can run 3 per minute; wait a moment and try again.';
     case 409:
       return 'Another ingest is already running. Wait for it to finish, then try again.';
     case 422:
       return `The source was rejected${detail ? `: ${detail}` : '. Check the title, date and text.'}`;
     default:
-      return detail
-        ? `Ingest failed (${status}): ${detail}`
-        : `Ingest failed: the server responded with ${status}.`;
+      if (status >= 500) return 'The server ran into a problem while reading the source. Try again in a moment.';
+      return detail ? `Ingest failed (${status}): ${detail}` : `Ingest failed: the server responded with ${status}.`;
   }
 }
 
@@ -249,7 +289,7 @@ export async function streamIngest(
     return;
   }
 
-  const response = await fetch(`${API_BASE_URL}/ingest`, {
+  const response = await apiFetch(`${API_BASE_URL}/ingest`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
     body: JSON.stringify(request),
@@ -289,14 +329,19 @@ async function readSse(body: ReadableStream<Uint8Array>, onMessage: (m: SseMessa
   };
   try {
     for (;;) {
-      const { done, value } = await reader.read();
+      let stall: ReturnType<typeof setTimeout> | undefined;
+      const stalled = new Promise<never>((_, reject) => {
+        stall = setTimeout(() => reject(new ApiError(TIMEOUT_MESSAGE, 408)), STREAM_IDLE_MS);
+      });
+      const { done, value } = await Promise.race([reader.read(), stalled]).finally(() => clearTimeout(stall));
       if (done) break;
       dispatch(rest + decoder.decode(value, { stream: true }));
     }
     // Flush a final event that was not followed by a blank line
     dispatch(`${rest}${decoder.decode()}\n\n`);
   } finally {
-    reader.releaseLock();
+    // A stalled stream is cancelled so the connection is released
+    reader.cancel().catch(() => undefined);
   }
 }
 
@@ -333,7 +378,7 @@ export async function streamAsk(
     return;
   }
 
-  const response = await fetch(`${API_BASE_URL}/ask/stream`, {
+  const response = await apiFetch(`${API_BASE_URL}/ask/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
     body: JSON.stringify({ question }),
@@ -341,11 +386,7 @@ export async function streamAsk(
   });
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    const message =
-      response.status === 429
-        ? 'Too many questions from this address. Wait a minute and try again.'
-        : `Search failed: the server responded with ${response.status}.`;
-    throw new ApiError(message, response.status, body);
+    throw new ApiError(httpErrorMessage(response.status, body, 'The answer'), response.status, body);
   }
   if (!response.body) throw new ApiError('The server returned an empty answer stream.', response.status);
 
@@ -392,7 +433,7 @@ export async function resetIngest(): Promise<ResetResult> {
     await wait(300);
     return (await loadMocks()).resetMockIngest();
   }
-  const response = await fetch(`${API_BASE_URL}/ingest/reset`, {
+  const response = await apiFetch(`${API_BASE_URL}/ingest/reset`, {
     method: 'POST',
     headers: { Accept: 'application/json' },
   });

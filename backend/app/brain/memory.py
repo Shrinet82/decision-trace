@@ -558,50 +558,39 @@ async def ask(question: str, dataset_name: Optional[str] = None) -> dict[str, An
         raise MemoryOperationError(f"Query failed: {exc}") from exc
 
 
+# Upper bound for one Cypher statement: the server aborts it after QUERY_TIMEOUT_MS, and the
+# caller stops waiting a little later in case the connection itself is stuck.
+QUERY_TIMEOUT_MS = 15000
+_QUERY_WAIT_SECONDS = 20.0
+
+
 async def query_graph(
     query: str,
     dataset_name: Optional[str] = None,
     params: Optional[dict[str, Any]] = None,
 ) -> list[Any]:
-    """Execute a Cypher query on the dataset's FalkorDB graph.
+    """Execute a Cypher query on the dataset's FalkorDB graph and return its rows.
 
-    Args:
-        query: Cypher query string.
-        dataset_name: Optional target dataset name.
-        params: Optional query parameters.
-
-    Returns:
-        list[Any]: Query result rows.
+    The FalkorDB client is synchronous, so the call runs in a worker thread: it never blocks the
+    event loop, and queries started together (asyncio.gather) really overlap. Every query is
+    bounded: the server aborts it after QUERY_TIMEOUT_MS and the caller stops waiting after
+    _QUERY_WAIT_SECONDS, so a stuck database call cannot hang a request forever.
     """
     engine = await get_graph_engine()
     target_graph = await resolve_active_graph_name(dataset_name)
     driver = getattr(engine, "driver", None)
     if driver and target_graph:
         graph = driver.select_graph(target_graph)
-        res = graph.query(query, params or {})
+        res = await asyncio.wait_for(
+            asyncio.to_thread(graph.query, query, params or {}, timeout=QUERY_TIMEOUT_MS),
+            timeout=_QUERY_WAIT_SECONDS,
+        )
         return res.result_set if res.result_set else []
-    return await engine.query(query, params or {})
+    return await asyncio.wait_for(engine.query(query, params or {}), timeout=_QUERY_WAIT_SECONDS)
 
 
-async def query_graph_threaded(
-    query: str,
-    dataset_name: Optional[str] = None,
-    params: Optional[dict[str, Any]] = None,
-) -> list[Any]:
-    """query_graph, with the blocking driver call run in a worker thread.
-
-    The FalkorDB client is synchronous, so plain query_graph blocks the event loop and
-    concurrent queries would still run one after another. Use this for queries meant to
-    overlap (asyncio.gather).
-    """
-    engine = await get_graph_engine()
-    target_graph = await resolve_active_graph_name(dataset_name)
-    driver = getattr(engine, "driver", None)
-    if driver and target_graph:
-        graph = driver.select_graph(target_graph)
-        res = await asyncio.to_thread(graph.query, query, params or {})
-        return res.result_set if res.result_set else []
-    return await engine.query(query, params or {})
+# Kept for existing callers: query_graph is now always threaded
+query_graph_threaded = query_graph
 
 
 async def get_graph(
@@ -827,7 +816,7 @@ async def ping_falkordb() -> bool:
     """
     try:
         engine = await get_graph_engine()
-        res = await engine.query("RETURN 1 as ping")
+        res = await asyncio.wait_for(engine.query("RETURN 1 as ping"), timeout=8.0)
         return bool(res and len(res) > 0)
     except Exception as exc:
         logger.error("FalkorDB ping failed: %s", exc)

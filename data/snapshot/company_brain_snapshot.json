@@ -708,8 +708,8 @@
         "ticket_id": "TICK-113",
         "title": "High CPU utilization on worker pods during scheduled sync - Incident #113",
         "status": "open",
-        "opened": "2026-002-14",
-        "closed": "2026-002-16",
+        "opened": "2026-02-14",
+        "closed": "2026-02-16",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -724,8 +724,8 @@
         "ticket_id": "TICK-114",
         "title": "SSL certificate renewal for internal load balancers - Incident #114",
         "status": "closed",
-        "opened": "2026-003-15",
-        "closed": "2026-003-17",
+        "opened": "2026-03-15",
+        "closed": "2026-03-17",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -740,8 +740,8 @@
         "ticket_id": "TICK-115",
         "title": "Optimize slow B-tree index on user accounts table - Incident #115",
         "status": "closed",
-        "opened": "2026-004-16",
-        "closed": "2026-004-18",
+        "opened": "2026-04-16",
+        "closed": "2026-04-18",
         "system": "Postgres",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -756,8 +756,8 @@
         "ticket_id": "TICK-116",
         "title": "Connection timeout when scraping staging metric endpoints - Incident #116",
         "status": "closed",
-        "opened": "2026-005-17",
-        "closed": "2026-005-19",
+        "opened": "2026-05-17",
+        "closed": "2026-05-19",
         "system": "Prometheus",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -772,8 +772,8 @@
         "ticket_id": "TICK-117",
         "title": "Missing traces on checkout service downstream call - Incident #117",
         "status": "closed",
-        "opened": "2026-006-18",
-        "closed": "2026-006-20",
+        "opened": "2026-06-18",
+        "closed": "2026-06-20",
         "system": "Datadog",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -788,8 +788,8 @@
         "ticket_id": "TICK-118",
         "title": "Update CORS headers for mobile client authentication - Incident #118",
         "status": "closed",
-        "opened": "2026-007-19",
-        "closed": "2026-007-21",
+        "opened": "2026-07-19",
+        "closed": "2026-07-21",
         "system": "Keycloak",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -804,8 +804,8 @@
         "ticket_id": "TICK-119",
         "title": "Rate limit threshold tuning for public signup endpoints - Incident #119",
         "status": "closed",
-        "opened": "2026-008-20",
-        "closed": "2026-008-22",
+        "opened": "2026-08-20",
+        "closed": "2026-08-22",
         "system": "Redis",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -820,8 +820,8 @@
         "ticket_id": "TICK-120",
         "title": "Consumer lag spike on payments topic during month-end - Incident #120",
         "status": "closed",
-        "opened": "2026-001-21",
-        "closed": "2026-001-23",
+        "opened": "2026-01-21",
+        "closed": "2026-01-23",
         "system": "Kafka",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -836,8 +836,8 @@
         "ticket_id": "TICK-121",
         "title": "Dead letter queue alert triggered on inventory notifications - Incident #121",
         "status": "closed",
-        "opened": "2026-002-22",
-        "closed": "2026-002-24",
+        "opened": "2026-02-22",
+        "closed": "2026-02-24",
         "system": "RabbitMQ",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -852,8 +852,8 @@
         "ticket_id": "TICK-122",
         "title": "Cluster disk watermark alert on log aggregation index - Incident #122",
         "status": "closed",
-        "opened": "2026-003-23",
-        "closed": "2026-003-25",
+        "opened": "2026-03-23",
+        "closed": "2026-03-25",
         "system": "Elasticsearch",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -868,8 +868,8 @@
         "ticket_id": "TICK-123",
         "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #123",
         "status": "closed",
-        "opened": "2026-004-24",
-        "closed": "2026-004-26",
+        "opened": "2026-04-24",
+        "closed": "2026-04-26",
         "system": "Snowflake",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -884,8 +884,8 @@
         "ticket_id": "TICK-124",
         "title": "Rotate root token for transit secrets engine - Incident #124",
         "status": "closed",
-        "opened": "2026-005-25",
-        "closed": "2026-005-27",
+        "opened": "2026-05-25",
+        "closed": "2026-05-27",
         "system": "Vault",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -900,8 +900,8 @@
         "ticket_id": "TICK-125",
         "title": "Partition pruning failure on daily analytics rollup view - Incident #125",
         "status": "closed",
-        "opened": "2026-006-01",
-        "closed": "2026-006-03",
+        "opened": "2026-06-01",
+        "closed": "2026-06-03",
         "system": "ClickHouse",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -916,8 +916,8 @@
         "ticket_id": "TICK-126",
         "title": "Add automated linter step to deployment pipeline - Incident #126",
         "status": "closed",
-        "opened": "2026-007-02",
-        "closed": "2026-007-04",
+        "opened": "2026-07-02",
+        "closed": "2026-07-04",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -932,8 +932,8 @@
         "ticket_id": "TICK-127",
         "title": "Node pool autoscaling delay during morning burst - Incident #127",
         "status": "open",
-        "opened": "2026-008-03",
-        "closed": "2026-008-05",
+        "opened": "2026-08-03",
+        "closed": "2026-08-05",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -948,8 +948,8 @@
         "ticket_id": "TICK-128",
         "title": "High CPU utilization on worker pods during scheduled sync - Incident #128",
         "status": "open",
-        "opened": "2026-001-04",
-        "closed": "2026-001-06",
+        "opened": "2026-01-04",
+        "closed": "2026-01-06",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -964,8 +964,8 @@
         "ticket_id": "TICK-129",
         "title": "SSL certificate renewal for internal load balancers - Incident #129",
         "status": "closed",
-        "opened": "2026-002-05",
-        "closed": "2026-002-07",
+        "opened": "2026-02-05",
+        "closed": "2026-02-07",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -980,8 +980,8 @@
         "ticket_id": "TICK-130",
         "title": "Optimize slow B-tree index on user accounts table - Incident #130",
         "status": "closed",
-        "opened": "2026-003-06",
-        "closed": "2026-003-08",
+        "opened": "2026-03-06",
+        "closed": "2026-03-08",
         "system": "Postgres",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -996,8 +996,8 @@
         "ticket_id": "TICK-131",
         "title": "Connection timeout when scraping staging metric endpoints - Incident #131",
         "status": "closed",
-        "opened": "2026-004-07",
-        "closed": "2026-004-09",
+        "opened": "2026-04-07",
+        "closed": "2026-04-09",
         "system": "Prometheus",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1012,8 +1012,8 @@
         "ticket_id": "TICK-132",
         "title": "Missing traces on checkout service downstream call - Incident #132",
         "status": "closed",
-        "opened": "2026-005-08",
-        "closed": "2026-005-10",
+        "opened": "2026-05-08",
+        "closed": "2026-05-10",
         "system": "Datadog",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1028,8 +1028,8 @@
         "ticket_id": "TICK-133",
         "title": "Update CORS headers for mobile client authentication - Incident #133",
         "status": "closed",
-        "opened": "2026-006-09",
-        "closed": "2026-006-11",
+        "opened": "2026-06-09",
+        "closed": "2026-06-11",
         "system": "Keycloak",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1044,8 +1044,8 @@
         "ticket_id": "TICK-134",
         "title": "Rate limit threshold tuning for public signup endpoints - Incident #134",
         "status": "closed",
-        "opened": "2026-007-10",
-        "closed": "2026-007-12",
+        "opened": "2026-07-10",
+        "closed": "2026-07-12",
         "system": "Redis",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1060,8 +1060,8 @@
         "ticket_id": "TICK-135",
         "title": "Consumer lag spike on payments topic during month-end - Incident #135",
         "status": "closed",
-        "opened": "2026-008-11",
-        "closed": "2026-008-13",
+        "opened": "2026-08-11",
+        "closed": "2026-08-13",
         "system": "Kafka",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1076,8 +1076,8 @@
         "ticket_id": "TICK-136",
         "title": "Dead letter queue alert triggered on inventory notifications - Incident #136",
         "status": "closed",
-        "opened": "2026-001-12",
-        "closed": "2026-001-14",
+        "opened": "2026-01-12",
+        "closed": "2026-01-14",
         "system": "RabbitMQ",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1092,8 +1092,8 @@
         "ticket_id": "TICK-137",
         "title": "Cluster disk watermark alert on log aggregation index - Incident #137",
         "status": "closed",
-        "opened": "2026-002-13",
-        "closed": "2026-002-15",
+        "opened": "2026-02-13",
+        "closed": "2026-02-15",
         "system": "Elasticsearch",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1108,8 +1108,8 @@
         "ticket_id": "TICK-138",
         "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #138",
         "status": "closed",
-        "opened": "2026-003-14",
-        "closed": "2026-003-16",
+        "opened": "2026-03-14",
+        "closed": "2026-03-16",
         "system": "Snowflake",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1124,8 +1124,8 @@
         "ticket_id": "TICK-139",
         "title": "Rotate root token for transit secrets engine - Incident #139",
         "status": "closed",
-        "opened": "2026-004-15",
-        "closed": "2026-004-17",
+        "opened": "2026-04-15",
+        "closed": "2026-04-17",
         "system": "Vault",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1140,8 +1140,8 @@
         "ticket_id": "TICK-140",
         "title": "Partition pruning failure on daily analytics rollup view - Incident #140",
         "status": "closed",
-        "opened": "2026-005-16",
-        "closed": "2026-005-18",
+        "opened": "2026-05-16",
+        "closed": "2026-05-18",
         "system": "ClickHouse",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1156,8 +1156,8 @@
         "ticket_id": "TICK-141",
         "title": "Add automated linter step to deployment pipeline - Incident #141",
         "status": "closed",
-        "opened": "2026-006-17",
-        "closed": "2026-006-19",
+        "opened": "2026-06-17",
+        "closed": "2026-06-19",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1172,8 +1172,8 @@
         "ticket_id": "TICK-142",
         "title": "Node pool autoscaling delay during morning burst - Incident #142",
         "status": "open",
-        "opened": "2026-007-18",
-        "closed": "2026-007-20",
+        "opened": "2026-07-18",
+        "closed": "2026-07-20",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1188,8 +1188,8 @@
         "ticket_id": "TICK-143",
         "title": "High CPU utilization on worker pods during scheduled sync - Incident #143",
         "status": "open",
-        "opened": "2026-008-19",
-        "closed": "2026-008-21",
+        "opened": "2026-08-19",
+        "closed": "2026-08-21",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1204,8 +1204,8 @@
         "ticket_id": "TICK-144",
         "title": "SSL certificate renewal for internal load balancers - Incident #144",
         "status": "closed",
-        "opened": "2026-001-20",
-        "closed": "2026-001-22",
+        "opened": "2026-01-20",
+        "closed": "2026-01-22",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1220,8 +1220,8 @@
         "ticket_id": "TICK-145",
         "title": "Optimize slow B-tree index on user accounts table - Incident #145",
         "status": "closed",
-        "opened": "2026-002-21",
-        "closed": "2026-002-23",
+        "opened": "2026-02-21",
+        "closed": "2026-02-23",
         "system": "Postgres",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1236,8 +1236,8 @@
         "ticket_id": "TICK-146",
         "title": "Connection timeout when scraping staging metric endpoints - Incident #146",
         "status": "closed",
-        "opened": "2026-003-22",
-        "closed": "2026-003-24",
+        "opened": "2026-03-22",
+        "closed": "2026-03-24",
         "system": "Prometheus",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1252,8 +1252,8 @@
         "ticket_id": "TICK-147",
         "title": "Missing traces on checkout service downstream call - Incident #147",
         "status": "closed",
-        "opened": "2026-004-23",
-        "closed": "2026-004-25",
+        "opened": "2026-04-23",
+        "closed": "2026-04-25",
         "system": "Datadog",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1268,8 +1268,8 @@
         "ticket_id": "TICK-148",
         "title": "Update CORS headers for mobile client authentication - Incident #148",
         "status": "closed",
-        "opened": "2026-005-24",
-        "closed": "2026-005-26",
+        "opened": "2026-05-24",
+        "closed": "2026-05-26",
         "system": "Keycloak",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1284,8 +1284,8 @@
         "ticket_id": "TICK-149",
         "title": "Rate limit threshold tuning for public signup endpoints - Incident #149",
         "status": "closed",
-        "opened": "2026-006-25",
-        "closed": "2026-006-27",
+        "opened": "2026-06-25",
+        "closed": "2026-06-27",
         "system": "Redis",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1300,8 +1300,8 @@
         "ticket_id": "TICK-150",
         "title": "Consumer lag spike on payments topic during month-end - Incident #150",
         "status": "closed",
-        "opened": "2026-007-01",
-        "closed": "2026-007-03",
+        "opened": "2026-07-01",
+        "closed": "2026-07-03",
         "system": "Kafka",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1316,8 +1316,8 @@
         "ticket_id": "TICK-151",
         "title": "Dead letter queue alert triggered on inventory notifications - Incident #151",
         "status": "closed",
-        "opened": "2026-008-02",
-        "closed": "2026-008-04",
+        "opened": "2026-08-02",
+        "closed": "2026-08-04",
         "system": "RabbitMQ",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1332,8 +1332,8 @@
         "ticket_id": "TICK-152",
         "title": "Cluster disk watermark alert on log aggregation index - Incident #152",
         "status": "closed",
-        "opened": "2026-001-03",
-        "closed": "2026-001-05",
+        "opened": "2026-01-03",
+        "closed": "2026-01-05",
         "system": "Elasticsearch",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1348,8 +1348,8 @@
         "ticket_id": "TICK-153",
         "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #153",
         "status": "closed",
-        "opened": "2026-002-04",
-        "closed": "2026-002-06",
+        "opened": "2026-02-04",
+        "closed": "2026-02-06",
         "system": "Snowflake",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1364,8 +1364,8 @@
         "ticket_id": "TICK-154",
         "title": "Rotate root token for transit secrets engine - Incident #154",
         "status": "closed",
-        "opened": "2026-003-05",
-        "closed": "2026-003-07",
+        "opened": "2026-03-05",
+        "closed": "2026-03-07",
         "system": "Vault",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1380,8 +1380,8 @@
         "ticket_id": "TICK-155",
         "title": "Partition pruning failure on daily analytics rollup view - Incident #155",
         "status": "closed",
-        "opened": "2026-004-06",
-        "closed": "2026-004-08",
+        "opened": "2026-04-06",
+        "closed": "2026-04-08",
         "system": "ClickHouse",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1396,8 +1396,8 @@
         "ticket_id": "TICK-156",
         "title": "Add automated linter step to deployment pipeline - Incident #156",
         "status": "closed",
-        "opened": "2026-005-07",
-        "closed": "2026-005-09",
+        "opened": "2026-05-07",
+        "closed": "2026-05-09",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1412,8 +1412,8 @@
         "ticket_id": "TICK-157",
         "title": "Node pool autoscaling delay during morning burst - Incident #157",
         "status": "open",
-        "opened": "2026-006-08",
-        "closed": "2026-006-10",
+        "opened": "2026-06-08",
+        "closed": "2026-06-10",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1428,8 +1428,8 @@
         "ticket_id": "TICK-158",
         "title": "High CPU utilization on worker pods during scheduled sync - Incident #158",
         "status": "open",
-        "opened": "2026-007-09",
-        "closed": "2026-007-11",
+        "opened": "2026-07-09",
+        "closed": "2026-07-11",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1444,8 +1444,8 @@
         "ticket_id": "TICK-159",
         "title": "SSL certificate renewal for internal load balancers - Incident #159",
         "status": "closed",
-        "opened": "2026-008-10",
-        "closed": "2026-008-12",
+        "opened": "2026-08-10",
+        "closed": "2026-08-12",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1460,8 +1460,8 @@
         "ticket_id": "TICK-160",
         "title": "Optimize slow B-tree index on user accounts table - Incident #160",
         "status": "closed",
-        "opened": "2026-001-11",
-        "closed": "2026-001-13",
+        "opened": "2026-01-11",
+        "closed": "2026-01-13",
         "system": "Postgres",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1476,8 +1476,8 @@
         "ticket_id": "TICK-161",
         "title": "Connection timeout when scraping staging metric endpoints - Incident #161",
         "status": "closed",
-        "opened": "2026-002-12",
-        "closed": "2026-002-14",
+        "opened": "2026-02-12",
+        "closed": "2026-02-14",
         "system": "Prometheus",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1492,8 +1492,8 @@
         "ticket_id": "TICK-162",
         "title": "Missing traces on checkout service downstream call - Incident #162",
         "status": "closed",
-        "opened": "2026-003-13",
-        "closed": "2026-003-15",
+        "opened": "2026-03-13",
+        "closed": "2026-03-15",
         "system": "Datadog",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1508,8 +1508,8 @@
         "ticket_id": "TICK-163",
         "title": "Update CORS headers for mobile client authentication - Incident #163",
         "status": "closed",
-        "opened": "2026-004-14",
-        "closed": "2026-004-16",
+        "opened": "2026-04-14",
+        "closed": "2026-04-16",
         "system": "Keycloak",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1524,8 +1524,8 @@
         "ticket_id": "TICK-164",
         "title": "Rate limit threshold tuning for public signup endpoints - Incident #164",
         "status": "closed",
-        "opened": "2026-005-15",
-        "closed": "2026-005-17",
+        "opened": "2026-05-15",
+        "closed": "2026-05-17",
         "system": "Redis",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1540,8 +1540,8 @@
         "ticket_id": "TICK-165",
         "title": "Consumer lag spike on payments topic during month-end - Incident #165",
         "status": "closed",
-        "opened": "2026-006-16",
-        "closed": "2026-006-18",
+        "opened": "2026-06-16",
+        "closed": "2026-06-18",
         "system": "Kafka",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1556,8 +1556,8 @@
         "ticket_id": "TICK-166",
         "title": "Dead letter queue alert triggered on inventory notifications - Incident #166",
         "status": "closed",
-        "opened": "2026-007-17",
-        "closed": "2026-007-19",
+        "opened": "2026-07-17",
+        "closed": "2026-07-19",
         "system": "RabbitMQ",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1572,8 +1572,8 @@
         "ticket_id": "TICK-167",
         "title": "Cluster disk watermark alert on log aggregation index - Incident #167",
         "status": "closed",
-        "opened": "2026-008-18",
-        "closed": "2026-008-20",
+        "opened": "2026-08-18",
+        "closed": "2026-08-20",
         "system": "Elasticsearch",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1588,8 +1588,8 @@
         "ticket_id": "TICK-168",
         "title": "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #168",
         "status": "closed",
-        "opened": "2026-001-19",
-        "closed": "2026-001-21",
+        "opened": "2026-01-19",
+        "closed": "2026-01-21",
         "system": "Snowflake",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1604,8 +1604,8 @@
         "ticket_id": "TICK-169",
         "title": "Rotate root token for transit secrets engine - Incident #169",
         "status": "closed",
-        "opened": "2026-002-20",
-        "closed": "2026-002-22",
+        "opened": "2026-02-20",
+        "closed": "2026-02-22",
         "system": "Vault",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1620,8 +1620,8 @@
         "ticket_id": "TICK-170",
         "title": "Partition pruning failure on daily analytics rollup view - Incident #170",
         "status": "closed",
-        "opened": "2026-003-21",
-        "closed": "2026-003-23",
+        "opened": "2026-03-21",
+        "closed": "2026-03-23",
         "system": "ClickHouse",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1636,8 +1636,8 @@
         "ticket_id": "TICK-171",
         "title": "Add automated linter step to deployment pipeline - Incident #171",
         "status": "closed",
-        "opened": "2026-004-22",
-        "closed": "2026-004-24",
+        "opened": "2026-04-22",
+        "closed": "2026-04-24",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1652,8 +1652,8 @@
         "ticket_id": "TICK-172",
         "title": "Node pool autoscaling delay during morning burst - Incident #172",
         "status": "open",
-        "opened": "2026-005-23",
-        "closed": "2026-005-25",
+        "opened": "2026-05-23",
+        "closed": "2026-05-25",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1668,8 +1668,8 @@
         "ticket_id": "TICK-173",
         "title": "High CPU utilization on worker pods during scheduled sync - Incident #173",
         "status": "open",
-        "opened": "2026-006-24",
-        "closed": "2026-006-26",
+        "opened": "2026-06-24",
+        "closed": "2026-06-26",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1684,8 +1684,8 @@
         "ticket_id": "TICK-174",
         "title": "SSL certificate renewal for internal load balancers - Incident #174",
         "status": "closed",
-        "opened": "2026-007-25",
-        "closed": "2026-007-27",
+        "opened": "2026-07-25",
+        "closed": "2026-07-27",
         "system": "Kubernetes",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1700,8 +1700,8 @@
         "ticket_id": "TICK-175",
         "title": "Optimize slow B-tree index on user accounts table - Incident #175",
         "status": "closed",
-        "opened": "2026-008-01",
-        "closed": "2026-008-03",
+        "opened": "2026-08-01",
+        "closed": "2026-08-03",
         "system": "Postgres",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1716,8 +1716,8 @@
         "ticket_id": "TICK-176",
         "title": "Connection timeout when scraping staging metric endpoints - Incident #176",
         "status": "closed",
-        "opened": "2026-001-02",
-        "closed": "2026-001-04",
+        "opened": "2026-01-02",
+        "closed": "2026-01-04",
         "system": "Prometheus",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1732,8 +1732,8 @@
         "ticket_id": "TICK-177",
         "title": "Missing traces on checkout service downstream call - Incident #177",
         "status": "closed",
-        "opened": "2026-002-03",
-        "closed": "2026-002-05",
+        "opened": "2026-02-03",
+        "closed": "2026-02-05",
         "system": "Datadog",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1748,8 +1748,8 @@
         "ticket_id": "TICK-178",
         "title": "Update CORS headers for mobile client authentication - Incident #178",
         "status": "closed",
-        "opened": "2026-003-04",
-        "closed": "2026-003-06",
+        "opened": "2026-03-04",
+        "closed": "2026-03-06",
         "system": "Keycloak",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1764,8 +1764,8 @@
         "ticket_id": "TICK-179",
         "title": "Rate limit threshold tuning for public signup endpoints - Incident #179",
         "status": "closed",
-        "opened": "2026-004-05",
-        "closed": "2026-004-07",
+        "opened": "2026-04-05",
+        "closed": "2026-04-07",
         "system": "Redis",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }
@@ -1780,8 +1780,8 @@
         "ticket_id": "TICK-180",
         "title": "Consumer lag spike on payments topic during month-end - Incident #180",
         "status": "closed",
-        "opened": "2026-005-06",
-        "closed": "2026-005-08",
+        "opened": "2026-05-06",
+        "closed": "2026-05-08",
         "system": "Kafka",
         "body": "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
       }

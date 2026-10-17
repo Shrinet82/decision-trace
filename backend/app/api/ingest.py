@@ -5,7 +5,7 @@ from typing import Any, AsyncIterator, Optional
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
-from app.api.rate_limiter import check_ingest_rate_limit
+from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_ingest_rate_limit
 from app.config import get_settings
 from app.ingest.live import (
     INGEST_LOCK,
@@ -30,6 +30,8 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
     Everything written is tagged with a demo_ingest_id so POST /ingest/reset can remove it.
     """
     check_ingest_rate_limit(request)
+    if budget_exceeded():
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=DEMO_LIMIT_MESSAGE)
     if INGEST_LOCK.locked():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_BUSY)
     dataset = _settings.DATASET_NAME
@@ -60,9 +62,10 @@ async def reset(request: Request) -> dict[str, Any]:
 async def changes(
     limit: int = Query(default=20, ge=1, le=100),
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),
+    include_tests: bool = Query(False, description="Also list CI smoke-test calls"),
 ) -> list[dict[str, Any]]:
-    """Recent ingests and resets, newest first, with their diffs."""
-    return await list_changes(dataset_name or _settings.DATASET_NAME, limit)
+    """Recent ingests, resets and agent calls, newest first, with their diffs."""
+    return await list_changes(dataset_name or _settings.DATASET_NAME, limit, include_tests)
 
 
 @router.get("/ingest/status")

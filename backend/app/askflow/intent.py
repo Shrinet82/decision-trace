@@ -98,9 +98,16 @@ def _cache_key(question: str) -> str:
 async def _ask_model(question: str) -> str:
     import litellm
 
-    from app.api.rate_limiter import record_llm_call
+    from app.api.rate_limiter import (
+        budget_exceeded,
+        estimate_tokens,
+        record_llm_call,
+        record_tokens,
+    )
     from app.config import get_settings
 
+    if budget_exceeded():
+        raise RuntimeError("daily token budget used up")
     record_llm_call()
     response = await asyncio.wait_for(
         litellm.acompletion(
@@ -111,7 +118,9 @@ async def _ask_model(question: str) -> str:
         ),
         timeout=FALLBACK_TIMEOUT_SECONDS,
     )
-    return response.choices[0].message.content or ""
+    reply = response.choices[0].message.content or ""
+    record_tokens(estimate_tokens(FALLBACK_PROMPT, question, reply), "intent")
+    return reply
 
 
 def parse_model_reply(reply: str) -> ParsedIntent:

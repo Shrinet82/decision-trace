@@ -35,7 +35,7 @@ export const PersonPage: React.FC = () => {
   if (query.isError || !p) {
     return (
       <PageFrame header={header}>
-        <LoadError notFound={query.error?.status === 404} what="Person" message={query.error?.message} backTo="/people" backLabel="All people" />
+        <LoadError notFound={query.error?.status === 404} what="Person" message={query.error?.status === 404 ? `There is nobody named "${name}" in the company records.` : query.error?.message} onRetry={() => query.refetch()} backTo="/people" backLabel="All people" />
       </PageFrame>
     );
   }
