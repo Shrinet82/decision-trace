@@ -6,6 +6,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.api.schemas import SystemDetail, SystemSummary
+from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map, is_departed
 from app.brain.trace import CypherTrace
@@ -85,6 +86,7 @@ def _summary(row: list[Any], today: str) -> Optional[dict[str, Any]]:
 
 
 @router.get("", response_model=list[SystemSummary])
+@cached_endpoint("systems.list_systems", 120.0)
 async def list_systems(
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),
 ) -> list[SystemSummary]:
@@ -99,6 +101,7 @@ async def list_systems(
 
 
 @router.get("/{name}", response_model=SystemDetail)
+@cached_endpoint("systems.get_system", 120.0)
 async def get_system(
     name: str,
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),

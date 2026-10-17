@@ -44,3 +44,24 @@ def test_empty_queue_when_everything_is_healthy():
          patch("app.api.attention.list_systems", AsyncMock(return_value=[])), \
          patch("app.api.attention.query_graph", AsyncMock(return_value=[])):
         assert client.get("/attention").json() == {"items": []}
+
+
+async def test_endpoint_cache_computes_once_for_concurrent_callers_and_resets_on_invalidate():
+    import asyncio
+
+    from app.brain import cache
+
+    calls = []
+
+    @cache.cached_endpoint("test.endpoint", 60)
+    async def read(*, name: str) -> str:
+        calls.append(name)
+        await asyncio.sleep(0.05)
+        return name.upper()
+
+    assert await asyncio.gather(*[read(name="a") for _ in range(8)]) == ["A"] * 8
+    assert calls == ["a"]
+    assert await read(name="b") == "B" and calls == ["a", "b"]
+    cache.invalidate()
+    await read(name="a")
+    assert calls == ["a", "b", "a"]

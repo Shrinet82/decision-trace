@@ -7,6 +7,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.api.schemas import PersonDetail, PersonSummary
+from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map, is_departed
 from app.brain.trace import CypherTrace
@@ -69,6 +70,7 @@ def _summary(row: list[Any], today: str) -> Optional[dict[str, Any]]:
 
 
 @router.get("", response_model=list[PersonSummary])
+@cached_endpoint("people.list_people", 120.0)
 async def list_people(
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),
 ) -> list[PersonSummary]:
@@ -82,6 +84,7 @@ async def list_people(
 
 
 @router.get("/{name}", response_model=PersonDetail)
+@cached_endpoint("people.get_person", 120.0)
 async def get_person(
     name: str,
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),

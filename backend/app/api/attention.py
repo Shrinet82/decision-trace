@@ -8,6 +8,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from app.api.systems import list_systems
+from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map
 from app.brain.memory import query_graph
@@ -43,6 +44,7 @@ def _plural(n: int, word: str) -> str:
 
 
 @router.get("/attention", response_model=Attention)
+@cached_endpoint("attention.attention", 120.0)
 async def attention(
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),
 ) -> Attention:

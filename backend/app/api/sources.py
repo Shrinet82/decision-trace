@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.api.schemas import CypherTraceOut, HealthStatus
 from app.askflow.assemble import norm_date
+from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map, is_departed
 from app.brain.trace import CypherTrace
@@ -115,6 +116,7 @@ def _today() -> str:
 
 
 @router.get("", response_model=SourceList)
+@cached_endpoint("sources.list_sources", 120.0)
 async def list_sources(dataset_name: Optional[str] = Query(None)) -> SourceList:
     """All source documents and company.db records, with how many decisions each one backs."""
     trace = CypherTrace(dataset_name or _settings.DATASET_NAME)
@@ -138,6 +140,7 @@ async def list_sources(dataset_name: Optional[str] = Query(None)) -> SourceList:
 
 
 @router.get("/{kind}/{key}", response_model=SourceDocument)
+@cached_endpoint("sources.get_source", 120.0)
 async def get_source(kind: SourceKind, key: str, dataset_name: Optional[str] = Query(None)) -> SourceDocument:
     """One source: full text with each linked decision's verbatim quote, plus people and systems.
     For a company.db record: its fields and what it is connected to."""
