@@ -15,7 +15,6 @@ dependencies = [
     "pydantic-settings>=2.5.0",
     "python-dotenv>=1.0.1",
     "tenacity>=9.0.0",
-    "mcp>=1.28.1,<2",
 ]
 
 [project.optional-dependencies]

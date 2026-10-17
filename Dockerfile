@@ -13,6 +13,10 @@ COPY backend/pyproject.toml ./pyproject.toml
 RUN uv venv /app/.venv && \
     uv pip install --python /app/.venv/bin/python --no-cache --compile-bytecode -r pyproject.toml
 
+# MCP SDK (see requirements-mcp.txt): a small separate layer
+COPY backend/requirements-mcp.txt ./requirements-mcp.txt
+RUN uv pip install --python /app/.venv/bin/python --no-cache --compile-bytecode -r requirements-mcp.txt
+
 # Stage 2: Minimal runtime image
 FROM python:3.12-slim AS runner
 
