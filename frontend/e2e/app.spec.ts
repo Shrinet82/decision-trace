@@ -79,7 +79,7 @@ test.describe('journey', () => {
     await expect(page.getByText(/^Conflict\./)).toBeVisible();
     const props = page.getByRole('complementary', { name: 'Decision properties' });
     await props.getByText('Show Cypher').click();
-    await expect(props.getByText('supersedes_chain')).toBeVisible();
+    await expect(props.getByText('decision_and_lineage')).toBeVisible();
     // Conflicting decision is one click away
     await props.getByRole('link', { name: /^DEC-\d{2}$/ }).first().click();
     await expect(page).toHaveURL(/\/decisions\/DEC-\d{2}$/);

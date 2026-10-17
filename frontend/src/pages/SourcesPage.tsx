@@ -6,7 +6,6 @@ import { Badge } from '../components/entity/Badge';
 import { ListSkeleton } from '../components/entity/EntityStates';
 import { PageFrame } from '../components/PageFrame';
 import { SourceDocDrawer } from '../components/SourceDocDrawer';
-import { SOURCE_KIND_LABEL } from '../utils/sources';
 import { formatLongDate } from '../utils/format';
 
 const RECORD_KINDS: SourceKind[] = ['system', 'person', 'team', 'project'];
@@ -160,7 +159,6 @@ const SourceRow: React.FC<{ item: SourceItem; onOpen: () => void }> = ({ item, o
       type="button"
       onClick={onOpen}
       aria-haspopup="dialog"
-      aria-label={`Open ${SOURCE_KIND_LABEL[item.kind]} ${item.kind === 'ticket' ? item.key + ' ' : ''}${item.title}`}
       className="flex min-h-10 w-full flex-wrap items-center gap-x-3 gap-y-0.5 bg-transparent px-3 py-1.5 text-left transition-colors hover:bg-subtle"
     >
       <span className="w-16 shrink-0 text-xs text-muted">{SHORT_KIND[item.kind]}</span>
