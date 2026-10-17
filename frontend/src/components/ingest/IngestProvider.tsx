@@ -18,7 +18,7 @@ export const IngestProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (touched.current || !changes.data) return;
     touched.current = true;
-    const diff = recentDiff(changes.data.find((c) => c.kind === 'ingest'));
+    const diff = recentDiff(changes.data.find((c) => c.kind === 'ingest' && !c.reverted));
     if (diff) setLatestDiffState(diff);
   }, [changes.data]);
 

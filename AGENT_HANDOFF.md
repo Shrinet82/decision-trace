@@ -194,7 +194,7 @@ Suggested questions on the Ask page (also recorded in `ask-stream.json`): *Why d
 * **Sidebar views**: Conflicts, Superseded, Orphaned systems (count from `/systems`).
 * **Data**: `useDecisions`, `useGraph`, `useDecisionDetail`, `useAsk` in `src/api/hooks.ts`. Mock mode (localhost / port 4173) serves frozen fixtures from `src/mocks/`, loaded lazily.
 * **Testing**:
-  * 138 Vitest unit tests.
+  * 157 Vitest unit tests.
   * Playwright: `app.spec.ts` (journey, axe, screenshots), `ingest.spec.ts`, `home-agents.spec.ts` (Home, Agents, axe + screenshots), `ask-stream.spec.ts` (streamed Ask, impact, expertise, status, Sources, axe and screenshots at 1440 and 390px) and `design-compare.spec.ts`.
   * Playwright runs with `reducedMotion: 'reduce'` and only in CI: no builds on the developer's machine.
   * Mock mode replays recorded Ask streams, waiting each step's recorded time (scaled 0.35, capped at 900 ms; instant under Vitest).
@@ -357,6 +357,19 @@ Scoring is per decision (rows are grouped by decision id/title). The holdout scr
 * Intent fallback (`askflow/intent.py`): rules first; only when none match, one cached model call returns `{intent, entity}` (shown as "· by model" in the understanding step). A failing call leaves the question as `other`.
 * `scripts/mcp_smoke.py [URL]` connects with the official client, lists tools, calls every read tool and asserts the benchmark answers; `deploy-backend.yml` runs it against production after each deploy.
 * Client snippets (verified against official docs): Claude Code `claude mcp add --transport http` (code.claude.com/docs/en/mcp), Claude Desktop `npx -y mcp-remote <url> --transport http-only` in `claude_desktop_config.json` (modelcontextprotocol.io connect-local-servers + github.com/geelen/mcp-remote), Cursor `{"mcpServers": {name: {"url": ...}}}` in `.cursor/mcp.json` (cursor.com/docs/context/mcp).
+
+---
+
+## 9c. Hardening (Phase 5, feature freeze)
+
+* **Timeouts**: every Cypher statement is bounded (`QUERY_TIMEOUT_MS` 15 s on the server, 20 s caller wait, `memory.query_graph`, which now always runs in a worker thread); LLM calls 45 s (intent fallback 12 s); the frontend `apiFetch` times plain requests out at 25 s and streams stall out after 60 s without data; the Cloudflare proxy gives plain requests 30 s and the two streams 170 s and answers 502/504 JSON when Railway is down or slow.
+* **Daily LLM budget**: `LLM_DAILY_TOKEN_BUDGET` (default 300000 estimated tokens, prompt + answer at 4 chars per token, 0 = unlimited) is counted across Ask, intent fallback and ingest (`api/rate_limiter.py`, logger `decision_trace.usage`). Over budget: Ask serves a saved answer for a repeated question or ends with a `demo_limit` error ("Demo limit reached..."), `POST /ingest` and `add_source` answer 429. The old 500 calls/day global cap and per-IP limits (Ask 20/min and 200/day, ingest 3/min) still apply.
+* **Read caching**: list and detail endpoints are cached for 2 minutes per argument set with single-flight (`cache.cached_endpoint`); ingest, reset and auto-reset call `cache.invalidate()`.
+* **Change feed**: CI smoke calls send `X-DT-Smoke: 1`, are stored with type `smoke` and hidden from `/changes` unless `include_tests=true`. `scripts/cleanup_agent_changes.py [--delete]` lists/removes MCP agent entries.
+* **Data fix**: the generator wrote ticket dates like `2026-002-14`; fixed in `generate_synthetic_dataset.py`, `data/tickets.csv`, the snapshot, the live graph and the Explore mock. Nothing is dated after 2026-10-18.
+* **Ingest lock**: check-and-acquire is atomic inside the stream, so a request that loses the race gets an `error` event ("Another ingest or reset is running") instead of queueing.
+* **First impression**: per-route tab titles (`utils/pageTitle.ts`), favicon, Open Graph/Twitter tags with `public/og.png` (1200x630), a "What is this?" intro on Home, Sources and Agents in the sidebar, a real 404 page.
+* **Tools**: `scripts/load_test.py` (concurrent Ask streams, page loads, MCP sessions, rate-limit check) and `scripts/live_walkthrough.mjs` (fresh-browser judge walkthrough at 1440 and 390 with screenshots).
 
 ---
 

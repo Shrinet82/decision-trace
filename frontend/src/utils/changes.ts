@@ -50,7 +50,7 @@ export function isPersonChanged(diff: IngestDiff | null | undefined, name: strin
 
 /** The latest ingest diff from the change log, if it is recent enough to call "just now". */
 export function recentDiff(entry: ChangeEntry | undefined, now = Date.now()): IngestDiff | null {
-  if (!entry || entry.kind !== 'ingest' || !entry.diff) return null;
+  if (!entry || entry.kind !== 'ingest' || !entry.diff || entry.reverted) return null;
   const at = Date.parse(entry.created_at);
   if (Number.isNaN(at) || now - at > RECENT_CHANGE_MS || at - now > RECENT_CHANGE_MS) return null;
   return entry.diff;

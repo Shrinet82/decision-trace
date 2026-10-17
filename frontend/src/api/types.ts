@@ -146,6 +146,8 @@ export interface ChangeEntry {
   created_at: string;
   summary: string;
   diff?: IngestDiff;
+  /** True once a reset has removed what this ingest added. */
+  reverted?: boolean;
 }
 
 export interface ResetResult {

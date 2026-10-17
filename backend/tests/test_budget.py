@@ -89,3 +89,22 @@ def test_ingest_rate_limit_is_429_after_three_per_minute():
         lock.locked.return_value = True
         codes = [client.post("/ingest", json=BODY).status_code for _ in range(4)]
     assert codes == [409, 409, 409, 429]
+
+
+async def test_a_second_stream_that_lost_the_race_gets_an_error_event_not_a_queue_slot():
+    """Both requests passed the 409 check; only one may run, the other reports busy at once."""
+    rate_limiter._ip_ingest_requests.clear()
+    seen = {"checks": 0}
+    real_locked = INGEST_LOCK.locked
+
+    def locked_after_first_check():
+        seen["checks"] += 1
+        return False if seen["checks"] == 1 else real_locked()
+
+    await INGEST_LOCK.acquire()
+    try:
+        with patch.object(type(INGEST_LOCK), "locked", lambda self: locked_after_first_check()):
+            r = client.post("/ingest", json=BODY)
+    finally:
+        INGEST_LOCK.release()
+    assert r.status_code == 200 and "event: error" in r.text and "Another ingest" in r.text

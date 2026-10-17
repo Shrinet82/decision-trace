@@ -37,6 +37,11 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
     dataset = _settings.DATASET_NAME
 
     async def stream() -> AsyncIterator[str]:
+        # Check and acquire with nothing awaited in between, so two requests that both passed the
+        # check above cannot both run: the second is told the pipeline is busy instead of queueing.
+        if INGEST_LOCK.locked():
+            yield sse({"event": "error", "data": {"message": _BUSY}})
+            return
         async with INGEST_LOCK:
             async for event in run_ingest(body, dataset):
                 yield sse(event)

@@ -136,6 +136,7 @@ describe('change markers', () => {
     expect(recentDiff(entry, now)).toBe(kafka);
     expect(recentDiff({ ...entry, created_at: new Date(now - RECENT_CHANGE_MS - 1000).toISOString() }, now)).toBeNull();
     expect(recentDiff({ ...entry, kind: 'reset' }, now)).toBeNull();
+    expect(recentDiff({ ...entry, reverted: true }, now)).toBeNull();
     expect(recentDiff(undefined, now)).toBeNull();
   });
 });
