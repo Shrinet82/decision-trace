@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { usePeople } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
 import { LeftBadge } from '../components/entity/Badge';
-import { ListSkeleton } from '../components/entity/EntityStates';
+import { ErrorNotice, ListSkeleton } from '../components/entity/EntityStates';
 import { PageFrame } from '../components/PageFrame';
 import { personHref } from '../utils/links';
 
@@ -12,7 +12,7 @@ export const PeoplePage: React.FC = () => {
   return (
     <PageFrame header={<h1 className="m-0 text-sm font-medium text-text">People</h1>}>
       {query.isLoading && <ListSkeleton label="Loading people" />}
-      {query.isError && <p role="alert" className="m-5 text-status-conflict-text">{query.error.message}</p>}
+      {query.isError && <ErrorNotice title="Could not load people" message={query.error.message} onRetry={() => query.refetch()} />}
       <ul className="m-0 list-none p-0">
         {(query.data ?? []).map((p) => (
           <li key={p.name}>

@@ -7,6 +7,7 @@ import { DecisionPage } from './pages/DecisionPage';
 import { DecisionsPage } from './pages/DecisionsPage';
 import { GraphPage } from './pages/GraphPage';
 import { HomePage } from './pages/HomePage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { PeoplePage } from './pages/PeoplePage';
 import { PersonPage } from './pages/PersonPage';
 import { SourcesPage } from './pages/SourcesPage';
@@ -35,7 +36,7 @@ export const App: React.FC = () => {
         <Route path="explore" element={<GraphPage />} />
         <Route path="graph" element={<GraphRedirect />} />
         <Route path="sources" element={<SourcesPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

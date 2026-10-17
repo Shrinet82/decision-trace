@@ -3,12 +3,13 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowUp, Bot, Download, PlayCircle } from 'lucide-react';
 import { useAttention, useChanges, useDecisions, useGraph, usePeople, useSources, useSystems } from '../api/hooks';
 import type { AttentionItem, ChangeEntry } from '../api/types';
-import { ListSkeleton } from '../components/entity/EntityStates';
+import { ErrorNotice, ListSkeleton } from '../components/entity/EntityStates';
 import { PageFrame } from '../components/PageFrame';
 import { StatusIcon } from '../components/StatusIcon';
-import { btnPrimary } from '../components/ui';
+import { useIngest } from '../components/ingest/ingestContext';
+import { btnOutline, btnPrimary } from '../components/ui';
 import { SUGGESTED_QUESTIONS } from '../config/questions';
-import { formatRelative } from '../utils/format';
+import { askHref, formatRelative } from '../utils/format';
 import { decisionHref, systemHref } from '../utils/links';
 import type { StatusKind } from '../utils/model';
 
@@ -65,6 +66,7 @@ export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [input, setInput] = useState('');
+  const ingest = useIngest();
 
   const attention = useAttention();
   const changes = useChanges(8);
@@ -73,6 +75,9 @@ export const HomePage: React.FC = () => {
   const systems = useSystems();
   const sources = useSources();
   const graph = useGraph();
+
+  const counts = sources.data?.counts;
+  const records = counts ? (counts.person ?? 0) + (counts.team ?? 0) + (counts.project ?? 0) + (counts.system ?? 0) : 0;
 
   // Old shared links were /?q=...; the composer now lives at /ask
   const legacyQuestion = params.get('q');
@@ -86,6 +91,52 @@ export const HomePage: React.FC = () => {
   return (
     <PageFrame header={<h1 className="m-0 text-sm font-medium text-text">Home</h1>}>
       <div className="mx-auto flex max-w-[820px] flex-col gap-8 px-5 py-8 min-[900px]:px-10">
+        <section aria-labelledby="intro-heading" className="flex flex-col gap-3 rounded-panel border border-divider bg-subtle p-4">
+          <h2 id="intro-heading" className="m-0 text-sm font-semibold">
+            What is this?
+          </h2>
+          <p className="m-0 max-w-prose text-text-2">
+            Decision Trace is a company brain for engineering decisions. It read a sample company
+            {counts
+              ? ` (${counts.ticket} tickets, ${counts.meeting} meeting notes and ${records} records from the company SQL database)`
+              : ''}
+            , worked out which decisions were made, by whom and on what evidence, and keeps them in a graph.
+            Ask it why something was decided, what a change would affect, or who knows a system. Every answer
+            shows its sources.
+          </p>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-muted">Try first</span>
+            <ul className="m-0 flex list-none flex-col gap-1 p-0 sm:flex-row sm:flex-wrap sm:gap-x-5">
+              <li>
+                <Link to={askHref('Why did we move sessions to Keycloak?')} className="text-accent hover:underline">
+                  Why did we move sessions to Keycloak?
+                </Link>
+              </li>
+              <li>
+                <Link to={askHref('Do any decisions conflict?')} className="text-accent hover:underline">
+                  Do any decisions conflict?
+                </Link>
+              </li>
+              <li>
+                <Link to="/explore" className="text-accent hover:underline">
+                  Explore the decision graph
+                </Link>
+              </li>
+            </ul>
+          </div>
+          {ingest && (
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" className={btnOutline} aria-haspopup="dialog" onClick={ingest.openDrawer}>
+                Try adding a source
+              </button>
+              <span className="text-xs text-muted">
+                Paste meeting notes or pick an example and watch the graph change. Added data removes itself
+                after 10 idle minutes.
+              </span>
+            </div>
+          )}
+        </section>
+
         <div className="flex flex-col gap-3">
           <form
             onSubmit={(e) => {
@@ -143,9 +194,12 @@ export const HomePage: React.FC = () => {
         <Section id="attention-heading" title="Needs attention">
           {attention.isLoading && <ListSkeleton label="Loading the attention queue" />}
           {attention.isError && (
-            <p role="alert" className="m-0 text-status-conflict-text">
-              {attention.error.message}
-            </p>
+            <ErrorNotice
+              className=""
+              title="Could not load the attention queue"
+              message={attention.error.message}
+              onRetry={() => attention.refetch()}
+            />
           )}
           {attention.data && attention.data.items.length === 0 && (
             <p className="m-0 rounded-panel border border-divider bg-subtle px-4 py-5 text-muted">
@@ -177,9 +231,12 @@ export const HomePage: React.FC = () => {
         <Section id="changes-heading" title="Recent changes">
           {changes.isLoading && <ListSkeleton label="Loading recent changes" />}
           {changes.isError && (
-            <p role="alert" className="m-0 text-status-conflict-text">
-              {changes.error.message}
-            </p>
+            <ErrorNotice
+              className=""
+              title="Could not load recent changes"
+              message={changes.error.message}
+              onRetry={() => changes.refetch()}
+            />
           )}
           {changes.data && changes.data.length === 0 && (
             <p className="m-0 text-muted">No changes yet. Add a source or connect an agent.</p>

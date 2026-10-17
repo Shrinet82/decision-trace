@@ -21,7 +21,12 @@ from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
 
 from app.api import systems as systems_api
-from app.api.rate_limiter import check_ingest_rate_limit, check_rate_limits
+from app.api.rate_limiter import (
+    DEMO_LIMIT_MESSAGE,
+    budget_exceeded,
+    check_ingest_rate_limit,
+    check_rate_limits,
+)
 from app.askflow.pipeline import collect_ask
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map
@@ -67,12 +72,17 @@ def _client_request(ctx: Context) -> Any:
     return ctx.request_context.request
 
 
+# Our own CI smoke test sends this header; its calls are recorded but hidden from the change feed
+SMOKE_HEADER = "x-dt-smoke"
+
+
 def logged(name: str, summarize: Callable[..., str], *, ingest: bool = False) -> Callable[[_ToolFn], _ToolFn]:
     """Rate limit the caller per IP, run the tool, and record it in the /changes feed."""
 
     def wrap(fn: _ToolFn) -> _ToolFn:
         async def inner(*args: Any, ctx: Context, **kwargs: Any) -> dict[str, Any]:
             request = _client_request(ctx)
+            smoke = bool(request is not None and request.headers.get(SMOKE_HEADER))
             try:
                 if request is not None:
                     (check_ingest_rate_limit if ingest else check_rate_limits)(request)
@@ -88,7 +98,7 @@ def logged(name: str, summarize: Callable[..., str], *, ingest: bool = False) ->
             try:
                 await record_change(_dataset(), {
                     "id": f"agent-{uuid.uuid4().hex[:12]}", "kind": "agent", "title": name,
-                    "type": "mcp", "created_at": _now(), "summary": summarize(*args, **kwargs),
+                    "type": "smoke" if smoke else "mcp", "created_at": _now(), "summary": summarize(*args, **kwargs),
                 })
             except Exception:  # noqa: BLE001 - logging a call must never fail the call
                 logger.warning("Could not record MCP call %s in the change feed", name)
@@ -290,6 +300,8 @@ async def add_source(
     Runs one at a time and is limited to 3 per minute."""
     if _settings.MCP_READ_ONLY:
         raise ToolError("This server is read-only: add_source is disabled.")
+    if budget_exceeded():
+        raise ToolError(DEMO_LIMIT_MESSAGE)
     if INGEST_LOCK.locked():
         raise ToolError("Another ingest or reset is running. Try again in a moment.")
     try:

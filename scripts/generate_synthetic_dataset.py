@@ -631,16 +631,8 @@ def create_tickets_csv():
         tmpl = routine_templates[(i - 113) % len(routine_templates)]
         month = (i % 8) + 1
         day = (i % 25) + 1
-        opened = (
-            f"2026-0{month:02d}-{day:02d}"
-            if month < 10
-            else f"2026-{month:02d}-{day:02d}"
-        )
-        closed = (
-            f"2026-0{month:02d}-{min(day + 2, 28):02d}"
-            if month < 10
-            else f"2026-{month:02d}-{min(day + 2, 28):02d}"
-        )
+        opened = f"2026-{month:02d}-{day:02d}"
+        closed = f"2026-{month:02d}-{min(day + 2, 28):02d}"
 
         comment = "Investigated root cause with team. Applied configuration fix in staging and validated telemetry. Ticket resolved."
         tickets.append(

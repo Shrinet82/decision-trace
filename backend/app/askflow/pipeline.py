@@ -16,11 +16,18 @@ import asyncio
 import logging
 import re
 import time
+from collections import OrderedDict
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Optional
 
 from app.api.primary import pick_primary_decision
-from app.api.rate_limiter import record_llm_call
+from app.api.rate_limiter import (
+    DEMO_LIMIT_MESSAGE,
+    budget_exceeded,
+    estimate_tokens,
+    record_llm_call,
+    record_tokens,
+)
 from app.askflow import assemble, queries
 from app.askflow.intent import classify_with_fallback
 from app.brain.codes import get_decision_codes_cached
@@ -87,6 +94,15 @@ _PROMPTS = {"why": WHY_PROMPT, "other": WHY_PROMPT, "impact": IMPACT_PROMPT,
             "expertise": EXPERTISE_PROMPT, "status": STATUS_PROMPT}
 
 _DEC_CODE = re.compile(r"\bDEC-\d{1,3}\b", re.IGNORECASE)
+
+
+# Completed answers by question, served when the daily token budget is used up
+_ANSWER_CACHE: "OrderedDict[str, dict[str, Any]]" = OrderedDict()
+_ANSWER_CACHE_SIZE = 200
+
+
+def _cache_key(question: str, dataset: str) -> str:
+    return f"{dataset}|{' '.join(question.lower().split())}"
 
 
 def _today() -> str:
@@ -185,11 +201,22 @@ async def _stream_llm(intent: str, context: str, question: str) -> AsyncIterator
     import litellm
 
     record_llm_call()
+    system_prompt = _PROMPTS[intent].format(context=context)
+    produced: list[str] = []
+    try:
+        async for text in _stream_llm_inner(litellm, intent, system_prompt, question):
+            produced.append(text)
+            yield text
+    finally:
+        record_tokens(estimate_tokens(system_prompt, question, "".join(produced)), f"ask:{intent}")
+
+
+async def _stream_llm_inner(litellm: Any, intent: str, system_prompt: str, question: str) -> AsyncIterator[str]:
     response = await asyncio.wait_for(
         litellm.acompletion(
             model=_settings.LLM_MODEL,
             messages=[
-                {"role": "system", "content": _PROMPTS[intent].format(context=context)},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": question},
             ],
             temperature=0.0,
@@ -402,6 +429,16 @@ async def _pipeline(run: _Run, question: str, dataset: str) -> AsyncIterator[dic
         yield run.done("composing", "No evidence on the path, so no model call")
         yield _event("done", _empty_done(run, intent, entities))
         return
+    if budget_exceeded():
+        cached = _ANSWER_CACHE.get(_cache_key(question, dataset))
+        if cached:
+            yield _event("token", {"text": cached["answer"]})
+            yield run.done("composing", "Daily AI budget used up; served the saved answer")
+            yield _event("done", {**cached, "trace": run.trace()})
+        else:
+            yield run.done("composing", "Daily AI budget used up", status="skipped")
+            yield _event("error", {"message": DEMO_LIMIT_MESSAGE, "code": "demo_limit"})
+        return
     llm_intent = route if route in _PROMPTS else "why"
     parts: list[str] = []
     try:
@@ -438,11 +475,18 @@ async def _pipeline(run: _Run, question: str, dataset: str) -> AsyncIterator[dic
     people_on_path = sorted(
         n["properties"].get("name", n["id"]) for n in path["nodes"] if n["label"] == "Person"
     )
-    yield _event("done", {
+    final = {
         "answer": answer, "citations": citations, "people": people_on_path, "primary_decision_id": primary,
         "graph_path": path, "intent": intent, "entities": entities, "sections": sections,
         "experts": experts, "trace": run.trace(),
-    })
+    }
+    if composed == "Streamed from the model":
+        # Only real model answers are kept for the over-budget fallback
+        _ANSWER_CACHE[_cache_key(question, dataset)] = final
+        _ANSWER_CACHE.move_to_end(_cache_key(question, dataset))
+        while len(_ANSWER_CACHE) > _ANSWER_CACHE_SIZE:
+            _ANSWER_CACHE.popitem(last=False)
+    yield _event("done", final)
 
 
 async def collect_ask(question: str, dataset: Optional[str] = None) -> dict[str, Any]:

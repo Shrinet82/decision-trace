@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useSystems } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
 import { Badge, LeftBadge } from '../components/entity/Badge';
-import { ListSkeleton } from '../components/entity/EntityStates';
+import { ErrorNotice, ListSkeleton } from '../components/entity/EntityStates';
 import { PageFrame } from '../components/PageFrame';
 import { SystemSquare } from '../components/SystemMark';
 import { systemHref } from '../utils/links';
@@ -44,7 +44,7 @@ export const SystemsPage: React.FC = () => {
   return (
     <PageFrame header={header}>
       {query.isLoading && <ListSkeleton label="Loading systems" />}
-      {query.isError && <p role="alert" className="m-5 text-status-conflict-text">{query.error.message}</p>}
+      {query.isError && <ErrorNotice title="Could not load systems" message={query.error.message} onRetry={() => query.refetch()} />}
       {query.data && items.length === 0 && <p className="m-0 px-5 py-8 text-muted">No systems match.</p>}
       <ul className="m-0 list-none p-0">
         {items.map((s) => (

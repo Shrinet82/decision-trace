@@ -28,12 +28,41 @@ export const LoadError: React.FC<{
   message?: string;
   backTo: string;
   backLabel: string;
-}> = ({ notFound, what, message, backTo, backLabel }) => (
+  onRetry?: () => void;
+}> = ({ notFound, what, message, backTo, backLabel, onRetry }) => (
   <div role={notFound ? 'status' : 'alert'} className="m-5 flex flex-col items-start gap-2 rounded-panel border border-divider bg-subtle p-4">
     <h1 className="m-0 text-lg font-semibold">{notFound ? `${what} not found` : `Could not load ${what.toLowerCase()}`}</h1>
     {message && <p className="m-0 text-muted">{message}</p>}
-    <Link to={backTo} className={btnOutline}>
-      {backLabel}
-    </Link>
+    <div className="flex flex-wrap gap-2">
+      {!notFound && onRetry && (
+        <button type="button" className={btnOutline} onClick={onRetry}>
+          Retry
+        </button>
+      )}
+      <Link to={backTo} className={btnOutline}>
+        {backLabel}
+      </Link>
+    </div>
+  </div>
+);
+
+/** A failed load: what happened, in plain words, and a button to try again. */
+export const ErrorNotice: React.FC<{ title: string; message?: string; onRetry?: () => void; className?: string }> = ({
+  title,
+  message,
+  onRetry,
+  className = 'm-5',
+}) => (
+  <div
+    role="alert"
+    className={`${className} flex flex-col items-start gap-2 rounded-panel border border-status-conflict-border bg-status-conflict-bg p-3`}
+  >
+    <span className="font-medium text-status-conflict-text">{title}</span>
+    {message && <span className="text-text-2">{message}</span>}
+    {onRetry && (
+      <button type="button" className={btnOutline} onClick={onRetry}>
+        Retry
+      </button>
+    )}
   </div>
 );

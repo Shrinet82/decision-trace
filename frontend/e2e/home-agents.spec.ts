@@ -51,6 +51,17 @@ test.describe('Home', () => {
     await expect(changes.getByText(/Keycloak/).first()).toBeVisible();
   });
 
+  test('explains what this is, with counts from the API and three things to try', async ({ page }) => {
+    await page.goto('/');
+    const intro = page.getByRole('region', { name: 'What is this?' });
+    await expect(intro.getByText(/80 tickets, 12 meeting notes and 37 records/)).toBeVisible();
+    await expect(intro.getByRole('link', { name: 'Why did we move sessions to Keycloak?' })).toBeVisible();
+    await expect(intro.getByRole('link', { name: 'Do any decisions conflict?' })).toBeVisible();
+    await expect(intro.getByRole('link', { name: 'Explore the decision graph' })).toBeVisible();
+    await intro.getByRole('button', { name: 'Try adding a source' }).click();
+    await expect(page.getByRole('dialog', { name: /Add source/i })).toBeVisible();
+  });
+
   test('attention rows open the decision or system page', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('link', { name: /DEC-04 and DEC-07 conflict/ }).click();
@@ -89,6 +100,13 @@ test.describe('Connect an agent', () => {
     await page.getByRole('link', { name: 'Agents' }).click();
     await expect(page).toHaveURL(/\/agents$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Connect an agent' })).toBeVisible();
+
+    const connector = page.getByRole('heading', { name: /custom connector \(recommended\)/ });
+    const configFile = page.getByRole('heading', { name: /Claude Desktop with a config file/ });
+    await expect(connector).toBeVisible();
+    await expect(page.getByText('Choose Add custom connector.')).toBeVisible();
+    const [a, b] = [await connector.boundingBox(), await configFile.boundingBox()];
+    expect(a!.y).toBeLessThan(b!.y);
 
     const url = await page.getByTestId('mcp-url').innerText();
     expect(url).toMatch(/^https:\/\/.+\/mcp$/);

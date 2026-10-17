@@ -152,6 +152,11 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               Nothing matches.
             </li>
           )}
+          {items.length === 1 && items[0].key === 'ask' && (
+            <li role="presentation" className="px-3 pb-1 pt-3 text-sm text-muted">
+              No decisions, systems or people match. Ask it as a question instead:
+            </li>
+          )}
           {items.map((item, i) => (
             <li
               key={item.key}

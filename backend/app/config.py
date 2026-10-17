@@ -47,6 +47,11 @@ class Settings(BaseSettings):
         description="Target graph database name",
     )
 
+    # Daily LLM budget, in tokens (prompt + answer, estimated at 4 characters per token across all
+    # model calls). Once used up, Ask serves cached answers or a "demo limit reached" message and
+    # ingest is refused until the day rolls over. 0 means unlimited.
+    LLM_DAILY_TOKEN_BUDGET: int = Field(default=300_000, ge=0, description="Daily LLM token budget")
+
     # MCP: true disables the one tool that writes (add_source)
     MCP_READ_ONLY: bool = Field(default=False, description="Disable add_source on the MCP server")
 

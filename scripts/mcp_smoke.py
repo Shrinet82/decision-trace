@@ -28,7 +28,8 @@ async def call(session: ClientSession, name: str, args: dict) -> dict:
 
 
 async def main(url: str) -> None:
-    async with streamablehttp_client(url) as (read, write, _):
+    # The header marks these calls as tests so they stay out of the Home change feed
+    async with streamablehttp_client(url, headers={"X-DT-Smoke": "1"}) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()
             tools = {t.name for t in (await session.list_tools()).tools}

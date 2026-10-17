@@ -58,6 +58,8 @@ export const MCP_TOOLS: McpTool[] = [
 export interface ClientSnippet {
   id: 'claude-code' | 'claude-desktop' | 'cursor';
   label: string;
+  /** Heading shown above the snippet (defaults to the label). */
+  heading?: string;
   /** Where the snippet goes. */
   where: string;
   language: 'bash' | 'json';
@@ -80,7 +82,8 @@ export const CLIENT_SNIPPETS: ClientSnippet[] = [
   {
     id: 'claude-desktop',
     label: 'Claude Desktop',
-    where: 'claude_desktop_config.json, then restart Claude Desktop',
+    heading: 'Claude Desktop with a config file (alternative)',
+    where: 'claude_desktop_config.json, then restart Claude Desktop. Uses mcp-remote, which needs Node.js 18 or newer.',
     language: 'json',
     code: JSON.stringify(
       {
@@ -105,3 +108,15 @@ export const CLIENT_SNIPPETS: ClientSnippet[] = [
     docs: [{ label: 'Cursor: Model Context Protocol', href: 'https://cursor.com/docs/context/mcp' }],
   },
 ];
+
+/** The recommended way into Claude Desktop and claude.ai: no config file, no Node.js. */
+export const CONNECTOR_STEPS = [
+  'Open Claude Desktop (or claude.ai) and go to Settings → Connectors.',
+  'Choose Add custom connector.',
+  'Paste the endpoint URL above and click Add. The server needs no sign-in.',
+  'Enable the connector in a chat, then ask: “Ask Decision Trace why we use Keycloak.”',
+];
+export const CONNECTOR_DOCS = {
+  label: 'MCP: connect to remote servers',
+  href: 'https://modelcontextprotocol.io/docs/develop/connect-remote-servers',
+};

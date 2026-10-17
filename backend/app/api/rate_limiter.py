@@ -5,6 +5,7 @@ Enforces:
 2. Global daily LLM call cap: 500 calls/day.
 """
 
+import logging
 import time
 from collections import defaultdict
 
@@ -73,9 +74,48 @@ def check_rate_limits(request: Request) -> str:
     return ip
 
 
+logger = logging.getLogger("decision_trace.usage")
+
+DEMO_LIMIT_MESSAGE = (
+    "Demo limit reached: today's AI budget for this public demo is used up, so new answers are paused "
+    "until tomorrow. Decisions, Systems, People, Sources and Explore still work."
+)
+# (timestamp, tokens) over the last 24 hours
+_token_usage: list[tuple[float, int]] = []
+
+
 def record_llm_call() -> None:
-    """Record a completed LLM invocation against the global daily cap."""
+    """Record an LLM invocation against the global daily cap."""
     _global_llm_calls.append(time.time())
+
+
+def estimate_tokens(*texts: str) -> int:
+    """About 4 characters per token; good enough for a spending guard."""
+    return sum(len(t) for t in texts) // 4 + 1
+
+
+def tokens_used_today() -> int:
+    global _token_usage
+    cutoff = time.time() - 86400.0
+    _token_usage = [(t, n) for t, n in _token_usage if t >= cutoff]
+    return sum(n for _, n in _token_usage)
+
+
+def record_tokens(tokens: int, label: str) -> None:
+    """Add a call's estimated tokens to today's total and log usage."""
+    from app.config import get_settings
+
+    _token_usage.append((time.time(), tokens))
+    budget = get_settings().LLM_DAILY_TOKEN_BUDGET
+    logger.info("LLM usage: +%d tokens (%s); %d of %s in the last 24 h", tokens, label,
+                tokens_used_today(), budget or "unlimited")
+
+
+def budget_exceeded() -> bool:
+    from app.config import get_settings
+
+    budget = get_settings().LLM_DAILY_TOKEN_BUDGET
+    return budget > 0 and tokens_used_today() >= budget
 
 
 # Live ingest is LLM-heavy and mutates demo data: 3 requests per minute per IP
