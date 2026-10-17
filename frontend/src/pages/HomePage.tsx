@@ -50,16 +50,19 @@ const Section: React.FC<{ id: string; title: string; children: React.ReactNode }
   </section>
 );
 
-const Stat: React.FC<{ label: string; value: string | number | undefined; detail?: string }> = ({
+const Stat: React.FC<{ label: string; value: string | number | undefined; detail?: string; to: string }> = ({
   label,
   value,
   detail,
+  to,
 }) => (
-  <div className="flex flex-col gap-0.5 rounded-panel border border-divider px-3 py-2">
-    <dt className="text-xs text-muted">{label}</dt>
-    <dd className="m-0 text-lg font-semibold tabular-nums">{value ?? '–'}</dd>
-    {detail && <dd className="m-0 text-xs text-muted">{detail}</dd>}
-  </div>
+  <li className="rounded-panel border border-divider transition-colors hover:bg-subtle">
+    <Link to={to} className="flex flex-col gap-0.5 px-3 py-2">
+      <span className="text-xs text-muted">{label}</span>
+      <span className="text-lg font-semibold tabular-nums">{value ?? '–'}</span>
+      {detail && <span className="text-xs text-muted">{detail}</span>}
+    </Link>
+  </li>
 );
 
 export const HomePage: React.FC = () => {
@@ -178,17 +181,18 @@ export const HomePage: React.FC = () => {
         </div>
 
         <Section id="stats-heading" title="The brain">
-          <dl className="m-0 grid grid-cols-2 gap-2 min-[560px]:grid-cols-5">
-            <Stat label="Decisions" value={decisions.data?.length} />
-            <Stat label="People" value={people.data?.length} />
-            <Stat label="Systems" value={systems.data?.length} />
-            <Stat label="Sources" value={sources.data?.items.length} />
+          <ul className="m-0 grid list-none grid-cols-2 gap-2 p-0 min-[560px]:grid-cols-5">
+            <Stat to="/decisions" label="Decisions" value={decisions.data?.length} />
+            <Stat to="/people" label="People" value={people.data?.length} />
+            <Stat to="/systems" label="Systems" value={systems.data?.length} />
+            <Stat to="/sources" label="Sources" value={sources.data?.items.length} />
             <Stat
+              to="/explore"
               label="Graph"
               value={graph.data ? `${graph.data.total_nodes} nodes` : undefined}
               detail={graph.data ? `${graph.data.total_edges} edges` : undefined}
             />
-          </dl>
+          </ul>
         </Section>
 
         <Section id="attention-heading" title="Needs attention">

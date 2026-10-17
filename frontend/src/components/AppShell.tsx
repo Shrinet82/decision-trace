@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
-import { Bot, CheckCircle2, Home, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
-import { useDecisions, useGraph, usePeople, useSystems } from '../api/hooks';
+import { Bot, CheckCircle2, FileText, Home, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
+import { useDecisions, useGraph, usePeople, useSources, useSystems } from '../api/hooks';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { pageTitleForPath } from '../utils/pageTitle';
@@ -136,6 +136,7 @@ export const AppShell: React.FC = () => {
   );
   const counts = decisionsQuery.data ? countByStatus(rows) : null;
   const systemsQuery = useSystems();
+  const sourcesQuery = useSources();
   const peopleQuery = usePeople();
   const orphaned = systemsQuery.data ? systemsQuery.data.filter((s) => s.orphaned).length : null;
 
@@ -217,7 +218,7 @@ export const AppShell: React.FC = () => {
             <kbd className="rounded-[4px] border border-border px-1.5 py-px font-sans text-[11px]">⌘K</kbd>
           </button>
 
-          <nav aria-label="Primary" className="flex gap-px overflow-x-auto min-[900px]:flex-col">
+          <nav aria-label="Primary" className="flex flex-wrap gap-px min-[900px]:flex-col">
             <NavItem to="/" end icon={<Home size={15} aria-hidden="true" />} label="Home" />
             <NavItem to="/ask" icon={<MessageCircle size={15} aria-hidden="true" />} label="Ask" />
             <NavItem
@@ -239,6 +240,12 @@ export const AppShell: React.FC = () => {
               count={peopleQuery.data?.length}
             />
             <NavItem to="/explore" icon={<Network size={15} aria-hidden="true" />} label="Explore" />
+            <NavItem
+              to="/sources"
+              icon={<FileText size={15} aria-hidden="true" />}
+              label="Sources"
+              count={sourcesQuery.data?.items.length}
+            />
             <NavItem to="/agents" icon={<Bot size={15} aria-hidden="true" />} label="Agents" />
           </nav>
 
