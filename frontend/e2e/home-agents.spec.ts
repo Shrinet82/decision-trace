@@ -63,13 +63,15 @@ test.describe('Home', () => {
   test('asking from Home opens /ask with the streamed answer', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Why did we move sessions to Keycloak?' }).click();
-    await expect(page).toHaveURL(/\/ask\?q=/);
+    // /ask clears ?q= once the question is running
+    await expect(page).toHaveURL(/\/ask$/);
     await expect(page.getByRole('region', { name: 'Evidence path' })).toBeVisible();
 
     await page.goto('/');
     await page.getByLabel('Ask a question').fill('Who decided to adopt Prometheus?');
     await page.getByRole('button', { name: 'Ask', exact: true }).click();
-    await expect(page).toHaveURL(/\/ask\?q=Who/);
+    await expect(page).toHaveURL(/\/ask$/);
+    await expect(page.getByText('Who decided to adopt Prometheus?').first()).toBeVisible();
   });
 
   test('an old /?q= link still lands on the answer', async ({ page }) => {
@@ -94,14 +96,14 @@ test.describe('Connect an agent', () => {
     await expect(page.getByRole('button', { name: 'Copy endpoint URL: copied' })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(url);
 
-    await expect(page.getByLabel('Claude Code configuration')).toContainText(
+    await expect(page.getByLabel('Claude Code configuration', { exact: true })).toContainText(
       `claude mcp add --transport http decision-trace ${url}`
     );
-    const desktop = await page.getByLabel('Claude Desktop configuration').innerText();
+    const desktop = await page.getByLabel('Claude Desktop configuration', { exact: true }).innerText();
     expect(JSON.parse(desktop).mcpServers['decision-trace'].args).toEqual([
       '-y', 'mcp-remote', url, '--transport', 'http-only',
     ]);
-    const cursor = await page.getByLabel('Cursor configuration').innerText();
+    const cursor = await page.getByLabel('Cursor configuration', { exact: true }).innerText();
     expect(JSON.parse(cursor)).toEqual({ mcpServers: { 'decision-trace': { url } } });
 
     const tools = page.getByRole('region', { name: 'Tools' });

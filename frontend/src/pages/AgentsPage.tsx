@@ -29,7 +29,7 @@ export const AgentsPage: React.FC = () => (
       <p className="m-0 max-w-prose text-muted">
         Decision Trace is an MCP server. Any MCP-capable agent can ask it why decisions were made, what a
         change would affect and who to talk to, and get answers with DEC codes and sources. Six tools only
-        read; <code className="rounded bg-hover px-1">add_source</code> writes demo data that resets itself
+        read; <code className="rounded bg-hover px-1 text-text">add_source</code> writes demo data that resets itself
         after 10 idle minutes.
       </p>
 
