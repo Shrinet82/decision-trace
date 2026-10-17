@@ -34,6 +34,12 @@ describe('failed requests', () => {
     expect(error.message).toBe('The server ran into a problem. Try again in a moment.');
   });
 
+  it('a gateway failure from the edge proxy reads as unreachable or slow', async () => {
+    const { httpErrorMessage, TIMEOUT_MESSAGE } = await loadClient();
+    expect(httpErrorMessage(502, null, 'x')).toBe('The API is unreachable right now. Try again in a moment.');
+    expect(httpErrorMessage(504, null, 'x')).toBe(TIMEOUT_MESSAGE);
+  });
+
   it('a 429 passes the server text on, including the demo limit message', async () => {
     vi.stubGlobal('fetch', vi.fn(() => json(429, { detail: 'Demo limit reached: try tomorrow.' })));
     const { listPeople } = await loadClient();

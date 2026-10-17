@@ -114,7 +114,25 @@ export async function onRequest(context: {
     redirect: 'follow',
   });
 
-  const upstream = await fetch(modifiedRequest);
+  // Never wait forever on the API: plain requests get 30 s; the two streams get long enough for
+  // their own per-step limits (Ask 45 s per model call, ingest several calls).
+  const isStream = normalizedPath === '/ask/stream' || normalizedPath === '/ingest';
+  let upstream: Response;
+  try {
+    upstream = await fetch(modifiedRequest, {
+      signal: AbortSignal.timeout(isStream ? 170_000 : 30_000),
+    });
+  } catch (error) {
+    const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+    return new Response(
+      JSON.stringify({
+        detail: timedOut
+          ? 'The API took too long to respond. Try again in a moment.'
+          : 'The API is unreachable right now. Try again in a moment.',
+      }),
+      { status: timedOut ? 504 : 502, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   // Server-sent events: hand the body stream straight back (never buffer it) and tell any
   // intermediary not to compress or transform it, which would delay events.

@@ -74,7 +74,8 @@ test('first impression: favicon and social preview tags', async ({ page }) => {
 test('search with no matches says so and offers to ask instead', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await page.keyboard.press('Control+k');
+  await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
+  await page.getByRole('button', { name: /^Search/ }).click();
   await page.getByRole('combobox').fill('zzzqqq');
   await expect(page.getByText('No decisions, systems or people match.')).toBeVisible();
   await expect(page.getByRole('option', { name: /Ask: “zzzqqq”/ })).toBeVisible();

@@ -62,6 +62,8 @@ export function httpErrorMessage(status: number, body: unknown, subject: string)
   const detail = detailText(body);
   if (status === 429) return detail ?? 'Too many requests from this address. Wait a minute and try again.';
   if (status === 404) return `${subject} was not found.`;
+  if (status === 504 || status === 408) return TIMEOUT_MESSAGE;
+  if (status === 502) return 'The API is unreachable right now. Try again in a moment.';
   if (status >= 500) return 'The server ran into a problem. Try again in a moment.';
   return detail ?? `${subject} could not be loaded (the server responded with ${status}).`;
 }

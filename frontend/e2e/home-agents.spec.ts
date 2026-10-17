@@ -36,8 +36,8 @@ test.describe('Home', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
 
     const stats = page.getByRole('region', { name: 'The brain' });
-    await expect(stats.getByText('Decisions', { exact: true })).toBeVisible();
-    await expect(stats.locator('dd').first()).toHaveText('17');
+    await expect(stats.getByRole('link', { name: /^Decisions\s*17$/ })).toBeVisible();
+    await expect(stats.getByRole('link', { name: /^Sources\s*129$/ })).toBeVisible();
     await expect(stats.getByText('146 nodes')).toBeVisible();
     await expect(stats.getByText('374 edges')).toBeVisible();
 
