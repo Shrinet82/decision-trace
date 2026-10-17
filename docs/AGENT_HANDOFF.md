@@ -206,7 +206,7 @@ Suggested questions on the Ask page (also recorded in `ask-stream.json`): *Why d
 
 ```text
 .
-├── AGENT_HANDOFF.md                  # This file: complete agent onboarding and handoff guide
+├── docs/AGENT_HANDOFF.md             # This file: complete agent onboarding and handoff guide
 ├── README.md                         # Product documentation, Cypher schema, and overview
 ├── Dockerfile                        # Multi-stage root Dockerfile for Railway cloud deployments
 ├── railway.json                      # Railway cloud deployment configuration
