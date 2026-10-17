@@ -20,6 +20,8 @@ const report = [];
 const browser = await chromium.launch();
 
 for (const width of [1440, 390]) {
+  // Ingest and reset are limited to 3 a minute per address: let the first run's window pass
+  if (withIngest && width === 390) await new Promise((r) => setTimeout(r, 65000));
   const context = await browser.newContext({ viewport: { width, height: 900 } });
   const page = await context.newPage();
   const problems = [];
@@ -37,6 +39,7 @@ for (const width of [1440, 390]) {
       await fn();
     } catch (e) {
       error = e.message.split('\n')[0].slice(0, 200);
+      await page.screenshot({ path: path.join(out, `FAILED-${name.replace(/[^a-z0-9]+/gi, '-')}-${width}.png`) }).catch(() => undefined);
     }
     const ms = Math.round(performance.now() - t);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth).catch(() => 0);
@@ -52,23 +55,23 @@ for (const width of [1440, 390]) {
   await step('ask: suggested question', async () => {
     await page.getByRole('button', { name: 'Why did we move sessions to Keycloak?' }).click();
     await page.getByRole('region', { name: 'Evidence path' }).waitFor({ timeout: 30000 });
-    await page.getByTestId('ask-total-ms').first().waitFor({ timeout: 30000 });
+    await page.getByRole('region', { name: 'Sources' }).waitFor({ timeout: 30000 });
     await shot('ask');
   });
   await step('decision page', async () => {
-    await page.locator('main a[href^="/decisions/DEC-"]').first().click();
+    await page.locator('main a[href^="/decisions/DEC-"]:visible').first().click();
     await page.getByRole('heading', { level: 1 }).first().waitFor();
     await page.waitForLoadState('networkidle');
     await shot('decision');
   });
   await step('system page', async () => {
-    await page.locator('main a[href^="/systems/"]').first().click();
+    await page.locator('main a[href^="/systems/"]:visible').first().click();
     await page.getByRole('heading', { level: 1 }).first().waitFor();
     await page.waitForLoadState('networkidle');
     await shot('system');
   });
   await step('person page', async () => {
-    await page.locator('main a[href^="/people/"]').first().click();
+    await page.locator('main a[href^="/people/"]:visible').first().click();
     await page.getByRole('heading', { level: 1 }).first().waitFor();
     await page.waitForLoadState('networkidle');
     await shot('person');
