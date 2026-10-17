@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Query
 
 from app.api.schemas import GraphEdge, GraphNode, GraphResponse
+from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes
 from app.brain.memory import query_graph
 from app.config import get_settings
@@ -16,6 +17,7 @@ _settings = get_settings()
 
 
 @router.get("", response_model=GraphResponse)
+@cached_endpoint("graph.get_graph", 120.0)
 async def get_graph(
     types: Optional[list[str]] = Query(
         None, description="Filter by node labels (e.g. Decision, Person, System, Ticket, Meeting)"

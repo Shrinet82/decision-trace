@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.api.schemas import DecisionDetail, DecisionSummary, HealthStatus
+from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes
 from app.brain.health import evaluate_graph_health
 from app.brain.lineage import build_decision_detail
@@ -18,6 +19,7 @@ _settings = get_settings()
 
 
 @router.get("", response_model=list[DecisionSummary])
+@cached_endpoint("decisions.list_decisions", 120.0)
 async def list_decisions(
     system: Optional[str] = Query(
         None, description="Filter decisions by system name (e.g. Redis, Kafka)"
@@ -105,6 +107,7 @@ async def list_decisions(
 
 
 @router.get("/{decision_ref}", response_model=DecisionDetail)
+@cached_endpoint("decisions.get_decision", 120.0)
 async def get_decision(
     decision_ref: str,
     dataset_name: Optional[str] = Query(None, description="Target dataset name"),
