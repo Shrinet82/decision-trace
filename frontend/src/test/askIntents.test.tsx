@@ -78,7 +78,7 @@ describe('Sources page', () => {
 
     await user.click(screen.getByRole('button', { name: 'All' }));
     await user.type(screen.getByLabelText('Filter sources'), 'TICK-105');
-    await user.click(await screen.findByRole('button', { name: /Open Ticket TICK-105/ }));
+    await user.click(await screen.findByRole('button', { name: /^Ticket TICK-105/ }));
     const dialog = await screen.findByRole('dialog', { name: 'Source' }, WAIT);
     expect(await within(dialog).findByText(/quote highlighted/, {}, WAIT)).toBeInTheDocument();
     expect(dialog.querySelector('mark')?.textContent).toMatch(/Kafka/);

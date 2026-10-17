@@ -96,7 +96,7 @@ test.describe('streamed Ask', () => {
     await suggested(page, EXPERT_Q);
     const list = page.getByRole('region', { name: 'People ranked by evidence' });
     await expect(list).toBeVisible();
-    const first = list.getByRole('listitem').first();
+    const first = list.locator('ol > li').first();
     await expect(first).toContainText('Alice Vance');
     await expect(first).toContainText('1 decided · 1 owns · 1 meeting · 1 ticket');
     await expect(page.getByRole('region', { name: 'Evidence path' })).toHaveCount(0);
@@ -123,7 +123,7 @@ test.describe('Sources page', () => {
     await expect(counts).toContainText('Last ingest');
     await page.getByRole('group', { name: 'Source type' }).getByRole('button', { name: 'Meetings' }).click();
     await expect(page.getByRole('list', { name: 'Sources' }).getByRole('listitem')).toHaveCount(12);
-    await page.getByRole('button', { name: /Open Meeting notes Core Messaging Architecture Sync/ }).click();
+    await page.getByRole('list', { name: 'Sources' }).getByRole('button', { name: /Core Messaging Architecture Sync/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Source' });
     await expect(dialog.locator('mark').first()).toBeVisible();
     await expect(dialog.getByRole('region', { name: 'Linked decisions' })).toContainText('DEC-07');
