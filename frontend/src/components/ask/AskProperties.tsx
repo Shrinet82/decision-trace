@@ -16,14 +16,23 @@ import { SystemSquare } from '../SystemMark';
 export interface AskPropertiesProps {
   detail: DecisionDetail | undefined;
   loading: boolean;
+  /** Shown at the top of the panel (the "How I found this" trace). */
+  before?: React.ReactNode;
 }
 
 const None = () => <span className="text-muted">None</span>;
 
-export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading }) => {
+export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading, before }) => {
+  const top = before ? (
+    <>
+      {before}
+      <div className="h-px bg-divider" />
+    </>
+  ) : null;
   if (loading) {
     return (
       <SidePanel label="Decision properties">
+        {top}
         <div className="skeleton h-4 w-24" />
         <div className="skeleton h-4 w-full" />
         <div className="skeleton h-4 w-5/6" />
@@ -35,6 +44,7 @@ export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading })
   if (!detail) {
     return (
       <SidePanel label="Decision properties">
+        {top}
         <div className="font-semibold">Decision properties</div>
         <p className="m-0 text-muted">
           Ask a question to see the status, owner, and validity checks of the decision behind the
@@ -49,6 +59,7 @@ export const AskProperties: React.FC<AskPropertiesProps> = ({ detail, loading })
 
   return (
     <SidePanel label="Decision properties">
+      {top}
       <div className="flex flex-col gap-1">
         {detail.decision_code && <div className="text-xs text-muted">{detail.decision_code}</div>}
         <Link to={decisionHref(detail.decision_code ?? detail.id)} className="font-semibold hover:underline">

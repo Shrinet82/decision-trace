@@ -4,10 +4,10 @@ import { AppShell } from './components/AppShell';
 import { AskPage } from './pages/AskPage';
 import { DecisionPage } from './pages/DecisionPage';
 import { DecisionsPage } from './pages/DecisionsPage';
-import { EmptyRoutePage } from './pages/EmptyRoutePage';
 import { GraphPage } from './pages/GraphPage';
 import { PeoplePage } from './pages/PeoplePage';
 import { PersonPage } from './pages/PersonPage';
+import { SourcesPage } from './pages/SourcesPage';
 import { SystemPage } from './pages/SystemPage';
 import { SystemsPage } from './pages/SystemsPage';
 
@@ -30,15 +30,7 @@ export const App: React.FC = () => {
         <Route path="people/:name" element={<PersonPage />} />
         <Route path="explore" element={<GraphPage />} />
         <Route path="graph" element={<GraphRedirect />} />
-        <Route
-          path="sources"
-          element={
-            <EmptyRoutePage
-              title="Sources"
-              description="Index of tickets, architecture records, and meeting minutes."
-            />
-          }
-        />
+        <Route path="sources" element={<SourcesPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

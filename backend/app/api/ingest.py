@@ -7,7 +7,15 @@ from fastapi.responses import StreamingResponse
 
 from app.api.rate_limiter import check_ingest_rate_limit
 from app.config import get_settings
-from app.ingest.live import INGEST_LOCK, IngestRequest, list_changes, reset_demo, run_ingest, sse
+from app.ingest.live import (
+    INGEST_LOCK,
+    IngestRequest,
+    demo_status,
+    list_changes,
+    reset_demo,
+    run_ingest,
+    sse,
+)
 
 router = APIRouter(tags=["Live ingest"])
 _settings = get_settings()
@@ -55,3 +63,10 @@ async def changes(
 ) -> list[dict[str, Any]]:
     """Recent ingests and resets, newest first, with their diffs."""
     return await list_changes(dataset_name or _settings.DATASET_NAME, limit)
+
+
+@router.get("/ingest/status")
+async def ingest_status() -> dict[str, Any]:
+    """Whether demo data is present and when the automatic reset (10 minutes after the latest
+    ingest) will remove it."""
+    return await demo_status(_settings.DATASET_NAME)

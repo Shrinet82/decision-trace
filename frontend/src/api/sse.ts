@@ -1,4 +1,4 @@
-import type { IngestEvent } from './types';
+import type { AskStreamEvent, IngestEvent } from './types';
 
 /** One dispatched server-sent event, before its data is decoded. */
 export interface SseMessage {
@@ -65,6 +65,20 @@ export function toIngestEvent(message: SseMessage): IngestEvent | null {
     const data = JSON.parse(message.data) as unknown;
     if (!data || typeof data !== 'object') return null;
     return { event: message.event, data } as IngestEvent;
+  } catch {
+    return null;
+  }
+}
+
+const ASK_EVENT_NAMES = new Set(['step', 'query', 'path', 'token', 'done', 'error']);
+
+/** Decodes the JSON payload of an /ask/stream event. Unknown event names and bad JSON are skipped. */
+export function toAskEvent(message: SseMessage): AskStreamEvent | null {
+  if (!ASK_EVENT_NAMES.has(message.event)) return null;
+  try {
+    const data = JSON.parse(message.data) as unknown;
+    if (!data || typeof data !== 'object') return null;
+    return { event: message.event, data } as AskStreamEvent;
   } catch {
     return null;
   }

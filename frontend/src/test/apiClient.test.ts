@@ -17,20 +17,24 @@ describe('API Client and Mock Fixtures', () => {
     expect(res.answer).toContain('Keycloak');
     expect(res.citations?.length).toBeGreaterThan(0);
     expect(res.citations?.some((c) => c.id === 'TICK-102')).toBe(true);
-    expect(res.citations?.some((c) => c.id === 'TICK-101')).toBe(true);
-    expect(res.primary_decision_id).toBeTruthy();
+    // The primary decision is the Keycloak session decision (DEC-11)
+    const primary = res.graph_path.nodes.find((n) => n.id === res.primary_decision_id);
+    expect(primary?.properties.decision_code).toBe('DEC-11');
   });
 
   it('matches prometheus decision question correctly', () => {
     const res = getMockAskResponse('Who decided to adopt Prometheus?');
-    expect(res.answer).toContain('Laura Croft');
-    expect(res.citations?.some((c) => c.id === 'TICK-109')).toBe(true);
+    // Kevin Flynn decided DEC-08 (the metrics migration to Prometheus)
+    expect(res.answer).toContain('Kevin Flynn');
+    const primary = res.graph_path.nodes.find((n) => n.id === res.primary_decision_id);
+    expect(primary?.properties.decision_code).toBe('DEC-08');
+    expect(res.citations?.length).toBeGreaterThan(0);
   });
 
   it('matches vault secret question correctly', () => {
     const res = getMockAskResponse('Why did we choose Vault for secret management?');
-    expect(res.answer).toContain('Vault dynamic secrets');
-    expect(res.citations?.some((c) => c.id === 'Security Architecture Review')).toBe(true);
+    expect(res.answer).toContain('Vault');
+    expect(res.citations?.some((c) => c.id === 'TICK-107')).toBe(true);
   });
 
   it('handles unanswerable questions with honest refusal', () => {

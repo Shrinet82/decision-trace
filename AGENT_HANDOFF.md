@@ -51,7 +51,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 | :--- | :--- | :--- | :--- | :--- |
 | **Frontend Web App** | Production | Cloudflare Pages | `https://decision-trace.pages.dev` | React SPA dashboard with graph explorer |
 | **Edge API Proxy** | Production | Cloudflare Pages Functions | `https://decision-trace.pages.dev/api/*` | Hardened reverse proxy to Railway backend |
-| **Backend REST API** | Production | Railway Cloud | `https://decision-trace-api-production.up.railway.app` | FastAPI application (`/health`, `/ask`, `/decisions`, `/decisions/{code}`, `/graph`, `/systems`, `/people`, `POST /ingest` (SSE), `POST /ingest/reset`, `/changes`) |
+| **Backend REST API** | Production | Railway Cloud | `https://decision-trace-api-production.up.railway.app` | FastAPI application (`/health`, `POST /ask`, `POST /ask/stream` (SSE), `/decisions`, `/decisions/{code}`, `/graph`, `/systems`, `/people`, `/sources`, `/sources/{kind}/{key}`, `POST /ingest` (SSE), `POST /ingest/reset`, `GET /ingest/status`, `/changes`) |
 | **Primary Graph DB** | Production | FalkorDB Cloud | Host: port 62360 (TCP) | FalkorDB instance housing graph topology |
 | **Keepalive Cron** | Automation | GitHub Actions | Scheduled every 6 hours | Pings FalkorDB to prevent cloud free-tier idle sleeping |
 
@@ -80,11 +80,40 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 ### A3. Performance
 * Detail endpoints use at most 3 Cypher statements, run concurrently in worker threads (`query_graph_threaded`, `CypherTrace.gather`). The health map and decision codes are cached for 5 minutes and refreshed in the background every 4 minutes (`_keep_caches_warm` in `server.py`), so requests never pay for them. Responses carry `Server-Timing: app;dur=<ms>`.
 
+### A4. Ask pipeline (`backend/app/askflow/`)
+* `POST /ask/stream` streams Server-Sent Events, and `POST /ask` runs the same generator and returns its final `done` payload, so the two always agree. Steps, each with `ms`:
+  1. `understanding`: the intent, by rules in `intent.py` (no LLM call). The intents are `why | impact | expertise | status | other`; status questions also get a focus (`conflicts | superseded | stale | ownership | overview`).
+  2. `matching`: one roster query, then whole-word name matching for people and systems, plus embedding matches on decision titles. Title matches need a score of 0.35, or 0.7 when the question already names a system, because unrelated titles score about 0.6 and would bury the facts.
+  3. `traversal`: the Cypher for the intent, in `queries.py`.
+  4. `health`: the cached health map. The pure functions in `assemble.py` build the evidence graph, sections and experts here.
+  5. `composing`: one LLM call that only phrases the computed context, streamed as `token` events.
+* Events: `step` (running / done / skipped), `query` (name, Cypher, params, rows, ms), `path` (graph_path, provisional primary, sections and experts, sent before the answer), `token`, then `done` or `error`. `done` carries `intent`, `entities`, `sections`, `experts` and `trace {steps, queries, total_ms}`.
+* What each intent computes:
+  * **impact** (one system): the decisions on it plus their full supersedes chains in both directions, deciders, owner and ticket participants, teams and projects two hops away (through the owner), and its tickets (open first, then the most recent). The primary decision is the newest one on the system that is still in force.
+  * **expertise**: people ranked by weighted evidence: decided ×3, owns ×3, meeting attendee ×2 (meetings that are sources of its decisions or mention it), ticket participant ×1. People who have left are kept, flagged, and ranked last. There is no primary decision.
+  * **status**: the conflict, superseded and stale lists, or system ownership (owner left, or no owner on record).
+* An unanswerable question skips traversal and the model. If the model answers "not found", the path, citations and primary are cleared.
+* Live results (2026-10-17, captured in `frontend/src/mocks/ask-stream.json`):
+  * Keycloak "why": DEC-11.
+  * Conflicts: DEC-04 and DEC-07 (primary DEC-07).
+  * Impact of Snowflake: DEC-03, DEC-13 (through the chain) and DEC-17.
+  * Kafka expertise: Alice Vance first (weight 9).
+  * No owner: Elasticsearch.
+
+### A5. Sources and demo safety
+* `GET /sources` lists 80 tickets, 12 meeting notes, any ingested documents, and the 37 company.db records (systems, people, teams and projects), each with the number of decisions it backs. `GET /sources/{kind}/{key}` returns the full text and each linked decision's verbatim quote: the edge quote first, then the decision quote, but only if it appears in the text. It also returns people and systems, or a record's fields and connections.
+* **Auto-reset**: `auto_reset_loop` (started in `server.py`) checks every minute and runs `reset_demo` 10 minutes after the latest ingest. `GET /ingest/status` returns `resets_at` and `seconds_left`, and the Add source drawer shows "Demo data resets in N min".
+
 ### B. Backup Snapshot
 * **Committed Snapshot File**: `data/snapshot/company_brain_snapshot.json` (146 nodes, 374 edges, 17 decisions; Person 15 and System 12 match `data/GROUND_TRUTH.md`).
 * Re-freeze with `PYTHONPATH=backend python scripts/restore_snapshot.py export company_brain` (read-only).
 * Ticket and Meeting nodes carry `body` (verbatim, first 1,500 chars) and every BASED_ON edge carries its own verbatim `quote`. For an existing graph, `scripts/backfill_source_text.py` adds them in place (idempotent, never deletes).
-* **DANGER**: `scripts/seed.py` and `scripts/restore_snapshot.py restore` call `reset(delete_all_graphs=True)`, which deletes EVERY graph on the instance, including production. Never run them against the live instance without a fresh snapshot and an explicit decision to rebuild.
+* **Guarded**: `scripts/seed.py` and `scripts/restore_snapshot.py restore` call `reset(delete_all_graphs=True)`, which deletes every graph on the instance. They run only through `scripts/destructive_guard.py`, which requires:
+  * `--i-know-this-deletes-all-graphs`;
+  * `--force-production` as well, when `FALKORDB_GRAPH_NAME` is the production UUID;
+  * the graph name typed back at a prompt.
+
+  `restore_snapshot.py` now needs an explicit `export|restore` action; before, it restored when called with no arguments. `memory.reset()` itself refuses to delete every graph or the production graph unless the guard has opted in (`DECISION_TRACE_ALLOW_DESTRUCTIVE_RESET=1`, set only in that process), so a bare `reset()` (which targets `DATASET_NAME`) and `POST /admin/reset` (now a 403) can no longer delete production.
 * The legacy 49-node test graph `company_brain` and all eval/test graphs have been deleted; the production graph is the only one left.
 
 ### C. Decision Health (live counts)
@@ -94,12 +123,12 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
   * Every decision also exposes `decider_departed` (true if any decider left), whatever its health. The UI's "decider still on team" check and "decider left the company" hint use it.
 * **Why 0 stale:** no Elasticsearch decision exists in the corpus. The 2026-07-14 meeting note only says ownership "needs reassignment"; it names no decider and no decision verb, and the quote in `data/GROUND_TRUTH_ADDENDUM.md` ("Alice Vance decided: ...") does not appear in the file, so the verified extractor correctly does not emit it. Marcus Aurelius (left 2025-11-30) owns Elasticsearch but decided nothing. The orphaned-system fact is still visible: `evaluate.py` reports it and `/ask "Who owns Elasticsearch?"` states he departed.
 * **Orphaned systems:** a system whose `owns` person has left (`evaluate_system_orphans` in `health.py`). Today: Elasticsearch (Marcus Aurelius, left 2025-11-30). Exposed as `orphaned` on `/systems`.
-* **Decision codes:** `/decisions`, `/ask` (graph_path Decision nodes) and `/graph` (Decision node properties) carry `decision_code` (`DEC-01`..`DEC-17`), numbered by decision date, then title (`backend/app/brain/codes.py`, computed on read). `/ask` also returns `primary_decision_id`, chosen server-side (`backend/app/api/primary.py`), or null if the answer found nothing.
+* **Decision codes:** `/decisions`, `/ask` (graph_path Decision nodes) and `/graph` (Decision node properties) carry `decision_code` (`DEC-01`..`DEC-17`), numbered by decision date, then title (`backend/app/brain/codes.py`, computed on read). `/ask` also returns `primary_decision_id`, chosen server-side: `primary.py` scoring for why-questions and the Cypher result for impact and status. It is null for expertise and for answers that found nothing.
 
 ## 4. Citation Integrity & Contradiction Resolution
 
 ### A. Graph-Edge Grounding
-* Located in `backend/app/api/ask.py`.
+* Located in `backend/app/askflow/assemble.py` (`verified_citations`).
 * Citations are verified strictly against real graph edges:
   ```python
   valid_based_on_targets = {e.target for e in edges_list if e.type == "based_on"}
@@ -109,7 +138,7 @@ Decision-Trace is built on a split-cloud, decoupled edge architecture:
 * Contradiction citations (e.g., both TICK-105 and TICK-106) are retained when the response explains conflicting decisions.
 
 ### B. Contradiction Surfacing Rule
-The system prompt in `backend/app/api/ask.py` instructs:
+The why-prompt in `backend/app/askflow/pipeline.py` instructs:
 > *"If asked why a technology or system was chosen over another (e.g. Kafka vs RabbitMQ) and the context contains contradicting decisions, you MUST explicitly surface the contradiction, describe both decisions with their deciders and statuses, cite the respective tickets (e.g. TICK-105, TICK-106), and explain that the records show conflicting accepted decisions rather than a one-sided choice."*
 
 ---
@@ -121,12 +150,14 @@ The system prompt in `backend/app/api/ask.py` instructs:
 | Q1 | *Why did we choose Kafka over RabbitMQ?* | Surfaces the conflict: both decisions accepted, no one-sided choice. | `TICK-106`, `TICK-105` | DEC-07 |
 | Q2 | *Who owns Elasticsearch?* | Marcus Aurelius, departed 2025-11-30. A pure ownership answer: no citations, no primary decision. | none | none |
 | Q3 | *What replaced Redis for session storage?* | Embedded Keycloak cache replaced Redis for sessions. | `TICK-102`, `TICK-101` | DEC-11 |
-| Q4 | *Who decided to adopt Prometheus?* | Kevin Flynn (metrics migration). | `Observability Platform Alignment`, `TICK-109` | DEC-08 |
-| Q5 | *Why did we choose Vault for secret management?* | Vault dynamic secrets, decided by Diana Prince. | `TICK-107`, `Security Architecture Review` | DEC-05 |
+| Q4 | *Who decided to adopt Prometheus?* | Kevin Flynn (metrics migration). | `Observability Platform Alignment` | DEC-08 |
+| Q5 | *Why did we choose Vault for secret management?* | Vault as the exclusive secret store, decided by Diana Prince. | `TICK-107`, `Security Architecture Review` | DEC-05 |
 | Q6 | *Quantum encryption migration plan* | "The answer is not found in the Company Brain." | none | none |
 | Q7 | *Oracle database licensing* | "The answer is not found in the Company Brain." | none | none |
 
-`/ask` returns only citations the answer text actually references and that come from real `based_on` edges, so an answer that cites nothing carries no sources.
+`/ask` returns only citations the answer text actually references and that come from real `based_on` edges, so an answer that cites nothing carries no sources. The model decides which sources it mentions, so citation lists can vary slightly between runs (for example Q3 sometimes cites only TICK-102); the primary decisions are stable.
+
+Suggested questions on the Ask page (also recorded in `ask-stream.json`): *Why did we move sessions to Keycloak?* (DEC-11), *Do any decisions conflict?* (DEC-04 / DEC-07), *What's affected if we drop Snowflake?* (DEC-03, DEC-13, DEC-17), *Who knows the most about Kafka?* (Alice Vance), *Which systems have no owner?* (Elasticsearch).
 
 ---
 
@@ -137,7 +168,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
    * Credentials belong strictly to environment variables and GitHub Secrets (`RAILWAY_TOKEN`).
 2. **Cloudflare Reverse Proxy Guardrails** (`frontend/functions/api/[[path]].ts`):
    * URL decodes paths and blocks directory traversal (`..`, `\`, `//`). Tested: `/decisions/../admin` returns HTTP 404.
-   * Strict endpoint whitelist: `GET /health`, `GET /decisions`, `GET /decisions/:ref`, `GET /graph`, `GET /systems`, `GET /systems/:name`, `GET /people`, `GET /people/:name`, `POST /ask`. Names are limited to `[A-Za-z0-9 _.&'-]{1,80}` and re-encoded before forwarding. All other routes return HTTP 404.
+   * Strict endpoint whitelist: `GET /health`, `GET /decisions`, `GET /decisions/:ref`, `GET /graph`, `GET /systems`, `GET /systems/:name`, `GET /people`, `GET /people/:name`, `GET /sources`, `GET /sources/:kind/:key`, `POST /ask`, `POST /ask/stream`, `POST /ingest`, `POST /ingest/reset`, `GET /ingest/status`, `GET /changes`. Names are limited to `[A-Za-z0-9 _.&'-]{1,80}` (source keys also allow `( ) , :`, up to 120) and re-encoded before forwarding. Server-sent events are streamed through unbuffered. All other routes return HTTP 404.
 3. **Backend Rate Limiting** (`backend/app/api/rate_limiter.py`):
    * Per-IP in-memory sliding window: 20 requests/minute, 200 requests/day.
    * Global LLM daily cost ceiling: 500 calls/day. Returns HTTP 429 when exceeded.
@@ -153,11 +184,20 @@ The system prompt in `backend/app/api/ask.py` instructs:
 
 * **Stack**: React 18, Vite 6, TypeScript 5.7, Tailwind CSS 3.4, TanStack Query, Cytoscape.js.
 * **Design**: Linear-style, light only (Geist via Google Fonts, 13px base). Tokens are in `src/styles/tokens.css`. The mockups are in `frontend/design-ref/`.
-* **Pages**: Ask (`/`), Decisions (`/decisions`, `/decisions/:code`), Systems (`/systems`, `/systems/:name`), People (`/people`, `/people/:name`), Explore (`/explore`, the full map; `/graph` redirects there), plus a command palette (Cmd/Ctrl+K) over decisions, systems and people. `/sources` is a placeholder.
+* **Pages**: Ask (`/`), Decisions (`/decisions`, `/decisions/:code`), Systems (`/systems`, `/systems/:name`), People (`/people`, `/people/:name`), Explore (`/explore`, the full map; `/graph` redirects there), Sources (`/sources`, with a type filter, counts, the last ingest, and a drawer with the full text and highlighted quotes; `?open=kind/key` deep-links a source), plus a command palette (Cmd/Ctrl+K) over decisions, systems and people.
+* **Ask page**:
+  * The answer streams in.
+  * "How I found this" shows every step with its ms, the matched entities as chips, each Cypher query (collapsible) with its row count, and the total time. It sits in the right panel on desktop and in a disclosure above the answer under 900px.
+  * Impact and status answers render as grouped sections; expertise renders as a ranked list with evidence bars built from the counts.
+  * The evidence path rows animate in once; reduced motion turns that off. A why-path waits until the streamed text can no longer be "not found".
 * **Decision page** (`/decisions/DEC-11`): header (code, title, status + health reason, deciders with a "Left company" badge, date, systems), a Lineage graph (dagre left to right; top to bottom under 600px; sources -> decision, supersedes drawn old -> new dashed, contradicts dashed red, at most 25 nodes, click to navigate), system timeline, sources with quotes, impact, and a properties panel with "Show Cypher" (every query + ms).
 * **Sidebar views**: Conflicts, Superseded, Orphaned systems (count from `/systems`).
 * **Data**: `useDecisions`, `useGraph`, `useDecisionDetail`, `useAsk` in `src/api/hooks.ts`. Mock mode (localhost / port 4173) serves frozen fixtures from `src/mocks/`, loaded lazily.
-* **Testing**: Vitest unit tests (54), Playwright journey plus axe on every page at 1440 and 390px (zero serious/critical violations), and `e2e/design-compare.spec.ts`, which renders the mockups next to the app.
+* **Testing**:
+  * 129 Vitest unit tests.
+  * Playwright: `app.spec.ts` (journey, axe, screenshots), `ingest.spec.ts`, `ask-stream.spec.ts` (streamed Ask, impact, expertise, status, Sources, axe and screenshots at 1440 and 390px) and `design-compare.spec.ts`.
+  * Playwright runs with `reducedMotion: 'reduce'` and only in CI: no builds on the developer's machine.
+  * Mock mode replays recorded Ask streams, waiting each step's recorded time (scaled 0.35, capped at 900 ms; instant under Vitest).
 * **Screenshots**: `frontend/screenshots/{ask,decisions,graph}-{1440,390}.png` and `compare-*.png` (design on the left, implementation on the right).
 
 ---
@@ -184,10 +224,11 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   ├── server.py                 # The FastAPI app: middleware, CORS, lifespan, cache warmer
 │   │   ├── config.py                 # Pydantic Settings & environment validation
 │   │   ├── api/
-│   │   │   ├── ask.py                # POST /ask endpoint (graph retrieval, one LLM call, citations, primary decision)
+│   │   │   ├── ask.py                # POST /ask and POST /ask/stream (thin wrappers over app/askflow)
+│   │   │   ├── sources.py            # GET /sources, /sources/{kind}/{key}
 │   │   │   ├── systems.py            # GET /systems, /systems/{name} (owner, orphaned, timeline, people)
 │   │   │   ├── people.py             # GET /people, /people/{name} (decisions, systems owned, teams)
-│   │   │   ├── ingest.py             # POST /ingest (SSE), POST /ingest/reset, GET /changes
+│   │   │   ├── ingest.py             # POST /ingest (SSE), POST /ingest/reset, GET /ingest/status, GET /changes
 │   │   │   ├── primary.py            # Server-side choice of the answer's primary decision
 │   │   │   ├── decisions.py          # GET /decisions and GET /decisions/{id}
 │   │   │   ├── graph.py              # GET /graph full topology extraction
@@ -203,6 +244,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   │   ├── trace.py              # CypherTrace: records each query + ms for "Show Cypher"
 │   │   │   ├── cache.py              # 5-minute cache for the health map and decision codes
 │   │   │   └── models.py             # Graph Node & Relationship Pydantic definitions
+│   │   ├── askflow/                  # Ask pipeline: intent.py (rules), queries.py (Cypher), assemble.py (pure), pipeline.py (events)
 │   │   └── ingest/
 │   │       ├── decisions_extractor.py# Decision extraction & verb-based status derivation
 │   │       ├── live.py               # Live ingest pipeline, diff, reset, change log
@@ -210,7 +252,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │       ├── notes_source.py       # Meeting notes ingestion parser
 │   │       ├── tickets_source.py     # Tickets ingestion parser
 │   │       └── sql_source.py         # Relational entities ingestion parser
-│   └── tests/                        # 39 unit tests + 6 integration tests (pytest -m integration)
+│   └── tests/                        # 110 unit tests + 17 integration tests (pytest -m integration); fixtures/askflow_live_rows.json
 ├── data/
 │   ├── GROUND_TRUTH.md               # Human-curated ground truth for decisions & contradictions
 │   ├── GROUND_TRUTH_ADDENDUM.md      # Genuine unplanted decisions (note: its Elasticsearch quote is not in the source note)
@@ -231,7 +273,7 @@ The system prompt in `backend/app/api/ask.py` instructs:
 │   │   ├── utils/                    # model, answer, evidence, graphConverter, lineage, links, format
 │   │   ├── mocks/                    # Frozen /ask, /decisions, /decisions/{id}, /graph responses
 │   │   └── test/                     # Vitest unit tests
-│   ├── e2e/                          # Playwright: app.spec.ts (journey, axe, screenshots), design-compare.spec.ts
+│   ├── e2e/                          # Playwright: app, ingest, ask-stream (Phase 3), design-compare
 │   └── screenshots/                  # ask/decisions/graph at 1440 and 390, plus compare-*.png
 └── scripts/
     ├── evaluate.py                   # Scores the live graph against data/GROUND_TRUTH.md (read-only)
@@ -240,8 +282,9 @@ The system prompt in `backend/app/api/ask.py` instructs:
     ├── split_composites.py           # Splits list-valued Person/System nodes (idempotent)
     ├── backfill_source_text.py       # Adds source bodies + per-source quotes in place (idempotent)
     ├── capture_fixtures.py           # Refreshes frontend/src/mocks from the current backend + graph
-    ├── restore_snapshot.py           # export (safe) / restore (DELETES ALL GRAPHS)
-    ├── seed.py                       # Full pipeline (DELETES ALL GRAPHS first)
+    ├── restore_snapshot.py           # export (safe) / restore (DELETES ALL GRAPHS; guarded)
+    ├── seed.py                       # Full pipeline (DELETES ALL GRAPHS first; guarded)
+    ├── destructive_guard.py          # Flag + production refusal + typed confirmation for the two above
     ├── generate_synthetic_dataset.py # Regenerates data/
     └── keepalive.py                  # Standalone keepalive script pinging FalkorDB
 ```
@@ -309,5 +352,5 @@ Scoring is per decision (rows are grouped by decision id/title). The holdout scr
 ## 10. Open Items
 
 1. **Orphaned Elasticsearch has no decision in the corpus** (see 3C). If a stale-by-departed-decider demo is wanted, add a source document in which a departed person decides something; do not edit extraction to invent one.
-2. `scripts/seed.py` and `restore_snapshot.py restore` delete every graph. Consider guarding `reset(delete_all_graphs=True)` behind an explicit confirmation flag.
-3. `/sources` is a placeholder page.
+2. The FalkorDB keepalive workflow fails: the repo's Actions secrets lack the FalkorDB credentials it reads.
+3. The intent classifier is rule-based. Phrasings outside its patterns fall back to the why retrieval, which still answers but without impact or expertise sections.

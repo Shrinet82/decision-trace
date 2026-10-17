@@ -3,6 +3,9 @@ import {
   ApiError,
   askQuestion,
   getDecision,
+  getDemoStatus,
+  getSource,
+  listSources,
   getGraph,
   getPerson,
   getSystem,
@@ -16,7 +19,11 @@ import type {
   ChangeEntry,
   DecisionDetail,
   DecisionSummary,
+  DemoStatus,
   GraphResponse,
+  SourceDocument,
+  SourceKind,
+  SourceList,
   PersonDetail,
   PersonSummary,
   SystemDetail,
@@ -107,6 +114,35 @@ export function useChanges(limit = 20) {
   });
 }
 
+export function useSources() {
+  return useQuery<SourceList, ApiError>({
+    queryKey: ['sources'],
+    queryFn: listSources,
+    staleTime: FIVE_MINUTES,
+  });
+}
+
+export function useSource(kind: SourceKind | undefined, key: string | undefined) {
+  return useQuery<SourceDocument, ApiError>({
+    queryKey: ['source', kind, key],
+    queryFn: () => getSource(kind!, key!),
+    enabled: Boolean(kind && key),
+    staleTime: FIVE_MINUTES,
+    retry: (count, error) => error.status !== 404 && count < 1,
+  });
+}
+
+/** Demo data presence and the automatic reset time; polled while `enabled` (the drawer is open). */
+export function useDemoStatus(enabled: boolean) {
+  return useQuery<DemoStatus, ApiError>({
+    queryKey: ['demo-status'],
+    queryFn: getDemoStatus,
+    enabled,
+    refetchInterval: enabled ? 30_000 : false,
+    retry: false,
+  });
+}
+
 /** First query-key segments whose data an ingest or a reset can change. */
 export const GRAPH_QUERY_KEYS = [
   'decisions',
@@ -117,6 +153,9 @@ export const GRAPH_QUERY_KEYS = [
   'person',
   'graph',
   'changes',
+  'sources',
+  'source',
+  'demo-status',
 ] as const;
 
 /** Refetch everything derived from the graph after an ingest or reset. */

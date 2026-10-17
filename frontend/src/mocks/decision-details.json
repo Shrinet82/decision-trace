@@ -24,7 +24,8 @@
     "id": "TICK-101",
     "title": "Severe latency on Postgres session store under peak load",
     "date": "2026-02-03",
-    "quote": "Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention."
+    "quote": "Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention.",
+    "text": "After profiling connection exhaustion on Postgres under peak user load, Alice Vance decided: Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention. System: Redis."
    }
   ],
   "supersedes": [],
@@ -154,6 +155,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-101",
+     "label": "Ticket",
+     "properties": {
+      "body": "After profiling connection exhaustion on Postgres under peak user load, Alice Vance decided: Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention. System: Redis.",
+      "closed": "2026-02-03",
+      "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
+      "opened": "2026-02-01",
+      "status": "closed",
+      "system": "Redis",
+      "ticket_id": "TICK-101",
+      "title": "Severe latency on Postgres session store under peak load"
+     }
+    },
+    {
      "id": "Decision:dec_2c6a03017923",
      "label": "Decision",
      "properties": {
@@ -180,26 +195,14 @@
      "id": "Ticket:TICK-102",
      "label": "Ticket",
      "properties": {
-      "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
-      "ticket_id": "TICK-102",
-      "title": "Redis session cluster operational maintenance and failover complexity",
-      "status": "closed",
-      "opened": "2026-05-10",
+      "body": "Given recurring operational failover complexity of standalone Redis clusters, Alice Vance decided: Migrate session storage to embedded Keycloak cache. This decision supersedes Migrate session storage from Postgres to Redis cluster. System: Keycloak.",
       "closed": "2026-05-12",
-      "system": "Keycloak"
-     }
-    },
-    {
-     "id": "Ticket:TICK-101",
-     "label": "Ticket",
-     "properties": {
-      "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
-      "ticket_id": "TICK-101",
-      "title": "Severe latency on Postgres session store under peak load",
+      "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
+      "opened": "2026-05-10",
       "status": "closed",
-      "opened": "2026-02-01",
-      "closed": "2026-02-03",
-      "system": "Redis"
+      "system": "Keycloak",
+      "ticket_id": "TICK-102",
+      "title": "Redis session cluster operational maintenance and failover complexity"
      }
     },
     {
@@ -249,6 +252,12 @@
      "properties": {}
     },
     {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "Ticket:TICK-101",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
      "source": "Decision:dec_2c6a03017923",
      "target": "System:Redis",
      "type": "about_system",
@@ -263,12 +272,6 @@
     {
      "source": "Decision:dec_f564fcd15601",
      "target": "Ticket:TICK-102",
-     "type": "based_on",
-     "properties": {}
-    },
-    {
-     "source": "Decision:dec_fda8c9b4e631",
-     "target": "Ticket:TICK-101",
      "type": "based_on",
      "properties": {}
     },
@@ -307,99 +310,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_fda8c9b4e631"
-     },
-     "ms": 73.4
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_fda8c9b4e631"
      },
-     "ms": 87.4
+     "ms": 193.5
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_fda8c9b4e631"
      },
-     "ms": 87.4
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_fda8c9b4e631"
-     },
-     "ms": 100.1
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_fda8c9b4e631"
-     },
-     "ms": 99.9
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_fda8c9b4e631"
-     },
-     "ms": 85.1
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_2c6a03017923",
-       "dec_f564fcd15601",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 86.3
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_f564fcd15601",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 74.7
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_f564fcd15601",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 80.2
+     "ms": 214.7
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Redis"
-      ]
+      "id": "dec_fda8c9b4e631"
      },
-     "ms": 97.5
+     "ms": 233.6
     }
    ],
-   "total_ms": 872.0
+   "total_ms": 234.9
   }
  },
  "dec_f17ee7ad31a2": {
@@ -427,7 +362,8 @@
     "id": "IAM Architecture Modernization",
     "title": "IAM Architecture Modernization",
     "date": "2026-02-10",
-    "quote": "Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints."
+    "quote": "Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints.",
+    "text": "Meeting: IAM Architecture Modernization\nDate: 2026-02-10\nAttended by: Julia Roberts, Diana Prince, Alice Vance\nNotes: Evaluated Okta, Auth0, and self-hosted Keycloak. Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints. System: Keycloak."
    }
   ],
   "supersedes": [],
@@ -565,6 +501,18 @@
      }
     },
     {
+     "id": "Meeting:IAM Architecture Modernization",
+     "label": "Meeting",
+     "properties": {
+      "body": "Meeting: IAM Architecture Modernization\nDate: 2026-02-10\nAttended by: Julia Roberts, Diana Prince, Alice Vance\nNotes: Evaluated Okta, Auth0, and self-hosted Keycloak. Julia Roberts decided: Adopt Keycloak for company-wide single sign-on to comply with on-premise governance constraints. System: Keycloak.",
+      "date": "2026-02-10",
+      "file_name": "2026-02-10_iam_modernization.md",
+      "id": "a500d882-96cf-5b04-b378-3d36b7e12d1e",
+      "meeting_date": "2026-02-10",
+      "title": "IAM Architecture Modernization"
+     }
+    },
+    {
      "id": "Decision:dec_f564fcd15601",
      "label": "Decision",
      "properties": {
@@ -574,17 +522,6 @@
       "status": "accepted",
       "decision_code": "DEC-11",
       "health": "active"
-     }
-    },
-    {
-     "id": "Meeting:IAM Architecture Modernization",
-     "label": "Meeting",
-     "properties": {
-      "id": "a500d882-96cf-5b04-b378-3d36b7e12d1e",
-      "title": "IAM Architecture Modernization",
-      "date": "2026-02-10",
-      "meeting_date": "2026-02-10",
-      "file_name": "2026-02-10_iam_modernization.md"
      }
     },
     {
@@ -640,15 +577,15 @@
      "properties": {}
     },
     {
-     "source": "Decision:dec_f564fcd15601",
-     "target": "System:Keycloak",
-     "type": "about_system",
-     "properties": {}
-    },
-    {
      "source": "Decision:dec_f17ee7ad31a2",
      "target": "Meeting:IAM Architecture Modernization",
      "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_f564fcd15601",
+     "target": "System:Keycloak",
+     "type": "about_system",
      "properties": {}
     },
     {
@@ -686,97 +623,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_f17ee7ad31a2"
-     },
-     "ms": 83.9
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_f17ee7ad31a2"
      },
-     "ms": 92.1
+     "ms": 132.8
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_f17ee7ad31a2"
      },
-     "ms": 77.7
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_f17ee7ad31a2"
-     },
-     "ms": 78.7
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_f17ee7ad31a2"
-     },
-     "ms": 81.0
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_f17ee7ad31a2"
-     },
-     "ms": 80.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_f17ee7ad31a2",
-       "dec_f564fcd15601",
-       "dec_f8a30e251e54"
-      ]
-     },
-     "ms": 86.3
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_f17ee7ad31a2"
-      ]
-     },
-     "ms": 75.5
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_f17ee7ad31a2"
-      ]
-     },
-     "ms": 97.3
+     "ms": 150.8
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Keycloak"
-      ]
+      "id": "dec_f17ee7ad31a2"
      },
-     "ms": 571.3
+     "ms": 163.8
     }
    ],
-   "total_ms": 1323.8
+   "total_ms": 166.3
   }
  },
  "dec_8c7075150849": {
@@ -805,7 +676,8 @@
     "id": "TICK-103",
     "title": "Slow analytical queries on historical clickstream datasets",
     "date": "2026-02-18",
-    "quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems."
+    "quote": "Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems.",
+    "text": "After evaluating data warehouse capacity for ad-hoc aggregations, Fiona Gallagher decided: Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems. System: Snowflake."
    }
   ],
   "supersedes": [],
@@ -942,14 +814,17 @@
      }
     },
     {
-     "id": "Decision:dec_d1d225a60971",
-     "label": "Decision",
+     "id": "Ticket:TICK-103",
+     "label": "Ticket",
      "properties": {
-      "id": "dec_d1d225a60971",
-      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
-      "decided_on": "2026-06-04",
-      "decision_code": "DEC-13",
-      "health": "active"
+      "body": "After evaluating data warehouse capacity for ad-hoc aggregations, Fiona Gallagher decided: Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems. System: Snowflake.",
+      "closed": "2026-02-18",
+      "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
+      "opened": "2026-02-15",
+      "status": "closed",
+      "system": "Snowflake",
+      "ticket_id": "TICK-103",
+      "title": "Slow analytical queries on historical clickstream datasets"
      }
     },
     {
@@ -965,29 +840,28 @@
      }
     },
     {
-     "id": "Ticket:TICK-103",
-     "label": "Ticket",
+     "id": "Decision:dec_d1d225a60971",
+     "label": "Decision",
      "properties": {
-      "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
-      "ticket_id": "TICK-103",
-      "title": "Slow analytical queries on historical clickstream datasets",
-      "status": "closed",
-      "opened": "2026-02-15",
-      "closed": "2026-02-18",
-      "system": "Snowflake"
+      "id": "dec_d1d225a60971",
+      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+      "decided_on": "2026-06-04",
+      "decision_code": "DEC-13",
+      "health": "active"
      }
     },
     {
      "id": "Ticket:TICK-104",
      "label": "Ticket",
      "properties": {
-      "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
-      "ticket_id": "TICK-104",
-      "title": "High compute credits on daily analytics warehouse rollups",
-      "status": "closed",
-      "opened": "2026-06-01",
+      "body": "Due to soaring cloud warehouse compute costs and 10x slower p95 reporting queries, Carlos Mendez decided: Migrate analytics reporting queries from Snowflake to ClickHouse cluster. This decision supersedes Adopt Snowflake for analytics ETL queries. System: ClickHouse.",
       "closed": "2026-06-04",
-      "system": "ClickHouse"
+      "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
+      "opened": "2026-06-01",
+      "status": "closed",
+      "system": "ClickHouse",
+      "ticket_id": "TICK-104",
+      "title": "High compute credits on daily analytics warehouse rollups"
      }
     },
     {
@@ -1040,6 +914,12 @@
      "properties": {}
     },
     {
+     "source": "Decision:dec_8c7075150849",
+     "target": "Ticket:TICK-103",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
      "source": "Decision:dec_d09476870168",
      "target": "System:Snowflake",
      "type": "about_system",
@@ -1049,12 +929,6 @@
      "source": "Decision:dec_d1d225a60971",
      "target": "Decision:dec_8c7075150849",
      "type": "supersedes",
-     "properties": {}
-    },
-    {
-     "source": "Decision:dec_8c7075150849",
-     "target": "Ticket:TICK-103",
-     "type": "based_on",
      "properties": {}
     },
     {
@@ -1098,99 +972,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_8c7075150849"
-     },
-     "ms": 86.9
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_8c7075150849"
      },
-     "ms": 96.1
+     "ms": 100.7
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_8c7075150849"
      },
-     "ms": 358.0
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_8c7075150849"
-     },
-     "ms": 369.7
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_8c7075150849"
-     },
-     "ms": 134.2
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_8c7075150849"
-     },
-     "ms": 78.5
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d09476870168",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 95.2
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 291.1
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 93.7
+     "ms": 116.8
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Snowflake"
-      ]
+      "id": "dec_8c7075150849"
      },
-     "ms": 504.8
+     "ms": 151.4
     }
    ],
-   "total_ms": 2108.2
+   "total_ms": 153.8
   }
  },
  "dec_76772c5b323f": {
@@ -1218,7 +1024,7 @@
     "title": "Need enterprise event bus for asynchronous order processing",
     "date": "2026-03-04",
     "quote": "Use Kafka for all event messaging across services.",
-    "text": "Need enterprise event bus for asynchronous order processing.\n\nOrder processing fans out to billing, fulfilment and notifications. Point-to-point HTTP calls are timing out under peak load and retries create duplicate orders.\n\nProposal from Alice Vance: use Kafka for all event messaging across services. Kafka gives us durable, replayable topics and consumer groups per downstream team."
+    "text": "To guarantee strictly-ordered replayable message streams across our microservices, Alice Vance decided: Use Kafka for all event messaging across services. System: Kafka."
    }
   ],
   "supersedes": [],
@@ -1339,40 +1145,43 @@
      }
     },
     {
-     "id": "Ticket:TICK-105",
-     "label": "Ticket",
-     "properties": {
-      "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
-      "ticket_id": "TICK-105",
-      "title": "Need enterprise event bus for asynchronous order processing",
-      "status": "closed",
-      "opened": "2026-03-01",
-      "closed": "2026-03-04",
-      "system": "Kafka"
-     }
-    },
-    {
      "id": "Ticket:TICK-106",
      "label": "Ticket",
      "properties": {
-      "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
-      "ticket_id": "TICK-106",
-      "title": "Lightweight pubsub requirements for async background tasks",
-      "status": "closed",
-      "opened": "2026-04-05",
+      "body": "To avoid heavy JVM JVM operational overhead and complex partition management for simple workers, Bob Martin decided: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: Kafka.",
       "closed": "2026-04-08",
-      "system": "RabbitMQ"
+      "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
+      "opened": "2026-04-05",
+      "status": "closed",
+      "system": "RabbitMQ",
+      "ticket_id": "TICK-106",
+      "title": "Lightweight pubsub requirements for async background tasks"
      }
     },
     {
      "id": "Meeting:Core Messaging Architecture Sync",
      "label": "Meeting",
      "properties": {
-      "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
-      "title": "Core Messaging Architecture Sync",
+      "body": "Meeting: Core Messaging Architecture Sync\nDate: 2026-05-18\nAttended by: Bob Martin, Alice Vance, Ian Malcolm\nNotes: Re-evaluated messaging brokers for backend services. Bob Martin reiterated: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: RabbitMQ.",
       "date": "2026-05-18",
+      "file_name": "2026-05-18_messaging_strategy.md",
+      "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
       "meeting_date": "2026-05-18",
-      "file_name": "2026-05-18_messaging_strategy.md"
+      "title": "Core Messaging Architecture Sync"
+     }
+    },
+    {
+     "id": "Ticket:TICK-105",
+     "label": "Ticket",
+     "properties": {
+      "body": "To guarantee strictly-ordered replayable message streams across our microservices, Alice Vance decided: Use Kafka for all event messaging across services. System: Kafka.",
+      "closed": "2026-03-04",
+      "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
+      "opened": "2026-03-01",
+      "status": "closed",
+      "system": "Kafka",
+      "ticket_id": "TICK-105",
+      "title": "Need enterprise event bus for asynchronous order processing"
      }
     },
     {
@@ -1415,12 +1224,6 @@
      "properties": {}
     },
     {
-     "source": "Decision:dec_76772c5b323f",
-     "target": "Ticket:TICK-105",
-     "type": "based_on",
-     "properties": {}
-    },
-    {
      "source": "Decision:dec_98a223fad745",
      "target": "Ticket:TICK-106",
      "type": "based_on",
@@ -1429,6 +1232,12 @@
     {
      "source": "Decision:dec_98a223fad745",
      "target": "Meeting:Core Messaging Architecture Sync",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_76772c5b323f",
+     "target": "Ticket:TICK-105",
      "type": "based_on",
      "properties": {}
     },
@@ -1461,98 +1270,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_76772c5b323f"
-     },
-     "ms": 66.2
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_76772c5b323f"
      },
-     "ms": 92.3
+     "ms": 373.9
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_76772c5b323f"
      },
-     "ms": 88.8
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_76772c5b323f"
-     },
-     "ms": 103.0
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_76772c5b323f"
-     },
-     "ms": 81.9
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_76772c5b323f"
-     },
-     "ms": 75.1
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_76772c5b323f",
-       "dec_98a223fad745"
-      ]
-     },
-     "ms": 83.0
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_76772c5b323f",
-       "dec_98a223fad745"
-      ]
-     },
-     "ms": 375.4
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_76772c5b323f",
-       "dec_98a223fad745"
-      ]
-     },
-     "ms": 75.9
+     "ms": 429.3
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Kafka"
-      ]
+      "id": "dec_76772c5b323f"
      },
-     "ms": 105.1
+     "ms": 433.5
     }
    ],
-   "total_ms": 1146.7
+   "total_ms": 436.1
   }
  },
  "dec_e287aa298850": {
@@ -1579,7 +1321,8 @@
     "id": "TICK-107",
     "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
     "date": "2026-03-14",
-    "quote": "Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets."
+    "quote": "Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets.",
+    "text": "Following an internal audit of credentials stored in build configurations, Diana Prince decided: Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets. System: Vault."
    }
   ],
   "supersedes": [],
@@ -1684,6 +1427,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-107",
+     "label": "Ticket",
+     "properties": {
+      "body": "Following an internal audit of credentials stored in build configurations, Diana Prince decided: Store secret credentials exclusively in HashiCorp Vault instead of Kubernetes secrets. System: Vault.",
+      "closed": "2026-03-14",
+      "id": "a91113f5-387c-5ee3-890a-fdafb324de11",
+      "opened": "2026-03-12",
+      "status": "closed",
+      "system": "Vault",
+      "ticket_id": "TICK-107",
+      "title": "Plaintext secret leakage risk in CI/CD pipeline variables"
+     }
+    },
+    {
      "id": "Decision:dec_ecd94c860f08",
      "label": "Decision",
      "properties": {
@@ -1693,19 +1450,6 @@
       "status": "accepted",
       "decision_code": "DEC-14",
       "health": "active"
-     }
-    },
-    {
-     "id": "Ticket:TICK-107",
-     "label": "Ticket",
-     "properties": {
-      "id": "a91113f5-387c-5ee3-890a-fdafb324de11",
-      "ticket_id": "TICK-107",
-      "title": "Plaintext secret leakage risk in CI/CD pipeline variables",
-      "status": "closed",
-      "opened": "2026-03-12",
-      "closed": "2026-03-14",
-      "system": "Vault"
      }
     },
     {
@@ -1732,15 +1476,15 @@
      "properties": {}
     },
     {
-     "source": "Decision:dec_ecd94c860f08",
-     "target": "System:Vault",
-     "type": "about_system",
-     "properties": {}
-    },
-    {
      "source": "Decision:dec_e287aa298850",
      "target": "Ticket:TICK-107",
      "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_ecd94c860f08",
+     "target": "System:Vault",
+     "type": "about_system",
      "properties": {}
     },
     {
@@ -1772,96 +1516,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_e287aa298850"
-     },
-     "ms": 77.1
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_e287aa298850"
      },
-     "ms": 102.7
+     "ms": 214.0
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_e287aa298850"
      },
-     "ms": 102.1
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_e287aa298850"
-     },
-     "ms": 102.4
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_e287aa298850"
-     },
-     "ms": 103.1
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_e287aa298850"
-     },
-     "ms": 101.7
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_e287aa298850",
-       "dec_ecd94c860f08"
-      ]
-     },
-     "ms": 103.8
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_e287aa298850"
-      ]
-     },
-     "ms": 101.0
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_e287aa298850"
-      ]
-     },
-     "ms": 205.2
+     "ms": 243.9
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Vault"
-      ]
+      "id": "dec_e287aa298850"
      },
-     "ms": 207.7
+     "ms": 272.8
     }
    ],
-   "total_ms": 1206.8
+   "total_ms": 275.3
   }
  },
  "dec_5b196394600e": {
@@ -1888,7 +1567,8 @@
     "id": "TICK-108",
     "title": "Inconsistent distributed trace propagation in checkout services",
     "date": "2026-03-28",
-    "quote": "Standardize application traces on Datadog APM across all production services."
+    "quote": "Standardize application traces on Datadog APM across all production services.",
+    "text": "To enable end-to-end distributed transaction tracing with minimal agent configuration, Kevin Flynn decided: Standardize application traces on Datadog APM across all production services. System: Datadog."
    }
   ],
   "supersedes": [],
@@ -1999,6 +1679,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-108",
+     "label": "Ticket",
+     "properties": {
+      "body": "To enable end-to-end distributed transaction tracing with minimal agent configuration, Kevin Flynn decided: Standardize application traces on Datadog APM across all production services. System: Datadog.",
+      "closed": "2026-03-28",
+      "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
+      "opened": "2026-03-25",
+      "status": "closed",
+      "system": "Datadog",
+      "ticket_id": "TICK-108",
+      "title": "Inconsistent distributed trace propagation in checkout services"
+     }
+    },
+    {
      "id": "Decision:dec_21a4de59b886",
      "label": "Decision",
      "properties": {
@@ -2010,27 +1704,15 @@
      }
     },
     {
-     "id": "Ticket:TICK-108",
-     "label": "Ticket",
-     "properties": {
-      "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
-      "ticket_id": "TICK-108",
-      "title": "Inconsistent distributed trace propagation in checkout services",
-      "status": "closed",
-      "opened": "2026-03-25",
-      "closed": "2026-03-28",
-      "system": "Datadog"
-     }
-    },
-    {
      "id": "Meeting:Observability Platform Alignment",
      "label": "Meeting",
      "properties": {
-      "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
-      "title": "Observability Platform Alignment",
+      "body": "Meeting: Observability Platform Alignment\nDate: 2026-04-12\nAttended by: Kevin Flynn, Laura Croft, Diana Prince\nNotes: Given escalating vendor licensing costs of proprietary APM tools, Kevin Flynn decided: Migrate application metrics from Datadog to Prometheus Operator. This decision supersedes Standardize application traces on Datadog APM across all production services. System: Prometheus.",
       "date": "2026-04-12",
+      "file_name": "2026-04-12_observability_sync.md",
+      "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
       "meeting_date": "2026-04-12",
-      "file_name": "2026-04-12_observability_sync.md"
+      "title": "Observability Platform Alignment"
      }
     },
     {
@@ -2067,15 +1749,15 @@
      "properties": {}
     },
     {
-     "source": "Decision:dec_21a4de59b886",
-     "target": "Decision:dec_5b196394600e",
-     "type": "supersedes",
-     "properties": {}
-    },
-    {
      "source": "Decision:dec_5b196394600e",
      "target": "Ticket:TICK-108",
      "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_21a4de59b886",
+     "target": "Decision:dec_5b196394600e",
+     "type": "supersedes",
      "properties": {}
     },
     {
@@ -2107,98 +1789,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_5b196394600e"
-     },
-     "ms": 246.0
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_5b196394600e"
      },
-     "ms": 204.6
+     "ms": 97.6
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_5b196394600e"
      },
-     "ms": 205.0
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_5b196394600e"
-     },
-     "ms": 205.6
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_5b196394600e"
-     },
-     "ms": 204.9
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_5b196394600e"
-     },
-     "ms": 203.9
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_21a4de59b886",
-       "dec_5b196394600e"
-      ]
-     },
-     "ms": 205.1
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_21a4de59b886",
-       "dec_5b196394600e"
-      ]
-     },
-     "ms": 205.0
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_21a4de59b886",
-       "dec_5b196394600e"
-      ]
-     },
-     "ms": 204.2
+     "ms": 111.2
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Datadog"
-      ]
+      "id": "dec_5b196394600e"
      },
-     "ms": 205.8
+     "ms": 124.2
     }
    ],
-   "total_ms": 2090.1
+   "total_ms": 126.7
   }
  },
  "dec_98a223fad745": {
@@ -2225,15 +1840,16 @@
     "id": "TICK-106",
     "title": "Lightweight pubsub requirements for async background tasks",
     "date": "2026-04-08",
-    "quote": null
+    "quote": "To avoid heavy JVM JVM operational overhead and complex partition management for simple workers, Bob Martin decided: Use RabbitMQ for all event messaging across services.",
+    "text": "To avoid heavy JVM JVM operational overhead and complex partition management for simple workers, Bob Martin decided: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: Kafka."
    },
    {
     "type": "meeting",
     "id": "Core Messaging Architecture Sync",
     "title": "Core Messaging Architecture Sync",
     "date": "2026-05-18",
-    "quote": "Use RabbitMQ for all event messaging across services.",
-    "text": "Core Messaging Architecture Sync, 2026-05-18.\nAttendees: Bob Martin, Alice Vance, Ian Malcolm.\n\nBob Martin reiterated: Use RabbitMQ for all event messaging across services. The team already runs RabbitMQ for background jobs and its routing covers the current pub/sub needs.\nAlice Vance noted this conflicts with the earlier Kafka decision for order events. No resolution recorded."
+    "quote": "Bob Martin reiterated: Use RabbitMQ for all event messaging across services.",
+    "text": "Meeting: Core Messaging Architecture Sync\nDate: 2026-05-18\nAttended by: Bob Martin, Alice Vance, Ian Malcolm\nNotes: Re-evaluated messaging brokers for backend services. Bob Martin reiterated: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: RabbitMQ."
    }
   ],
   "supersedes": [],
@@ -2343,6 +1959,32 @@
      }
     },
     {
+     "id": "Ticket:TICK-106",
+     "label": "Ticket",
+     "properties": {
+      "body": "To avoid heavy JVM JVM operational overhead and complex partition management for simple workers, Bob Martin decided: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: Kafka.",
+      "closed": "2026-04-08",
+      "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
+      "opened": "2026-04-05",
+      "status": "closed",
+      "system": "RabbitMQ",
+      "ticket_id": "TICK-106",
+      "title": "Lightweight pubsub requirements for async background tasks"
+     }
+    },
+    {
+     "id": "Meeting:Core Messaging Architecture Sync",
+     "label": "Meeting",
+     "properties": {
+      "body": "Meeting: Core Messaging Architecture Sync\nDate: 2026-05-18\nAttended by: Bob Martin, Alice Vance, Ian Malcolm\nNotes: Re-evaluated messaging brokers for backend services. Bob Martin reiterated: Use RabbitMQ for all event messaging across services. This decision contradicts Use Kafka for all event messaging across services. System: RabbitMQ.",
+      "date": "2026-05-18",
+      "file_name": "2026-05-18_messaging_strategy.md",
+      "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
+      "meeting_date": "2026-05-18",
+      "title": "Core Messaging Architecture Sync"
+     }
+    },
+    {
      "id": "Decision:dec_76772c5b323f",
      "label": "Decision",
      "properties": {
@@ -2357,37 +1999,14 @@
      "id": "Ticket:TICK-105",
      "label": "Ticket",
      "properties": {
-      "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
-      "ticket_id": "TICK-105",
-      "title": "Need enterprise event bus for asynchronous order processing",
-      "status": "closed",
-      "opened": "2026-03-01",
+      "body": "To guarantee strictly-ordered replayable message streams across our microservices, Alice Vance decided: Use Kafka for all event messaging across services. System: Kafka.",
       "closed": "2026-03-04",
-      "system": "Kafka"
-     }
-    },
-    {
-     "id": "Ticket:TICK-106",
-     "label": "Ticket",
-     "properties": {
-      "id": "72147c0c-5708-5d35-b608-e2f1572bfdaa",
-      "ticket_id": "TICK-106",
-      "title": "Lightweight pubsub requirements for async background tasks",
+      "id": "047ab6cd-c838-5a6a-a93b-0f36426cd4ba",
+      "opened": "2026-03-01",
       "status": "closed",
-      "opened": "2026-04-05",
-      "closed": "2026-04-08",
-      "system": "RabbitMQ"
-     }
-    },
-    {
-     "id": "Meeting:Core Messaging Architecture Sync",
-     "label": "Meeting",
-     "properties": {
-      "id": "456c0817-62d0-56f4-9c47-a054ae44b9f4",
-      "title": "Core Messaging Architecture Sync",
-      "date": "2026-05-18",
-      "meeting_date": "2026-05-18",
-      "file_name": "2026-05-18_messaging_strategy.md"
+      "system": "Kafka",
+      "ticket_id": "TICK-105",
+      "title": "Need enterprise event bus for asynchronous order processing"
      }
     },
     {
@@ -2430,12 +2049,6 @@
      "properties": {}
     },
     {
-     "source": "Decision:dec_76772c5b323f",
-     "target": "Ticket:TICK-105",
-     "type": "based_on",
-     "properties": {}
-    },
-    {
      "source": "Decision:dec_98a223fad745",
      "target": "Ticket:TICK-106",
      "type": "based_on",
@@ -2444,6 +2057,12 @@
     {
      "source": "Decision:dec_98a223fad745",
      "target": "Meeting:Core Messaging Architecture Sync",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_76772c5b323f",
+     "target": "Ticket:TICK-105",
      "type": "based_on",
      "properties": {}
     },
@@ -2470,98 +2089,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_98a223fad745"
-     },
-     "ms": 197.7
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_98a223fad745"
      },
-     "ms": 204.0
+     "ms": 90.9
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_98a223fad745"
      },
-     "ms": 204.5
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_98a223fad745"
-     },
-     "ms": 204.6
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_98a223fad745"
-     },
-     "ms": 205.0
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_98a223fad745"
-     },
-     "ms": 205.9
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_76772c5b323f",
-       "dec_98a223fad745"
-      ]
-     },
-     "ms": 203.7
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_76772c5b323f",
-       "dec_98a223fad745"
-      ]
-     },
-     "ms": 204.8
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_76772c5b323f",
-       "dec_98a223fad745"
-      ]
-     },
-     "ms": 207.2
+     "ms": 129.7
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "RabbitMQ"
-      ]
+      "id": "dec_98a223fad745"
      },
-     "ms": 208.6
+     "ms": 135.3
     }
    ],
-   "total_ms": 2046.0
+   "total_ms": 137.8
   }
  },
  "dec_21a4de59b886": {
@@ -2589,7 +2141,8 @@
     "id": "Observability Platform Alignment",
     "title": "Observability Platform Alignment",
     "date": "2026-04-12",
-    "quote": "Migrate application metrics from Datadog to Prometheus Operator."
+    "quote": "Migrate application metrics from Datadog to Prometheus Operator.",
+    "text": "Meeting: Observability Platform Alignment\nDate: 2026-04-12\nAttended by: Kevin Flynn, Laura Croft, Diana Prince\nNotes: Given escalating vendor licensing costs of proprietary APM tools, Kevin Flynn decided: Migrate application metrics from Datadog to Prometheus Operator. This decision supersedes Standardize application traces on Datadog APM across all production services. System: Prometheus."
    }
   ],
   "supersedes": [
@@ -2730,6 +2283,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-108",
+     "label": "Ticket",
+     "properties": {
+      "body": "To enable end-to-end distributed transaction tracing with minimal agent configuration, Kevin Flynn decided: Standardize application traces on Datadog APM across all production services. System: Datadog.",
+      "closed": "2026-03-28",
+      "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
+      "opened": "2026-03-25",
+      "status": "closed",
+      "system": "Datadog",
+      "ticket_id": "TICK-108",
+      "title": "Inconsistent distributed trace propagation in checkout services"
+     }
+    },
+    {
      "id": "Decision:dec_091c86e8e476",
      "label": "Decision",
      "properties": {
@@ -2742,27 +2309,15 @@
      }
     },
     {
-     "id": "Ticket:TICK-108",
-     "label": "Ticket",
-     "properties": {
-      "id": "43ed0b74-e52d-5a4b-8cdd-ee40e2bb0fcf",
-      "ticket_id": "TICK-108",
-      "title": "Inconsistent distributed trace propagation in checkout services",
-      "status": "closed",
-      "opened": "2026-03-25",
-      "closed": "2026-03-28",
-      "system": "Datadog"
-     }
-    },
-    {
      "id": "Meeting:Observability Platform Alignment",
      "label": "Meeting",
      "properties": {
-      "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
-      "title": "Observability Platform Alignment",
+      "body": "Meeting: Observability Platform Alignment\nDate: 2026-04-12\nAttended by: Kevin Flynn, Laura Croft, Diana Prince\nNotes: Given escalating vendor licensing costs of proprietary APM tools, Kevin Flynn decided: Migrate application metrics from Datadog to Prometheus Operator. This decision supersedes Standardize application traces on Datadog APM across all production services. System: Prometheus.",
       "date": "2026-04-12",
+      "file_name": "2026-04-12_observability_sync.md",
+      "id": "a11fdcc2-90ac-5b26-9b50-7683916ba33f",
       "meeting_date": "2026-04-12",
-      "file_name": "2026-04-12_observability_sync.md"
+      "title": "Observability Platform Alignment"
      }
     },
     {
@@ -2812,6 +2367,12 @@
      "properties": {}
     },
     {
+     "source": "Decision:dec_5b196394600e",
+     "target": "Ticket:TICK-108",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
      "source": "Decision:dec_091c86e8e476",
      "target": "System:Prometheus",
      "type": "about_system",
@@ -2821,12 +2382,6 @@
      "source": "Decision:dec_21a4de59b886",
      "target": "Decision:dec_5b196394600e",
      "type": "supersedes",
-     "properties": {}
-    },
-    {
-     "source": "Decision:dec_5b196394600e",
-     "target": "Ticket:TICK-108",
-     "type": "based_on",
      "properties": {}
     },
     {
@@ -2864,99 +2419,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_21a4de59b886"
-     },
-     "ms": 167.5
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_21a4de59b886"
      },
-     "ms": 227.4
+     "ms": 91.8
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_21a4de59b886"
      },
-     "ms": 202.2
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_21a4de59b886"
-     },
-     "ms": 205.0
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_21a4de59b886"
-     },
-     "ms": 204.4
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_21a4de59b886"
-     },
-     "ms": 204.8
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_091c86e8e476",
-       "dec_21a4de59b886",
-       "dec_5b196394600e"
-      ]
-     },
-     "ms": 96.1
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_21a4de59b886",
-       "dec_5b196394600e"
-      ]
-     },
-     "ms": 79.7
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_21a4de59b886",
-       "dec_5b196394600e"
-      ]
-     },
-     "ms": 89.7
+     "ms": 115.4
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Prometheus"
-      ]
+      "id": "dec_21a4de59b886"
      },
-     "ms": 193.4
+     "ms": 134.5
     }
    ],
-   "total_ms": 1670.2
+   "total_ms": 137.3
   }
  },
  "dec_091c86e8e476": {
@@ -2984,7 +2471,8 @@
     "id": "TICK-109",
     "title": "Cluster-wide metrics collection and automated alerts",
     "date": "2026-04-22",
-    "quote": "Deploy Prometheus Operator on all Kubernetes staging clusters."
+    "quote": "Deploy Prometheus Operator on all Kubernetes staging clusters.",
+    "text": "To achieve standardized Kubernetes metrics collection and alerting, Laura Croft decided: Deploy Prometheus Operator on all Kubernetes staging clusters. System: Prometheus."
    }
   ],
   "supersedes": [],
@@ -3112,13 +2600,14 @@
      "id": "Ticket:TICK-109",
      "label": "Ticket",
      "properties": {
-      "id": "59a9634b-5aba-5231-bed1-dba7943696cd",
-      "ticket_id": "TICK-109",
-      "title": "Cluster-wide metrics collection and automated alerts",
-      "status": "closed",
-      "opened": "2026-04-20",
+      "body": "To achieve standardized Kubernetes metrics collection and alerting, Laura Croft decided: Deploy Prometheus Operator on all Kubernetes staging clusters. System: Prometheus.",
       "closed": "2026-04-22",
-      "system": "Prometheus"
+      "id": "59a9634b-5aba-5231-bed1-dba7943696cd",
+      "opened": "2026-04-20",
+      "status": "closed",
+      "system": "Prometheus",
+      "ticket_id": "TICK-109",
+      "title": "Cluster-wide metrics collection and automated alerts"
      }
     },
     {
@@ -3208,96 +2697,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_091c86e8e476"
-     },
-     "ms": 70.9
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_091c86e8e476"
      },
-     "ms": 104.9
+     "ms": 100.9
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_091c86e8e476"
      },
-     "ms": 87.0
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_091c86e8e476"
-     },
-     "ms": 96.3
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_091c86e8e476"
-     },
-     "ms": 419.7
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_091c86e8e476"
-     },
-     "ms": 100.2
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_091c86e8e476",
-       "dec_21a4de59b886"
-      ]
-     },
-     "ms": 149.3
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_091c86e8e476"
-      ]
-     },
-     "ms": 85.8
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_091c86e8e476"
-      ]
-     },
-     "ms": 80.7
+     "ms": 154.8
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Prometheus"
-      ]
+      "id": "dec_091c86e8e476"
      },
-     "ms": 111.6
+     "ms": 161.2
     }
    ],
-   "total_ms": 1306.4
+   "total_ms": 163.6
   }
  },
  "dec_2c6a03017923": {
@@ -3325,7 +2749,8 @@
     "id": "TICK-110",
     "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
     "date": "2026-05-05",
-    "quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications."
+    "quote": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications.",
+    "text": "After profiling message broker RAM usage during customer broadcast spikes, Ian Malcolm decided: Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications. System: Redis."
    }
   ],
   "supersedes": [],
@@ -3453,13 +2878,14 @@
      "id": "Ticket:TICK-110",
      "label": "Ticket",
      "properties": {
-      "id": "46e33a08-5a65-5643-8bd6-9158801f30d5",
-      "ticket_id": "TICK-110",
-      "title": "Memory pressure on legacy RabbitMQ broker during notifications spike",
-      "status": "closed",
-      "opened": "2026-05-02",
+      "body": "After profiling message broker RAM usage during customer broadcast spikes, Ian Malcolm decided: Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications. System: Redis.",
       "closed": "2026-05-05",
-      "system": "Redis"
+      "id": "46e33a08-5a65-5643-8bd6-9158801f30d5",
+      "opened": "2026-05-02",
+      "status": "closed",
+      "system": "Redis",
+      "ticket_id": "TICK-110",
+      "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
      }
     },
     {
@@ -3555,96 +2981,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_2c6a03017923"
-     },
-     "ms": 469.4
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_2c6a03017923"
      },
-     "ms": 168.8
+     "ms": 94.8
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_2c6a03017923"
      },
-     "ms": 341.3
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_2c6a03017923"
-     },
-     "ms": 75.5
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_2c6a03017923"
-     },
-     "ms": 80.9
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_2c6a03017923"
-     },
-     "ms": 80.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_2c6a03017923",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 80.0
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_2c6a03017923"
-      ]
-     },
-     "ms": 84.8
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_2c6a03017923"
-      ]
-     },
-     "ms": 93.5
+     "ms": 108.8
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Redis"
-      ]
+      "id": "dec_2c6a03017923"
      },
-     "ms": 493.2
+     "ms": 123.3
     }
    ],
-   "total_ms": 1967.4
+   "total_ms": 125.8
   }
  },
  "dec_f564fcd15601": {
@@ -3673,7 +3034,7 @@
     "title": "Redis session cluster operational maintenance and failover complexity",
     "date": "2026-05-12",
     "quote": "Alice Vance decided: Migrate session storage to embedded Keycloak cache.",
-    "text": "Redis session cluster operational maintenance and failover complexity.\n\nThe Redis session cluster needs manual failover during every maintenance window, and two incidents this quarter came from replica lag after a failover. Keeping a separate cluster only for sessions doubles the on-call surface.\n\nAlice Vance decided: Migrate session storage to embedded Keycloak cache. Sessions already originate in Keycloak, so the embedded Infinispan cache removes the extra hop and the separate cluster."
+    "text": "Given recurring operational failover complexity of standalone Redis clusters, Alice Vance decided: Migrate session storage to embedded Keycloak cache. This decision supersedes Migrate session storage from Postgres to Redis cluster. System: Keycloak."
    }
   ],
   "supersedes": [
@@ -3827,6 +3188,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-101",
+     "label": "Ticket",
+     "properties": {
+      "body": "After profiling connection exhaustion on Postgres under peak user load, Alice Vance decided: Migrate session storage from Postgres to Redis cluster to eliminate database connection pool contention. System: Redis.",
+      "closed": "2026-02-03",
+      "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
+      "opened": "2026-02-01",
+      "status": "closed",
+      "system": "Redis",
+      "ticket_id": "TICK-101",
+      "title": "Severe latency on Postgres session store under peak load"
+     }
+    },
+    {
      "id": "Decision:dec_f8a30e251e54",
      "label": "Decision",
      "properties": {
@@ -3854,26 +3229,14 @@
      "id": "Ticket:TICK-102",
      "label": "Ticket",
      "properties": {
-      "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
-      "ticket_id": "TICK-102",
-      "title": "Redis session cluster operational maintenance and failover complexity",
-      "status": "closed",
-      "opened": "2026-05-10",
+      "body": "Given recurring operational failover complexity of standalone Redis clusters, Alice Vance decided: Migrate session storage to embedded Keycloak cache. This decision supersedes Migrate session storage from Postgres to Redis cluster. System: Keycloak.",
       "closed": "2026-05-12",
-      "system": "Keycloak"
-     }
-    },
-    {
-     "id": "Ticket:TICK-101",
-     "label": "Ticket",
-     "properties": {
-      "id": "8168524e-1fc2-5095-a30b-a3fcf1a80a12",
-      "ticket_id": "TICK-101",
-      "title": "Severe latency on Postgres session store under peak load",
+      "id": "d9595f39-a55c-54b1-8593-47d9f04a7ba3",
+      "opened": "2026-05-10",
       "status": "closed",
-      "opened": "2026-02-01",
-      "closed": "2026-02-03",
-      "system": "Redis"
+      "system": "Keycloak",
+      "ticket_id": "TICK-102",
+      "title": "Redis session cluster operational maintenance and failover complexity"
      }
     },
     {
@@ -3923,6 +3286,12 @@
      "properties": {}
     },
     {
+     "source": "Decision:dec_fda8c9b4e631",
+     "target": "Ticket:TICK-101",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
      "source": "Decision:dec_f8a30e251e54",
      "target": "System:Keycloak",
      "type": "about_system",
@@ -3943,12 +3312,6 @@
     {
      "source": "Decision:dec_f564fcd15601",
      "target": "Ticket:TICK-102",
-     "type": "based_on",
-     "properties": {}
-    },
-    {
-     "source": "Decision:dec_fda8c9b4e631",
-     "target": "Ticket:TICK-101",
      "type": "based_on",
      "properties": {}
     },
@@ -3987,100 +3350,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_f564fcd15601"
-     },
-     "ms": 79.9
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_f564fcd15601"
      },
-     "ms": 81.1
+     "ms": 93.6
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_f564fcd15601"
      },
-     "ms": 75.4
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_f564fcd15601"
-     },
-     "ms": 94.3
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_f564fcd15601"
-     },
-     "ms": 89.9
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_f564fcd15601"
-     },
-     "ms": 80.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_f17ee7ad31a2",
-       "dec_f564fcd15601",
-       "dec_f8a30e251e54",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 103.1
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_f564fcd15601",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 76.8
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_f564fcd15601",
-       "dec_fda8c9b4e631"
-      ]
-     },
-     "ms": 80.1
+     "ms": 111.0
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Keycloak"
-      ]
+      "id": "dec_f564fcd15601"
      },
-     "ms": 154.6
+     "ms": 139.6
     }
    ],
-   "total_ms": 915.2
+   "total_ms": 142.4
   }
  },
  "dec_f8a30e251e54": {
@@ -4108,7 +3402,8 @@
     "id": "TICK-111",
     "title": "OAuth2 token issuance architecture for internal gateway",
     "date": "2026-05-24",
-    "quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication."
+    "quote": "Use Keycloak OAuth2 tokens for internal API gateway authentication.",
+    "text": "To streamline microservice token validation and role-based access control, Julia Roberts decided: Use Keycloak OAuth2 tokens for internal API gateway authentication. System: Keycloak."
    }
   ],
   "supersedes": [],
@@ -4234,6 +3529,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-111",
+     "label": "Ticket",
+     "properties": {
+      "body": "To streamline microservice token validation and role-based access control, Julia Roberts decided: Use Keycloak OAuth2 tokens for internal API gateway authentication. System: Keycloak.",
+      "closed": "2026-05-24",
+      "id": "f88fb560-84ff-5be2-9de2-1422f0dbae7d",
+      "opened": "2026-05-22",
+      "status": "closed",
+      "system": "Keycloak",
+      "ticket_id": "TICK-111",
+      "title": "OAuth2 token issuance architecture for internal gateway"
+     }
+    },
+    {
      "id": "Decision:dec_f17ee7ad31a2",
      "label": "Decision",
      "properties": {
@@ -4255,19 +3564,6 @@
       "status": "accepted",
       "decision_code": "DEC-11",
       "health": "active"
-     }
-    },
-    {
-     "id": "Ticket:TICK-111",
-     "label": "Ticket",
-     "properties": {
-      "id": "f88fb560-84ff-5be2-9de2-1422f0dbae7d",
-      "ticket_id": "TICK-111",
-      "title": "OAuth2 token issuance architecture for internal gateway",
-      "status": "closed",
-      "opened": "2026-05-22",
-      "closed": "2026-05-24",
-      "system": "Keycloak"
      }
     },
     {
@@ -4317,6 +3613,12 @@
      "properties": {}
     },
     {
+     "source": "Decision:dec_f8a30e251e54",
+     "target": "Ticket:TICK-111",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
      "source": "Decision:dec_f17ee7ad31a2",
      "target": "System:Keycloak",
      "type": "about_system",
@@ -4326,12 +3628,6 @@
      "source": "Decision:dec_f564fcd15601",
      "target": "System:Keycloak",
      "type": "about_system",
-     "properties": {}
-    },
-    {
-     "source": "Decision:dec_f8a30e251e54",
-     "target": "Ticket:TICK-111",
-     "type": "based_on",
      "properties": {}
     },
     {
@@ -4369,97 +3665,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_f8a30e251e54"
-     },
-     "ms": 83.9
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_f8a30e251e54"
      },
-     "ms": 90.3
+     "ms": 91.2
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_f8a30e251e54"
      },
-     "ms": 109.0
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_f8a30e251e54"
-     },
-     "ms": 304.4
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_f8a30e251e54"
-     },
-     "ms": 506.2
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_f8a30e251e54"
-     },
-     "ms": 629.5
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_f17ee7ad31a2",
-       "dec_f564fcd15601",
-       "dec_f8a30e251e54"
-      ]
-     },
-     "ms": 520.2
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_f8a30e251e54"
-      ]
-     },
-     "ms": 104.5
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_f8a30e251e54"
-      ]
-     },
-     "ms": 100.1
+     "ms": 115.4
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Keycloak"
-      ]
+      "id": "dec_f8a30e251e54"
      },
-     "ms": 244.3
+     "ms": 140.4
     }
    ],
-   "total_ms": 2692.4
+   "total_ms": 142.9
   }
  },
  "dec_d1d225a60971": {
@@ -4489,7 +3719,8 @@
     "id": "TICK-104",
     "title": "High compute credits on daily analytics warehouse rollups",
     "date": "2026-06-04",
-    "quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster."
+    "quote": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster.",
+    "text": "Due to soaring cloud warehouse compute costs and 10x slower p95 reporting queries, Carlos Mendez decided: Migrate analytics reporting queries from Snowflake to ClickHouse cluster. This decision supersedes Adopt Snowflake for analytics ETL queries. System: ClickHouse."
    }
   ],
   "supersedes": [
@@ -4645,6 +3876,20 @@
      }
     },
     {
+     "id": "Ticket:TICK-103",
+     "label": "Ticket",
+     "properties": {
+      "body": "After evaluating data warehouse capacity for ad-hoc aggregations, Fiona Gallagher decided: Adopt Snowflake for analytics ETL queries to decouple reporting compute from transactional systems. System: Snowflake.",
+      "closed": "2026-02-18",
+      "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
+      "opened": "2026-02-15",
+      "status": "closed",
+      "system": "Snowflake",
+      "ticket_id": "TICK-103",
+      "title": "Slow analytical queries on historical clickstream datasets"
+     }
+    },
+    {
      "id": "Decision:dec_d09476870168",
      "label": "Decision",
      "properties": {
@@ -4657,29 +3902,17 @@
      }
     },
     {
-     "id": "Ticket:TICK-103",
-     "label": "Ticket",
-     "properties": {
-      "id": "1dbe8179-bff7-578c-927e-8ddd4cc08cc2",
-      "ticket_id": "TICK-103",
-      "title": "Slow analytical queries on historical clickstream datasets",
-      "status": "closed",
-      "opened": "2026-02-15",
-      "closed": "2026-02-18",
-      "system": "Snowflake"
-     }
-    },
-    {
      "id": "Ticket:TICK-104",
      "label": "Ticket",
      "properties": {
-      "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
-      "ticket_id": "TICK-104",
-      "title": "High compute credits on daily analytics warehouse rollups",
-      "status": "closed",
-      "opened": "2026-06-01",
+      "body": "Due to soaring cloud warehouse compute costs and 10x slower p95 reporting queries, Carlos Mendez decided: Migrate analytics reporting queries from Snowflake to ClickHouse cluster. This decision supersedes Adopt Snowflake for analytics ETL queries. System: ClickHouse.",
       "closed": "2026-06-04",
-      "system": "ClickHouse"
+      "id": "c2861a7d-2973-5562-a4f5-3f5b4ee35c1b",
+      "opened": "2026-06-01",
+      "status": "closed",
+      "system": "ClickHouse",
+      "ticket_id": "TICK-104",
+      "title": "High compute credits on daily analytics warehouse rollups"
      }
     },
     {
@@ -4755,6 +3988,12 @@
      "properties": {}
     },
     {
+     "source": "Decision:dec_8c7075150849",
+     "target": "Ticket:TICK-103",
+     "type": "based_on",
+     "properties": {}
+    },
+    {
      "source": "Decision:dec_d09476870168",
      "target": "System:ClickHouse",
      "type": "about_system",
@@ -4764,12 +4003,6 @@
      "source": "Decision:dec_d1d225a60971",
      "target": "Decision:dec_8c7075150849",
      "type": "supersedes",
-     "properties": {}
-    },
-    {
-     "source": "Decision:dec_8c7075150849",
-     "target": "Ticket:TICK-103",
-     "type": "based_on",
      "properties": {}
     },
     {
@@ -4825,99 +4058,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_d1d225a60971"
-     },
-     "ms": 76.5
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_d1d225a60971"
      },
-     "ms": 151.4
+     "ms": 100.0
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_d1d225a60971"
      },
-     "ms": 82.9
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_d1d225a60971"
-     },
-     "ms": 85.6
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_d1d225a60971"
-     },
-     "ms": 82.2
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_d1d225a60971"
-     },
-     "ms": 80.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d09476870168",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 103.2
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 91.7
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 80.8
+     "ms": 178.6
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "ClickHouse"
-      ]
+      "id": "dec_d1d225a60971"
      },
-     "ms": 205.4
+     "ms": 199.8
     }
    ],
-   "total_ms": 1039.7
+   "total_ms": 202.3
   }
  },
  "dec_ecd94c860f08": {
@@ -4944,7 +4109,8 @@
     "id": "Security Architecture Review",
     "title": "Security Architecture Review",
     "date": "2026-06-08",
-    "quote": "Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials."
+    "quote": "Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials.",
+    "text": "Meeting: Security Architecture Review\nDate: 2026-06-08\nAttended by: Diana Prince, Julia Roberts, Evan Wright\nNotes: Evaluated database credential rotation. Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials. System: Vault."
    }
   ],
   "supersedes": [],
@@ -5064,11 +4230,12 @@
      "id": "Meeting:Security Architecture Review",
      "label": "Meeting",
      "properties": {
-      "id": "da360c0c-0d44-53d7-bc39-a71fe16a6a18",
-      "title": "Security Architecture Review",
+      "body": "Meeting: Security Architecture Review\nDate: 2026-06-08\nAttended by: Diana Prince, Julia Roberts, Evan Wright\nNotes: Evaluated database credential rotation. Diana Prince decided: Rotate all database passwords into Vault dynamic secrets to eliminate static credentials. System: Vault.",
       "date": "2026-06-08",
+      "file_name": "2026-06-08_secrets_management.md",
+      "id": "da360c0c-0d44-53d7-bc39-a71fe16a6a18",
       "meeting_date": "2026-06-08",
-      "file_name": "2026-06-08_secrets_management.md"
+      "title": "Security Architecture Review"
      }
     },
     {
@@ -5135,96 +4302,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_ecd94c860f08"
-     },
-     "ms": 134.4
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_ecd94c860f08"
      },
-     "ms": 190.3
+     "ms": 100.2
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_ecd94c860f08"
      },
-     "ms": 444.2
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_ecd94c860f08"
-     },
-     "ms": 110.9
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_ecd94c860f08"
-     },
-     "ms": 101.1
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_ecd94c860f08"
-     },
-     "ms": 105.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_e287aa298850",
-       "dec_ecd94c860f08"
-      ]
-     },
-     "ms": 515.6
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_ecd94c860f08"
-      ]
-     },
-     "ms": 111.3
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_ecd94c860f08"
-      ]
-     },
-     "ms": 84.6
+     "ms": 124.5
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Vault"
-      ]
+      "id": "dec_ecd94c860f08"
      },
-     "ms": 158.4
+     "ms": 138.8
     }
    ],
-   "total_ms": 1955.8
+   "total_ms": 141.1
   }
  },
  "dec_53d51a7d4549": {
@@ -5251,7 +4353,8 @@
     "id": "TICK-112",
     "title": "Replication lag and connection pool contention on primary database",
     "date": "2026-06-18",
-    "quote": "Upgrade all production Postgres instances to version 16."
+    "quote": "Upgrade all production Postgres instances to version 16.",
+    "text": "To leverage native logical replication performance and query pipeline improvements, Evan Wright decided: Upgrade all production Postgres instances to version 16. System: Postgres."
    }
   ],
   "supersedes": [],
@@ -5346,13 +4449,14 @@
      "id": "Ticket:TICK-112",
      "label": "Ticket",
      "properties": {
-      "id": "c910f3a2-50ee-5608-8821-5b47d0d3f857",
-      "ticket_id": "TICK-112",
-      "title": "Replication lag and connection pool contention on primary database",
-      "status": "closed",
-      "opened": "2026-06-15",
+      "body": "To leverage native logical replication performance and query pipeline improvements, Evan Wright decided: Upgrade all production Postgres instances to version 16. System: Postgres.",
       "closed": "2026-06-18",
-      "system": "Postgres"
+      "id": "c910f3a2-50ee-5608-8821-5b47d0d3f857",
+      "opened": "2026-06-15",
+      "status": "closed",
+      "system": "Postgres",
+      "ticket_id": "TICK-112",
+      "title": "Replication lag and connection pool contention on primary database"
      }
     },
     {
@@ -5401,95 +4505,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_53d51a7d4549"
-     },
-     "ms": 356.7
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_53d51a7d4549"
      },
-     "ms": 581.4
+     "ms": 112.2
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_53d51a7d4549"
      },
-     "ms": 113.7
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_53d51a7d4549"
-     },
-     "ms": 80.1
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_53d51a7d4549"
-     },
-     "ms": 80.9
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_53d51a7d4549"
-     },
-     "ms": 85.5
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_53d51a7d4549"
-      ]
-     },
-     "ms": 90.2
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_53d51a7d4549"
-      ]
-     },
-     "ms": 84.7
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_53d51a7d4549"
-      ]
-     },
-     "ms": 104.4
+     "ms": 150.1
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Postgres"
-      ]
+      "id": "dec_53d51a7d4549"
      },
-     "ms": 107.5
+     "ms": 168.1
     }
    ],
-   "total_ms": 1685.1
+   "total_ms": 170.5
   }
  },
  "dec_04ed8d5c10ae": {
@@ -5516,7 +4556,8 @@
     "id": "Container Platform Strategy",
     "title": "Container Platform Strategy",
     "date": "2026-08-20",
-    "quote": "Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers."
+    "quote": "Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers.",
+    "text": "Meeting: Container Platform Strategy\nDate: 2026-08-20\nAttended by: Laura Croft, George Clark, Oliver Queen\nNotes: Evaluated Kubernetes version lifecycle. Laura Croft decided: Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers. System: Kubernetes."
    }
   ],
   "supersedes": [],
@@ -5611,11 +4652,12 @@
      "id": "Meeting:Container Platform Strategy",
      "label": "Meeting",
      "properties": {
-      "id": "730eebe4-956c-501b-838d-34aca3eea565",
-      "title": "Container Platform Strategy",
+      "body": "Meeting: Container Platform Strategy\nDate: 2026-08-20\nAttended by: Laura Croft, George Clark, Oliver Queen\nNotes: Evaluated Kubernetes version lifecycle. Laura Croft decided: Standardize on Kubernetes 1.30 across all production regions to unlock gateway API controllers. System: Kubernetes.",
       "date": "2026-08-20",
+      "file_name": "2026-08-20_container_platform_upgrade.md",
+      "id": "730eebe4-956c-501b-838d-34aca3eea565",
       "meeting_date": "2026-08-20",
-      "file_name": "2026-08-20_container_platform_upgrade.md"
+      "title": "Container Platform Strategy"
      }
     },
     {
@@ -5664,95 +4706,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_04ed8d5c10ae"
-     },
-     "ms": 103.4
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_04ed8d5c10ae"
      },
-     "ms": 84.0
+     "ms": 119.0
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_04ed8d5c10ae"
      },
-     "ms": 93.0
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_04ed8d5c10ae"
-     },
-     "ms": 79.6
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_04ed8d5c10ae"
-     },
-     "ms": 91.1
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_04ed8d5c10ae"
-     },
-     "ms": 68.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_04ed8d5c10ae"
-      ]
-     },
-     "ms": 104.3
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_04ed8d5c10ae"
-      ]
-     },
-     "ms": 76.9
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_04ed8d5c10ae"
-      ]
-     },
-     "ms": 80.0
+     "ms": 137.3
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "Kubernetes"
-      ]
+      "id": "dec_04ed8d5c10ae"
      },
-     "ms": 110.8
+     "ms": 147.9
     }
    ],
-   "total_ms": 891.1
+   "total_ms": 150.0
   }
  },
  "dec_d09476870168": {
@@ -5783,7 +4761,8 @@
     "id": "Cloud Cost Optimization Taskforce",
     "title": "Cloud Cost Optimization Taskforce",
     "date": "2026-10-10",
-    "quote": "decommissioning Snowflake warehouses in favor of ClickHouse."
+    "quote": "decommissioning Snowflake warehouses in favor of ClickHouse.",
+    "text": "Meeting: Cloud Cost Optimization Taskforce\nDate: 2026-10-10\nAttended by: Laura Croft, Fiona Gallagher, Bob Martin\nNotes: Reviewed monthly cloud spend reductions achieved by decommissioning Snowflake warehouses in favor of ClickHouse."
    }
   ],
   "supersedes": [],
@@ -5974,18 +4953,6 @@
      }
     },
     {
-     "id": "Decision:dec_d1d225a60971",
-     "label": "Decision",
-     "properties": {
-      "id": "dec_d1d225a60971",
-      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
-      "decided_on": "2026-06-04",
-      "status": "accepted",
-      "decision_code": "DEC-13",
-      "health": "active"
-     }
-    },
-    {
      "id": "Decision:dec_8c7075150849",
      "label": "Decision",
      "properties": {
@@ -6001,11 +4968,24 @@
      "id": "Meeting:Cloud Cost Optimization Taskforce",
      "label": "Meeting",
      "properties": {
-      "id": "d7e0c9f8-1205-5d1a-9ce8-97679bc5bb8a",
-      "title": "Cloud Cost Optimization Taskforce",
+      "body": "Meeting: Cloud Cost Optimization Taskforce\nDate: 2026-10-10\nAttended by: Laura Croft, Fiona Gallagher, Bob Martin\nNotes: Reviewed monthly cloud spend reductions achieved by decommissioning Snowflake warehouses in favor of ClickHouse.",
       "date": "2026-10-10",
+      "file_name": "2026-10-10_cloud_cost_optimization.md",
+      "id": "d7e0c9f8-1205-5d1a-9ce8-97679bc5bb8a",
       "meeting_date": "2026-10-10",
-      "file_name": "2026-10-10_cloud_cost_optimization.md"
+      "title": "Cloud Cost Optimization Taskforce"
+     }
+    },
+    {
+     "id": "Decision:dec_d1d225a60971",
+     "label": "Decision",
+     "properties": {
+      "id": "dec_d1d225a60971",
+      "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+      "decided_on": "2026-06-04",
+      "status": "accepted",
+      "decision_code": "DEC-13",
+      "health": "active"
      }
     },
     {
@@ -6073,12 +5053,6 @@
      "properties": {}
     },
     {
-     "source": "Decision:dec_d1d225a60971",
-     "target": "System:ClickHouse",
-     "type": "about_system",
-     "properties": {}
-    },
-    {
      "source": "Decision:dec_8c7075150849",
      "target": "System:Snowflake",
      "type": "about_system",
@@ -6088,6 +5062,12 @@
      "source": "Decision:dec_d09476870168",
      "target": "Meeting:Cloud Cost Optimization Taskforce",
      "type": "based_on",
+     "properties": {}
+    },
+    {
+     "source": "Decision:dec_d1d225a60971",
+     "target": "System:ClickHouse",
+     "type": "about_system",
      "properties": {}
     },
     {
@@ -6143,98 +5123,31 @@
   "cypher": {
    "queries": [
     {
-     "name": "resolve",
-     "query": "MATCH (d:Decision) WHERE d.id = $ref OR d.title = $ref RETURN d.id LIMIT 1",
-     "params": {
-      "ref": "dec_d09476870168"
-     },
-     "ms": 86.2
-    },
-    {
-     "name": "decision",
-     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:decided_by]->(p:Person) OPTIONAL MATCH (d)-[:about_system]->(s:System) RETURN properties(d), collect(DISTINCT p {.name, .role, .is_active, .leave_date}), collect(DISTINCT s.name)",
+     "name": "decision_and_lineage",
+     "query": "MATCH (d:Decision) WHERE d.id = $id OPTIONAL MATCH (d)-[:decided_by]->(p:Person) WITH d, collect(DISTINCT p {.name, .role, .is_active, .leave_date}) AS deciders OPTIONAL MATCH (d)-[:about_system]->(s:System) WITH d, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH down = (d)-[:supersedes*1..10]->(older:Decision) WITH d, deciders, systems, collect(DISTINCT [older.id, length(down)]) AS supersedes OPTIONAL MATCH up = (d)<-[:supersedes*1..10]-(newer:Decision) WITH d, deciders, systems, supersedes, collect(DISTINCT [newer.id, length(up)]) AS superseded_by OPTIONAL MATCH (d)-[c:contradicts]-(rival:Decision) WITH d, deciders, systems, supersedes, superseded_by, collect(DISTINCT [rival.id, startNode(c).id = d.id]) AS conflicts OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(peer:Decision) RETURN properties(d), deciders, systems, supersedes, superseded_by, conflicts, collect(DISTINCT peer.id)",
      "params": {
       "id": "dec_d09476870168"
      },
-     "ms": 86.6
+     "ms": 122.8
     },
     {
-     "name": "supersedes_chain",
-     "query": "MATCH path = (d:Decision {id: $id})-[:supersedes*1..10]->(x:Decision) RETURN x.id, min(length(path))",
+     "name": "related_decisions",
+     "query": "MATCH (d:Decision {id: $id}) OPTIONAL MATCH (d)-[:supersedes*0..10]-(c:Decision) WITH d, collect(DISTINCT c) AS chain OPTIONAL MATCH (d)-[:contradicts]-(r:Decision) WITH d, chain, collect(DISTINCT r) AS rivals WITH d, chain + rivals AS lineage OPTIONAL MATCH (d)-[:about_system]->(:System)<-[:about_system]-(p:Decision) WITH lineage, collect(DISTINCT p) AS peers UNWIND (lineage + peers) AS x WITH DISTINCT x, [n IN lineage | n.id] AS lineage_ids OPTIONAL MATCH (x)-[:decided_by]->(pp:Person) WITH x, lineage_ids, collect(DISTINCT pp.name) AS deciders OPTIONAL MATCH (x)-[:about_system]->(s:System) WITH x, lineage_ids, deciders, collect(DISTINCT s.name) AS systems OPTIONAL MATCH (x)-[l:supersedes|contradicts]->(y:Decision) WHERE y.id IN lineage_ids WITH x, lineage_ids, deciders, systems, collect(DISTINCT [type(l), y.id]) AS links OPTIONAL MATCH (x)-[bo:based_on]->(src) WHERE x.id IN lineage_ids RETURN x.id, x.title, x.decided_on, x.evidence_quote, deciders, systems, links, collect(DISTINCT [labels(src)[0], properties(src), properties(bo)])",
      "params": {
       "id": "dec_d09476870168"
      },
-     "ms": 99.4
-    },
-    {
-     "name": "superseded_by_chain",
-     "query": "MATCH path = (d:Decision {id: $id})<-[:supersedes*1..10]-(x:Decision) RETURN x.id, min(length(path))",
-     "params": {
-      "id": "dec_d09476870168"
-     },
-     "ms": 72.7
-    },
-    {
-     "name": "contradictions",
-     "query": "MATCH (d:Decision {id: $id})-[r:contradicts]-(x:Decision) RETURN x.id, startNode(r).id = d.id",
-     "params": {
-      "id": "dec_d09476870168"
-     },
-     "ms": 77.3
-    },
-    {
-     "name": "system_timeline",
-     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System)<-[:about_system]-(o:Decision) RETURN DISTINCT o.id",
-     "params": {
-      "id": "dec_d09476870168"
-     },
-     "ms": 90.0
-    },
-    {
-     "name": "decision_attributes",
-     "query": "MATCH (x:Decision) WHERE x.id IN $ids OPTIONAL MATCH (x)-[:decided_by]->(p:Person) OPTIONAL MATCH (x)-[:about_system]->(s:System) RETURN x.id, x.title, x.decided_on, collect(DISTINCT p.name), collect(DISTINCT s.name)",
-     "params": {
-      "ids": [
-       "dec_8c7075150849",
-       "dec_d09476870168",
-       "dec_d1d225a60971"
-      ]
-     },
-     "ms": 312.5
-    },
-    {
-     "name": "lineage_edges",
-     "query": "MATCH (a:Decision)-[r:supersedes|contradicts]->(b:Decision) WHERE a.id IN $ids AND b.id IN $ids RETURN a.id, type(r), b.id",
-     "params": {
-      "ids": [
-       "dec_d09476870168"
-      ]
-     },
-     "ms": 147.4
-    },
-    {
-     "name": "sources",
-     "query": "MATCH (x:Decision)-[:based_on]->(src) WHERE x.id IN $ids RETURN x.id, labels(src)[0], properties(src)",
-     "params": {
-      "ids": [
-       "dec_d09476870168"
-      ]
-     },
-     "ms": 74.8
+     "ms": 159.0
     },
     {
      "name": "impact",
-     "query": "MATCH path = (s:System)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE s.name IN $systems AND (x:Person OR x:Team OR x:Project) UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
+     "query": "MATCH (d:Decision {id: $id})-[:about_system]->(s:System) MATCH path = (s)-[:owns|member_of|leads|about_system|decided_by*1..2]-(x) WHERE x:Person OR x:Team OR x:Project UNWIND relationships(path) AS r RETURN DISTINCT labels(startNode(r))[0], properties(startNode(r)), type(r), labels(endNode(r))[0], properties(endNode(r))",
      "params": {
-      "systems": [
-       "ClickHouse",
-       "Snowflake"
-      ]
+      "id": "dec_d09476870168"
      },
-     "ms": 132.6
+     "ms": 174.2
     }
    ],
-   "total_ms": 1179.5
+   "total_ms": 179.5
   }
  }
 }

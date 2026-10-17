@@ -1,0 +1,1210 @@
+{
+ "captured_from": "production graph c87aa0cf (read-only), 2026-10-17",
+ "rows": {
+  "ROSTER": [
+   [
+    "Person",
+    "Alice Vance",
+    "4b071cc6-857f-5465-8830-80bad4dd9efd"
+   ],
+   [
+    "Person",
+    "Bob Martin",
+    "b372efab-4b32-5aa0-a154-edc0cd6a2100"
+   ],
+   [
+    "Person",
+    "Carlos Mendez",
+    "9cd89920-ceae-5803-be17-b9ebd7cfb8b1"
+   ],
+   [
+    "Person",
+    "Diana Prince",
+    "48524af6-c1ee-5511-af18-71f4895e1ac5"
+   ],
+   [
+    "Person",
+    "Evan Wright",
+    "d144ad7b-97e7-5540-b57c-4c07e2d4f501"
+   ],
+   [
+    "Person",
+    "Fiona Gallagher",
+    "0bb4c85f-396c-5a74-9978-e7c746d76489"
+   ],
+   [
+    "Person",
+    "George Clark",
+    "73b3b1bc-1e87-5c48-a774-071dc66ff51c"
+   ],
+   [
+    "Person",
+    "Hannah Abbott",
+    "87549a88-1438-5b06-89d3-d1d226fc9329"
+   ],
+   [
+    "Person",
+    "Ian Malcolm",
+    "7cd29e90-177e-5bcd-a6c1-9394f2b1b40a"
+   ],
+   [
+    "Person",
+    "Julia Roberts",
+    "9f04412b-7bb9-50c6-8c7b-644c6e18e8d2"
+   ],
+   [
+    "Person",
+    "Kevin Flynn",
+    "ae7f1280-ec95-5115-aebc-5b53966ad868"
+   ],
+   [
+    "Person",
+    "Laura Croft",
+    "5a242d25-3634-50e5-8386-9332f81a2f95"
+   ],
+   [
+    "Person",
+    "Marcus Aurelius",
+    "11a32105-6114-5ddb-bb4f-3630337b9662"
+   ],
+   [
+    "Person",
+    "Nina Simone",
+    "4f2fc09d-f07c-530e-bbbe-dfe117e18bab"
+   ],
+   [
+    "Person",
+    "Oliver Queen",
+    "df339236-9957-5149-aa56-596317a889f1"
+   ],
+   [
+    "System",
+    "Postgres",
+    "0a778edb-e92d-511f-a498-ee5ed29ea0f3"
+   ],
+   [
+    "System",
+    "Redis",
+    "3513e265-fe56-5a66-ba00-5f925be3ceee"
+   ],
+   [
+    "System",
+    "ClickHouse",
+    "c55cc515-a1c6-5c40-aaed-2bf9357cab7c"
+   ],
+   [
+    "System",
+    "Keycloak",
+    "966e4c75-dd82-54d3-b9dd-1a89d3c6a06f"
+   ],
+   [
+    "System",
+    "Kafka",
+    "62d67fac-4128-57dd-8e5c-586f1a353323"
+   ],
+   [
+    "System",
+    "RabbitMQ",
+    "947b2207-8108-5b28-828c-eadef48fc20d"
+   ],
+   [
+    "System",
+    "Elasticsearch",
+    "e6fb1361-33d2-5c9a-b3ce-a581cca63ed0"
+   ],
+   [
+    "System",
+    "Kubernetes",
+    "674d1c14-d794-5111-85ff-710e68f75ffe"
+   ],
+   [
+    "System",
+    "Snowflake",
+    "7c54b083-1145-52f5-8c0c-1b7377ac839e"
+   ],
+   [
+    "System",
+    "Vault",
+    "f555b55a-5dcc-5d37-891e-f655fdedb917"
+   ],
+   [
+    "System",
+    "Prometheus",
+    "5ae14694-9400-5002-a0a7-185b4fb92de8"
+   ],
+   [
+    "System",
+    "Datadog",
+    "a8f9f613-759b-58cf-b4a1-ee669b05c856"
+   ],
+   [
+    "Decision",
+    "Migrate session storage to embedded Keycloak cache",
+    "dec_f564fcd15601"
+   ],
+   [
+    "Decision",
+    "Adopt Snowflake for analytics ETL queries",
+    "dec_8c7075150849"
+   ],
+   [
+    "Decision",
+    "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+    "dec_fda8c9b4e631"
+   ],
+   [
+    "Decision",
+    "Adopt Kafka for all event messaging across services",
+    "dec_76772c5b323f"
+   ],
+   [
+    "Decision",
+    "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "dec_d1d225a60971"
+   ],
+   [
+    "Decision",
+    "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+    "dec_e287aa298850"
+   ],
+   [
+    "Decision",
+    "Adopt RabbitMQ for all event messaging across services",
+    "dec_98a223fad745"
+   ],
+   [
+    "Decision",
+    "Standardize application traces on Datadog APM across all production services",
+    "dec_5b196394600e"
+   ],
+   [
+    "Decision",
+    "Deploy Prometheus Operator on all Kubernetes staging clusters",
+    "dec_091c86e8e476"
+   ],
+   [
+    "Decision",
+    "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+    "dec_2c6a03017923"
+   ],
+   [
+    "Decision",
+    "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "dec_f8a30e251e54"
+   ],
+   [
+    "Decision",
+    "Upgrade all production Postgres instances to version 16",
+    "dec_53d51a7d4549"
+   ],
+   [
+    "Decision",
+    "Migrate application metrics from Datadog to Prometheus Operator",
+    "dec_21a4de59b886"
+   ],
+   [
+    "Decision",
+    "Adopt Keycloak for company-wide single sign-on",
+    "dec_f17ee7ad31a2"
+   ],
+   [
+    "Decision",
+    "Standardize on Kubernetes 1.30 across all production regions",
+    "dec_04ed8d5c10ae"
+   ],
+   [
+    "Decision",
+    "Decommission Snowflake warehouses in favor of ClickHouse",
+    "dec_d09476870168"
+   ],
+   [
+    "Decision",
+    "Rotate all database passwords into Vault dynamic secrets",
+    "dec_ecd94c860f08"
+   ]
+  ],
+  "IMPACT_DECISIONS": [
+   [
+    "dec_8c7075150849",
+    "Adopt Snowflake for analytics ETL queries",
+    "2026-02-18",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Fiona Gallagher",
+      "role": "Lead Analytics Engineer"
+     }
+    ],
+    [
+     "Snowflake"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-103",
+      "Slow analytical queries on historical clickstream datasets",
+      "2026-02-15"
+     ]
+    ]
+   ],
+   [
+    "dec_d1d225a60971",
+    "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "2026-06-04",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Carlos Mendez",
+      "role": "Staff Data Engineer"
+     }
+    ],
+    [
+     "ClickHouse"
+    ],
+    [
+     "dec_8c7075150849"
+    ],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-104",
+      "High compute credits on daily analytics warehouse rollups",
+      "2026-06-01"
+     ]
+    ]
+   ],
+   [
+    "dec_d09476870168",
+    "Decommission Snowflake warehouses in favor of ClickHouse",
+    "2026-10-10",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Bob Martin",
+      "role": "Senior Staff SRE"
+     },
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Fiona Gallagher",
+      "role": "Lead Analytics Engineer"
+     },
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Laura Croft",
+      "role": "Cloud Operations Lead"
+     }
+    ],
+    [
+     "ClickHouse",
+     "Snowflake"
+    ],
+    [],
+    [],
+    [
+     [
+      "Meeting",
+      "Cloud Cost Optimization Taskforce",
+      "Cloud Cost Optimization Taskforce",
+      "2026-10-10"
+     ]
+    ]
+   ]
+  ],
+  "IMPACT_PEOPLE": [
+   [
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Fiona Gallagher",
+      "role": "Lead Analytics Engineer"
+     }
+    ],
+    [
+     [
+      "Fiona Gallagher",
+      "Lead Analytics Engineer",
+      true,
+      "",
+      "TICK-103"
+     ],
+     [
+      "Nina Simone",
+      "Data Pipeline Engineer",
+      true,
+      "",
+      "TICK-103"
+     ],
+     [
+      "Fiona Gallagher",
+      "Lead Analytics Engineer",
+      true,
+      "",
+      "TICK-123"
+     ],
+     [
+      "Fiona Gallagher",
+      "Lead Analytics Engineer",
+      true,
+      "",
+      "TICK-138"
+     ],
+     [
+      "Fiona Gallagher",
+      "Lead Analytics Engineer",
+      true,
+      "",
+      "TICK-153"
+     ],
+     [
+      "Fiona Gallagher",
+      "Lead Analytics Engineer",
+      true,
+      "",
+      "TICK-168"
+     ]
+    ],
+    [
+     [
+      "Team",
+      "Data Platform",
+      "Fiona Gallagher",
+      "member_of"
+     ]
+    ]
+   ]
+  ],
+  "IMPACT_TICKETS": [
+   [
+    "TICK-103",
+    "Slow analytical queries on historical clickstream datasets",
+    "closed",
+    "2026-02-15",
+    "2026-02-18"
+   ],
+   [
+    "TICK-123",
+    "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #123",
+    "closed",
+    "2026-004-24",
+    "2026-004-26"
+   ],
+   [
+    "TICK-138",
+    "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #138",
+    "closed",
+    "2026-003-14",
+    "2026-003-16"
+   ],
+   [
+    "TICK-153",
+    "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #153",
+    "closed",
+    "2026-002-04",
+    "2026-002-06"
+   ],
+   [
+    "TICK-168",
+    "Warehouse auto-suspend timeout reduction to control cloud spend - Incident #168",
+    "closed",
+    "2026-001-19",
+    "2026-001-21"
+   ]
+  ],
+  "EXPERTISE": [
+   [
+    [
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Alice Vance",
+       "role": "Principal Platform Engineer"
+      },
+      "dec_76772c5b323f"
+     ]
+    ],
+    [
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Alice Vance",
+       "role": "Principal Platform Engineer"
+      },
+      "Kafka"
+     ]
+    ],
+    [
+     [
+      null,
+      null
+     ]
+    ],
+    [
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Alice Vance",
+       "role": "Principal Platform Engineer"
+      },
+      "Core Messaging Architecture Sync"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Bob Martin",
+       "role": "Senior Staff SRE"
+      },
+      "Core Messaging Architecture Sync"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Ian Malcolm",
+       "role": "Distributed Systems Architect"
+      },
+      "Core Messaging Architecture Sync"
+     ]
+    ],
+    [
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Alice Vance",
+       "role": "Principal Platform Engineer"
+      },
+      "TICK-105"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Evan Wright",
+       "role": "Senior Backend Engineer"
+      },
+      "TICK-105"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Bob Martin",
+       "role": "Senior Staff SRE"
+      },
+      "TICK-120"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Carlos Mendez",
+       "role": "Staff Data Engineer"
+      },
+      "TICK-120"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Bob Martin",
+       "role": "Senior Staff SRE"
+      },
+      "TICK-135"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Carlos Mendez",
+       "role": "Staff Data Engineer"
+      },
+      "TICK-135"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Bob Martin",
+       "role": "Senior Staff SRE"
+      },
+      "TICK-150"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Carlos Mendez",
+       "role": "Staff Data Engineer"
+      },
+      "TICK-150"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Bob Martin",
+       "role": "Senior Staff SRE"
+      },
+      "TICK-165"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Carlos Mendez",
+       "role": "Staff Data Engineer"
+      },
+      "TICK-165"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Bob Martin",
+       "role": "Senior Staff SRE"
+      },
+      "TICK-180"
+     ],
+     [
+      {
+       "is_active": true,
+       "leave_date": "",
+       "name": "Carlos Mendez",
+       "role": "Staff Data Engineer"
+      },
+      "TICK-180"
+     ]
+    ]
+   ]
+  ],
+  "STATUS_DECISIONS": [
+   [
+    "dec_8c7075150849",
+    "Adopt Snowflake for analytics ETL queries",
+    "2026-02-18",
+    [
+     "Fiona Gallagher"
+    ],
+    [
+     "Snowflake"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-103",
+      "Slow analytical queries on historical clickstream datasets",
+      "2026-02-15"
+     ]
+    ]
+   ],
+   [
+    "dec_d09476870168",
+    "Decommission Snowflake warehouses in favor of ClickHouse",
+    "2026-10-10",
+    [
+     "Bob Martin",
+     "Fiona Gallagher",
+     "Laura Croft"
+    ],
+    [
+     "ClickHouse",
+     "Snowflake"
+    ],
+    [],
+    [],
+    [
+     [
+      "Meeting",
+      "Cloud Cost Optimization Taskforce",
+      "Cloud Cost Optimization Taskforce",
+      "2026-10-10"
+     ]
+    ]
+   ],
+   [
+    "dec_5b196394600e",
+    "Standardize application traces on Datadog APM across all production services",
+    "2026-03-28",
+    [
+     "Kevin Flynn"
+    ],
+    [
+     "Datadog"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-108",
+      "Inconsistent distributed trace propagation in checkout services",
+      "2026-03-25"
+     ]
+    ]
+   ],
+   [
+    "dec_e287aa298850",
+    "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+    "2026-03-14",
+    [
+     "Diana Prince"
+    ],
+    [
+     "Vault"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-107",
+      "Plaintext secret leakage risk in CI/CD pipeline variables",
+      "2026-03-12"
+     ]
+    ]
+   ],
+   [
+    "dec_98a223fad745",
+    "Adopt RabbitMQ for all event messaging across services",
+    "2026-04-08",
+    [
+     "Bob Martin"
+    ],
+    [
+     "RabbitMQ"
+    ],
+    [
+     "dec_76772c5b323f"
+    ],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-106",
+      "Lightweight pubsub requirements for async background tasks",
+      "2026-04-05"
+     ],
+     [
+      "Meeting",
+      "Core Messaging Architecture Sync",
+      "Core Messaging Architecture Sync",
+      "2026-05-18"
+     ]
+    ]
+   ],
+   [
+    "dec_f564fcd15601",
+    "Migrate session storage to embedded Keycloak cache",
+    "2026-05-12",
+    [
+     "Alice Vance"
+    ],
+    [
+     "Keycloak"
+    ],
+    [],
+    [
+     "dec_fda8c9b4e631"
+    ],
+    [
+     [
+      "Ticket",
+      "TICK-102",
+      "Redis session cluster operational maintenance and failover complexity",
+      "2026-05-10"
+     ]
+    ]
+   ],
+   [
+    "dec_ecd94c860f08",
+    "Rotate all database passwords into Vault dynamic secrets",
+    "2026-06-08",
+    [
+     "Diana Prince"
+    ],
+    [
+     "Vault"
+    ],
+    [],
+    [],
+    [
+     [
+      "Meeting",
+      "Security Architecture Review",
+      "Security Architecture Review",
+      "2026-06-08"
+     ]
+    ]
+   ],
+   [
+    "dec_04ed8d5c10ae",
+    "Standardize on Kubernetes 1.30 across all production regions",
+    "2026-08-20",
+    [
+     "Laura Croft"
+    ],
+    [
+     "Kubernetes"
+    ],
+    [],
+    [],
+    [
+     [
+      "Meeting",
+      "Container Platform Strategy",
+      "Container Platform Strategy",
+      "2026-08-20"
+     ]
+    ]
+   ],
+   [
+    "dec_21a4de59b886",
+    "Migrate application metrics from Datadog to Prometheus Operator",
+    "2026-04-12",
+    [
+     "Kevin Flynn"
+    ],
+    [
+     "Prometheus"
+    ],
+    [],
+    [
+     "dec_5b196394600e"
+    ],
+    [
+     [
+      "Meeting",
+      "Observability Platform Alignment",
+      "Observability Platform Alignment",
+      "2026-04-12"
+     ]
+    ]
+   ],
+   [
+    "dec_f17ee7ad31a2",
+    "Adopt Keycloak for company-wide single sign-on",
+    "2026-02-10",
+    [
+     "Julia Roberts"
+    ],
+    [
+     "Keycloak"
+    ],
+    [],
+    [],
+    [
+     [
+      "Meeting",
+      "IAM Architecture Modernization",
+      "IAM Architecture Modernization",
+      "2026-02-10"
+     ]
+    ]
+   ],
+   [
+    "dec_53d51a7d4549",
+    "Upgrade all production Postgres instances to version 16",
+    "2026-06-18",
+    [
+     "Evan Wright"
+    ],
+    [
+     "Postgres"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-112",
+      "Replication lag and connection pool contention on primary database",
+      "2026-06-15"
+     ]
+    ]
+   ],
+   [
+    "dec_091c86e8e476",
+    "Deploy Prometheus Operator on all Kubernetes staging clusters",
+    "2026-04-22",
+    [
+     "Laura Croft"
+    ],
+    [
+     "Prometheus"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-109",
+      "Cluster-wide metrics collection and automated alerts",
+      "2026-04-20"
+     ]
+    ]
+   ],
+   [
+    "dec_f8a30e251e54",
+    "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
+    "2026-05-24",
+    [
+     "Julia Roberts"
+    ],
+    [
+     "Keycloak"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-111",
+      "OAuth2 token issuance architecture for internal gateway",
+      "2026-05-22"
+     ]
+    ]
+   ],
+   [
+    "dec_76772c5b323f",
+    "Adopt Kafka for all event messaging across services",
+    "2026-03-04",
+    [
+     "Alice Vance"
+    ],
+    [
+     "Kafka"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-105",
+      "Need enterprise event bus for asynchronous order processing",
+      "2026-03-01"
+     ]
+    ]
+   ],
+   [
+    "dec_2c6a03017923",
+    "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+    "2026-05-05",
+    [
+     "Ian Malcolm"
+    ],
+    [
+     "Redis"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-110",
+      "Memory pressure on legacy RabbitMQ broker during notifications spike",
+      "2026-05-02"
+     ]
+    ]
+   ],
+   [
+    "dec_fda8c9b4e631",
+    "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+    "2026-02-03",
+    [
+     "Alice Vance"
+    ],
+    [
+     "Redis"
+    ],
+    [],
+    [],
+    [
+     [
+      "Ticket",
+      "TICK-101",
+      "Severe latency on Postgres session store under peak load",
+      "2026-02-01"
+     ]
+    ]
+   ],
+   [
+    "dec_d1d225a60971",
+    "Migrate analytics reporting queries from Snowflake to ClickHouse cluster",
+    "2026-06-04",
+    [
+     "Carlos Mendez"
+    ],
+    [
+     "ClickHouse"
+    ],
+    [],
+    [
+     "dec_8c7075150849"
+    ],
+    [
+     [
+      "Ticket",
+      "TICK-104",
+      "High compute credits on daily analytics warehouse rollups",
+      "2026-06-01"
+     ]
+    ]
+   ]
+  ],
+  "STATUS_SYSTEMS": [
+   [
+    "ClickHouse",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Carlos Mendez",
+      "role": "Staff Data Engineer"
+     }
+    ]
+   ],
+   [
+    "Datadog",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Kevin Flynn",
+      "role": "Observability Lead"
+     }
+    ]
+   ],
+   [
+    "Elasticsearch",
+    [
+     {
+      "is_active": false,
+      "leave_date": "2025-11-30",
+      "name": "Marcus Aurelius",
+      "role": "Former Staff Architect"
+     }
+    ]
+   ],
+   [
+    "Kafka",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Alice Vance",
+      "role": "Principal Platform Engineer"
+     }
+    ]
+   ],
+   [
+    "Keycloak",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Julia Roberts",
+      "role": "Identity & Access Lead"
+     }
+    ]
+   ],
+   [
+    "Kubernetes",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Laura Croft",
+      "role": "Cloud Operations Lead"
+     }
+    ]
+   ],
+   [
+    "Postgres",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Evan Wright",
+      "role": "Senior Backend Engineer"
+     }
+    ]
+   ],
+   [
+    "Prometheus",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Kevin Flynn",
+      "role": "Observability Lead"
+     }
+    ]
+   ],
+   [
+    "RabbitMQ",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Bob Martin",
+      "role": "Senior Staff SRE"
+     }
+    ]
+   ],
+   [
+    "Redis",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Alice Vance",
+      "role": "Principal Platform Engineer"
+     }
+    ]
+   ],
+   [
+    "Snowflake",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Fiona Gallagher",
+      "role": "Lead Analytics Engineer"
+     }
+    ]
+   ],
+   [
+    "Vault",
+    [
+     {
+      "is_active": true,
+      "leave_date": "",
+      "name": "Diana Prince",
+      "role": "Security Architect"
+     }
+    ]
+   ]
+  ]
+ },
+ "codes": {
+  "dec_fda8c9b4e631": "DEC-01",
+  "dec_f17ee7ad31a2": "DEC-02",
+  "dec_8c7075150849": "DEC-03",
+  "dec_76772c5b323f": "DEC-04",
+  "dec_e287aa298850": "DEC-05",
+  "dec_5b196394600e": "DEC-06",
+  "dec_98a223fad745": "DEC-07",
+  "dec_21a4de59b886": "DEC-08",
+  "dec_091c86e8e476": "DEC-09",
+  "dec_2c6a03017923": "DEC-10",
+  "dec_f564fcd15601": "DEC-11",
+  "dec_f8a30e251e54": "DEC-12",
+  "dec_d1d225a60971": "DEC-13",
+  "dec_ecd94c860f08": "DEC-14",
+  "dec_53d51a7d4549": "DEC-15",
+  "dec_04ed8d5c10ae": "DEC-16",
+  "dec_d09476870168": "DEC-17"
+ },
+ "health": {
+  "dec_fda8c9b4e631": {
+   "status": "superseded",
+   "reason": "Superseded by 'Migrate session storage to embedded Keycloak cache' (date: 2026-05-12)",
+   "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention"
+  },
+  "dec_f17ee7ad31a2": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Adopt Keycloak for company-wide single sign-on"
+  },
+  "dec_8c7075150849": {
+   "status": "superseded",
+   "reason": "Superseded by 'Migrate analytics reporting queries from Snowflake to ClickHouse cluster' (date: 2026-06-04)",
+   "title": "Adopt Snowflake for analytics ETL queries"
+  },
+  "dec_76772c5b323f": {
+   "status": "contradicted",
+   "reason": "Contradicted by 'Adopt RabbitMQ for all event messaging across services' decided by Bob Martin",
+   "title": "Adopt Kafka for all event messaging across services"
+  },
+  "dec_e287aa298850": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets"
+  },
+  "dec_5b196394600e": {
+   "status": "superseded",
+   "reason": "Superseded by 'Migrate application metrics from Datadog to Prometheus Operator' (date: 2026-04-12)",
+   "title": "Standardize application traces on Datadog APM across all production services"
+  },
+  "dec_98a223fad745": {
+   "status": "contradicted",
+   "reason": "Contradicted by 'Adopt Kafka for all event messaging across services' decided by Alice Vance",
+   "title": "Adopt RabbitMQ for all event messaging across services"
+  },
+  "dec_21a4de59b886": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Migrate application metrics from Datadog to Prometheus Operator"
+  },
+  "dec_091c86e8e476": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Deploy Prometheus Operator on all Kubernetes staging clusters"
+  },
+  "dec_2c6a03017923": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications"
+  },
+  "dec_f564fcd15601": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Migrate session storage to embedded Keycloak cache"
+  },
+  "dec_f8a30e251e54": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication"
+  },
+  "dec_d1d225a60971": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Migrate analytics reporting queries from Snowflake to ClickHouse cluster"
+  },
+  "dec_ecd94c860f08": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Rotate all database passwords into Vault dynamic secrets"
+  },
+  "dec_53d51a7d4549": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Upgrade all production Postgres instances to version 16"
+  },
+  "dec_04ed8d5c10ae": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Standardize on Kubernetes 1.30 across all production regions"
+  },
+  "dec_d09476870168": {
+   "status": "active",
+   "reason": "Active decision; its deciders are still at the company and nothing conflicts with or supersedes it.",
+   "title": "Decommission Snowflake warehouses in favor of ClickHouse"
+  }
+ }
+}

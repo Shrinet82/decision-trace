@@ -155,3 +155,161 @@ export interface ResetResult {
   nodes: number;
   edges: number;
 }
+
+/* ---------------------------------------------------------------------------------------------
+ * Streamed Ask (Phase 3). POST /ask/stream emits these server-sent events; POST /ask returns the
+ * `done` payload. Hand-written for the same reason as the ingest types above.
+ * ------------------------------------------------------------------------------------------- */
+
+export type AskIntent = 'why' | 'impact' | 'expertise' | 'status' | 'other';
+export const ASK_STEPS = ['understanding', 'matching', 'traversal', 'health', 'composing'] as const;
+export type AskStepKey = (typeof ASK_STEPS)[number];
+
+export interface MatchedEntity {
+  label: 'Person' | 'System' | 'Decision';
+  name: string;
+  id?: string | null;
+  decision_code?: string | null;
+}
+
+export interface AskStepEvent {
+  step: AskStepKey;
+  status: 'running' | 'done' | 'skipped' | 'error';
+  label: string;
+  ms?: number;
+  detail?: string | null;
+  intent?: AskIntent;
+  focus?: string | null;
+  entities?: MatchedEntity[];
+}
+
+export interface AskQueryEvent {
+  step: string;
+  name: string;
+  query: string;
+  params: Record<string, unknown>;
+  rows: number;
+  ms: number;
+}
+
+export interface SectionItem {
+  kind: 'decision' | 'person' | 'system' | 'team' | 'project' | 'ticket' | 'meeting';
+  name: string;
+  id?: string | null;
+  code?: string | null;
+  health?: HealthStatus | null;
+  detail?: string | null;
+  role?: string | null;
+  departed?: boolean;
+  leave_date?: string | null;
+  status?: string | null;
+  date?: string | null;
+}
+
+export interface AnswerSection {
+  key: string;
+  title: string;
+  items: SectionItem[];
+  total: number;
+}
+
+export interface Expert {
+  name: string;
+  role?: string | null;
+  departed: boolean;
+  leave_date?: string | null;
+  score: number;
+  evidence: { decided: number; owns: number; meetings: number; tickets: number };
+  decisions: string[];
+  meetings: string[];
+  tickets: string[];
+}
+
+export interface AskTraceStep {
+  step: AskStepKey;
+  label: string;
+  status: 'done' | 'skipped' | 'error';
+  ms: number;
+  detail?: string | null;
+}
+
+export interface AskTrace {
+  steps: AskTraceStep[];
+  queries: AskQueryEvent[];
+  total_ms: number;
+}
+
+export interface AskPathEvent {
+  intent: AskIntent;
+  graph_path: GraphPath;
+  primary_decision_id: string | null;
+  sections: AnswerSection[];
+  experts: Expert[];
+}
+
+/** The full result: AskResponse plus the Phase 3 fields (absent in older fixtures). */
+export type AskResult = AskResponse & {
+  intent?: AskIntent;
+  entities?: MatchedEntity[];
+  sections?: AnswerSection[];
+  experts?: Expert[];
+  trace?: AskTrace | null;
+};
+
+export type AskStreamEvent =
+  | { event: 'step'; data: AskStepEvent }
+  | { event: 'query'; data: AskQueryEvent }
+  | { event: 'path'; data: AskPathEvent }
+  | { event: 'token'; data: { text: string } }
+  | { event: 'done'; data: AskResult }
+  | { event: 'error'; data: { message: string } };
+
+/* Sources ------------------------------------------------------------------------------------ */
+
+export type SourceKind = 'ticket' | 'meeting' | 'document' | 'person' | 'team' | 'project' | 'system';
+
+export interface SourceItem {
+  kind: SourceKind;
+  key: string;
+  title: string;
+  detail?: string | null;
+  date?: string | null;
+  linked_decisions: number;
+  demo: boolean;
+}
+
+export interface SourceList {
+  items: SourceItem[];
+  counts: Partial<Record<SourceKind, number>>;
+}
+
+export interface SourceDocument {
+  kind: SourceKind;
+  key: string;
+  title: string;
+  date?: string | null;
+  status?: string | null;
+  text?: string | null;
+  fields: Record<string, unknown>;
+  decisions: {
+    id: string;
+    decision_code?: string | null;
+    title: string;
+    health: HealthStatus;
+    quote?: string | null;
+  }[];
+  people: { name: string; relation: string; role?: string | null; departed: boolean }[];
+  systems: string[];
+  related: { label: string; name: string; relation: string }[];
+  demo: boolean;
+}
+
+export interface DemoStatus {
+  has_demo_data: boolean;
+  tagged_nodes: number;
+  tagged_edges: number;
+  last_ingest_at: string | null;
+  resets_at: string | null;
+  seconds_left: number | null;
+  auto_reset_minutes: number;
+}

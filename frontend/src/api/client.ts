@@ -1,7 +1,12 @@
-import { parseSse, toIngestEvent } from './sse';
+import { parseSse, toAskEvent, toIngestEvent, type SseMessage } from './sse';
 import type {
   AskRequest,
   AskResponse,
+  AskStreamEvent,
+  DemoStatus,
+  SourceDocument,
+  SourceKind,
+  SourceList,
   ChangeEntry,
   DecisionDetail,
   DecisionSummary,
@@ -258,21 +263,29 @@ export async function streamIngest(
     throw new ApiError('The server returned an empty ingest stream.', response.status);
   }
 
-  const reader = response.body.getReader();
+  let finished = false;
+  await readSse(response.body, (message) => {
+    const event = toIngestEvent(message);
+    if (!event) return;
+    if (event.event === 'diff' || event.event === 'error') finished = true;
+    onEvent(event);
+  });
+
+  if (!finished) {
+    throw new ApiError('The ingest stream ended before a result arrived. Try again.', 0);
+  }
+}
+
+/** Reads a server-sent-events body to the end, calling `onMessage` for each complete event. */
+async function readSse(body: ReadableStream<Uint8Array>, onMessage: (m: SseMessage) => void): Promise<void> {
+  const reader = body.getReader();
   const decoder = new TextDecoder();
   let rest = '';
-  let finished = false;
   const dispatch = (text: string) => {
     const parsed = parseSse(text);
     rest = parsed.rest;
-    for (const message of parsed.events) {
-      const event = toIngestEvent(message);
-      if (!event) continue;
-      if (event.event === 'diff' || event.event === 'error') finished = true;
-      onEvent(event);
-    }
+    parsed.events.forEach(onMessage);
   };
-
   try {
     for (;;) {
       const { done, value } = await reader.read();
@@ -284,10 +297,92 @@ export async function streamIngest(
   } finally {
     reader.releaseLock();
   }
+}
 
-  if (!finished) {
-    throw new ApiError('The ingest stream ended before a result arrived. Try again.', 0);
+/* ------------------------------------------------------------------------------------------ */
+/* Streamed Ask                                                                                */
+/* ------------------------------------------------------------------------------------------ */
+
+/** Mock playback runs each recorded step at this fraction of its real duration (capped). */
+const INSTANT = import.meta.env.MODE === 'test';
+export const MOCK_STEP_SCALE = INSTANT ? 0 : 0.35;
+export const MOCK_STEP_MAX_MS = 900;
+export const MOCK_TOKEN_INTERVAL_MS = INSTANT ? 0 : 40;
+
+/**
+ * POST /ask/stream and hand each event to `onEvent` as it arrives. Resolves after `done` or
+ * `error`; rejects with an ApiError for a non-2xx response or a stream that ends early. In mock
+ * mode it replays a stream recorded from the live API, waiting each step's recorded time.
+ */
+export async function streamAsk(
+  question: string,
+  onEvent: (event: AskStreamEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  if (USE_MOCKS) {
+    const { getMockAskStream } = await loadMocks();
+    for (const event of await getMockAskStream(question)) {
+      if (event.event === 'step' && event.data.status !== 'running') {
+        await wait(Math.min((event.data.ms ?? 0) * MOCK_STEP_SCALE, MOCK_STEP_MAX_MS), signal);
+      } else if (event.event === 'token') {
+        await wait(MOCK_TOKEN_INTERVAL_MS, signal);
+      }
+      onEvent(event);
+    }
+    return;
   }
+
+  const response = await fetch(`${API_BASE_URL}/ask/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    body: JSON.stringify({ question }),
+    signal,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    const message =
+      response.status === 429
+        ? 'Too many questions from this address. Wait a minute and try again.'
+        : `Search failed: the server responded with ${response.status}.`;
+    throw new ApiError(message, response.status, body);
+  }
+  if (!response.body) throw new ApiError('The server returned an empty answer stream.', response.status);
+
+  let finished = false;
+  await readSse(response.body, (message) => {
+    const event = toAskEvent(message);
+    if (!event) return;
+    if (event.event === 'done' || event.event === 'error') finished = true;
+    onEvent(event);
+  });
+  if (!finished) throw new ApiError('The answer stream ended before a result arrived. Try again.', 0);
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Sources and demo status                                                                     */
+/* ------------------------------------------------------------------------------------------ */
+
+export async function listSources(): Promise<SourceList> {
+  if (USE_MOCKS) return (await loadMocks()).getMockSources();
+  return getJson<SourceList>('/sources', 'Failed to load sources');
+}
+
+export async function getSource(kind: SourceKind, key: string): Promise<SourceDocument> {
+  if (USE_MOCKS) {
+    const mock = await (await loadMocks()).getMockSource(kind, key);
+    if (!mock) throw new ApiError(`Source ${key} not found`, 404);
+    return mock;
+  }
+  return getJson<SourceDocument>(
+    `/sources/${kind}/${encodeURIComponent(key)}`,
+    `Failed to load ${key}`
+  );
+}
+
+/** GET /ingest/status: whether demo data is present and when it resets automatically. */
+export async function getDemoStatus(): Promise<DemoStatus> {
+  if (USE_MOCKS) return (await loadMocks()).getMockDemoStatus();
+  return getJson<DemoStatus>('/ingest/status', 'Failed to load demo status');
 }
 
 /** POST /ingest/reset: removes everything added by demo ingests. */

@@ -1,20 +1,13 @@
 {
-  "answer": "Kevin Flynn decided to adopt Prometheus for application metrics, as recorded in the accepted decision 'Migrate application metrics from Datadog to Prometheus Operator' from the Observability Platform Alignment meeting on 2026-04-12. Laura Croft also made the accepted decision to 'Deploy Prometheus Operator on all Kubernetes staging clusters' in ticket TICK-109. Both decisions involve adopting Prometheus technology.",
+  "answer": "The decision to adopt Prometheus was made by Kevin Flynn, as documented in the accepted decision DEC-08 to migrate application metrics from Datadog to Prometheus Operator (Source Meeting: Observability Platform Alignment, 2026-04-12).",
   "citations": [
     {
       "type": "meeting",
       "id": "Observability Platform Alignment",
       "title": "Observability Platform Alignment"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-109",
-      "title": "Cluster-wide metrics collection and automated alerts"
     }
   ],
   "people": [
-    "Fiona Gallagher",
-    "Julia Roberts",
     "Kevin Flynn",
     "Laura Croft"
   ],
@@ -26,9 +19,10 @@
         "label": "Decision",
         "properties": {
           "title": "Migrate application metrics from Datadog to Prometheus Operator",
+          "decision_code": "DEC-08",
+          "health": "active",
           "status": "accepted",
-          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator.",
-          "decision_code": "DEC-08"
+          "rationale": "This is a clear engineering decision to change a technology vendor and tooling for application metrics, moving from Datadog to Prometheus Operator."
         }
       },
       {
@@ -36,36 +30,19 @@
         "label": "Decision",
         "properties": {
           "title": "Deploy Prometheus Operator on all Kubernetes staging clusters",
+          "decision_code": "DEC-09",
+          "health": "active",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance.",
-          "decision_code": "DEC-09"
-        }
-      },
-      {
-        "id": "dec_f8a30e251e54",
-        "label": "Decision",
-        "properties": {
-          "title": "Adopt Keycloak OAuth2 tokens for internal API gateway authentication",
-          "status": "accepted",
-          "rationale": "The text explicitly states a decision to adopt Keycloak OAuth2 tokens for a specific authentication purpose, which fits the definition of a technology/policy choice.",
-          "decision_code": "DEC-12"
-        }
-      },
-      {
-        "id": "dec_8c7075150849",
-        "label": "Decision",
-        "properties": {
-          "title": "Adopt Snowflake for analytics ETL queries",
-          "status": "accepted",
-          "rationale": "The text explicitly states a choice to adopt a specific technology (Snowflake) for a defined purpose (analytics ETL queries), which fits the definition of an engineering decision.",
-          "decision_code": "DEC-03"
+          "rationale": "The text explicitly states a decision to deploy a specific tool (Prometheus Operator) across a defined environment (all Kubernetes staging clusters). This is a clear technology and configuration choice, not routine maintenance."
         }
       },
       {
         "id": "Kevin Flynn",
         "label": "Person",
         "properties": {
-          "name": "Kevin Flynn"
+          "name": "Kevin Flynn",
+          "is_active": true,
+          "leave_date": null
         }
       },
       {
@@ -80,34 +57,6 @@
         "label": "Person",
         "properties": {
           "name": "Laura Croft"
-        }
-      },
-      {
-        "id": "Julia Roberts",
-        "label": "Person",
-        "properties": {
-          "name": "Julia Roberts"
-        }
-      },
-      {
-        "id": "Keycloak",
-        "label": "System",
-        "properties": {
-          "name": "Keycloak"
-        }
-      },
-      {
-        "id": "Fiona Gallagher",
-        "label": "Person",
-        "properties": {
-          "name": "Fiona Gallagher"
-        }
-      },
-      {
-        "id": "Snowflake",
-        "label": "System",
-        "properties": {
-          "name": "Snowflake"
         }
       },
       {
@@ -127,19 +76,12 @@
         }
       },
       {
-        "id": "TICK-111",
-        "label": "Ticket",
+        "id": "dec_5b196394600e",
+        "label": "Decision",
         "properties": {
-          "ticket_id": "TICK-111",
-          "title": "OAuth2 token issuance architecture for internal gateway"
-        }
-      },
-      {
-        "id": "TICK-103",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-103",
-          "title": "Slow analytical queries on historical clickstream datasets"
+          "title": "Standardize application traces on Datadog APM across all production services",
+          "decision_code": "DEC-06",
+          "health": "superseded"
         }
       }
     ],
@@ -169,6 +111,12 @@
         "properties": {}
       },
       {
+        "source": "dec_21a4de59b886",
+        "target": "dec_5b196394600e",
+        "type": "supersedes",
+        "properties": {}
+      },
+      {
         "source": "dec_091c86e8e476",
         "target": "Laura Croft",
         "type": "decided_by",
@@ -185,56 +133,91 @@
         "target": "TICK-109",
         "type": "based_on",
         "properties": {}
-      },
-      {
-        "source": "dec_f8a30e251e54",
-        "target": "Julia Roberts",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_f8a30e251e54",
-        "target": "Keycloak",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Julia Roberts",
-        "target": "Keycloak",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_f8a30e251e54",
-        "target": "TICK-111",
-        "type": "based_on",
-        "properties": {}
-      },
-      {
-        "source": "dec_8c7075150849",
-        "target": "Fiona Gallagher",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_8c7075150849",
-        "target": "Snowflake",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Fiona Gallagher",
-        "target": "Snowflake",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_8c7075150849",
-        "target": "TICK-103",
-        "type": "based_on",
-        "properties": {}
       }
     ],
-    "omitted_count": 2
+    "omitted_count": 0
+  },
+  "intent": "why",
+  "entities": [
+    {
+      "label": "System",
+      "name": "Prometheus"
+    }
+  ],
+  "sections": [],
+  "experts": [],
+  "trace": {
+    "steps": [
+      {
+        "step": "understanding",
+        "label": "Understanding the question",
+        "status": "done",
+        "ms": 0.7,
+        "detail": "why"
+      },
+      {
+        "step": "matching",
+        "label": "Matching people, systems and decisions",
+        "status": "done",
+        "ms": 302.2,
+        "detail": "1 matched"
+      },
+      {
+        "step": "traversal",
+        "label": "Traversing the graph",
+        "status": "done",
+        "ms": 92.2,
+        "detail": "2 queries \u00b7 3 rows"
+      },
+      {
+        "step": "health",
+        "label": "Checking decision health",
+        "status": "done",
+        "ms": 0.4,
+        "detail": "3 decisions \u00b7 2 active, 1 superseded"
+      },
+      {
+        "step": "composing",
+        "label": "Composing the answer",
+        "status": "done",
+        "ms": 2250.7,
+        "detail": "Streamed from the model"
+      }
+    ],
+    "queries": [
+      {
+        "step": "matching",
+        "name": "roster",
+        "query": "MATCH (n) WHERE n:Person OR n:System OR n:Decision RETURN labels(n)[0], coalesce(n.name, n.title), n.id",
+        "params": {},
+        "rows": 44,
+        "ms": 99.6
+      },
+      {
+        "step": "traversal",
+        "name": "system_owners",
+        "query": "MATCH (s:System) WHERE s.name IN $system_names OPTIONAL MATCH (s)<-[r:owns]-(p:Person) RETURN s.name, p.name, coalesce(p.is_active, true), coalesce(p.leave_date, '')",
+        "params": {
+          "system_names": [
+            "Prometheus"
+          ]
+        },
+        "rows": 1,
+        "ms": 84.5
+      },
+      {
+        "step": "traversal",
+        "name": "decisions_by_system",
+        "query": "MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN $system_names OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+        "params": {
+          "system_names": [
+            "Prometheus"
+          ]
+        },
+        "rows": 2,
+        "ms": 91.5
+      }
+    ],
+    "total_ms": 2649.1
   }
 }

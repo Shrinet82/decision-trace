@@ -25,6 +25,7 @@ from app.api.decisions import router as decisions_router
 from app.api.graph import router as graph_router
 from app.api.ingest import router as ingest_router
 from app.api.people import router as people_router
+from app.api.sources import router as sources_router
 from app.api.systems import router as systems_router
 from app.brain.memory import ping_falkordb
 from app.config import get_settings
@@ -69,8 +70,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Keep the health map and decision codes warm so no request pays for computing them.
     # Started in the background so it never delays startup (or the deploy healthcheck).
     warmer = asyncio.create_task(_keep_caches_warm())
+    # Demo data from live ingests is removed automatically after 10 idle minutes
+    from app.ingest.live import auto_reset_loop
+
+    auto_reset = asyncio.create_task(auto_reset_loop(settings.DATASET_NAME))
     yield
     warmer.cancel()
+    auto_reset.cancel()
     logger.info("Shutting down Decision-Trace backend...")
 
 
@@ -100,6 +106,7 @@ app.include_router(ask_router)
 app.include_router(graph_router)
 app.include_router(systems_router)
 app.include_router(people_router)
+app.include_router(sources_router)
 app.include_router(ingest_router)
 app.include_router(admin_router)
 

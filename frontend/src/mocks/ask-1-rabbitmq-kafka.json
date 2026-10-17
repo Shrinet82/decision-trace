@@ -1,5 +1,5 @@
 {
-  "answer": "Based solely on the provided context, there is no single decision to choose Kafka over RabbitMQ. Instead, the records show two conflicting, accepted decisions.\n\n**Contradiction Found:**\nThe Company Brain contains two directly opposing, accepted decisions for the same purpose (\"all event messaging across services\"):\n\n1.  **Decision to adopt Kafka:** Decided by Alice Vance and recorded in ticket TICK-105. Status: **accepted**. [Contradicts: 'Adopt RabbitMQ for all event messaging across services']\n2.  **Decision to adopt RabbitMQ:** Decided by Bob Martin and recorded in ticket TICK-106 and a meeting on 2026-05-18. Status: **accepted**. [Contradicts: 'Adopt Kafka for all event messaging across services']\n\nTherefore, the context does not show a definitive choice of one over the other; it shows conflicting records where both decisions are marked as accepted.",
+  "answer": "Based strictly on the provided context, there is no single, uncontested decision to choose Kafka over RabbitMQ. Instead, the records show two directly conflicting, accepted decisions.\n\n**CONTRADICTION:** The Company Brain contains two decisions that contradict each other on this exact choice.\n\n1.  **Decision DEC-04** (accepted): 'Adopt Kafka for all event messaging across services'. This was decided by **Alice Vance** (Kafka owner) and documented in ticket **TICK-105**.\n2.  **Decision DEC-07** (accepted): 'Adopt RabbitMQ for all event messaging across services'. This was decided by **Bob Martin** (RabbitMQ owner) and documented in ticket **TICK-106**.\n\nBoth decisions have the status 'accepted' but are marked as 'contradicted' because they directly oppose each other (DEC-04 contradicts DEC-07, and vice-versa). Therefore, the context does not show a clear, one-sided choice of Kafka over RabbitMQ; it shows conflicting directives for the same scope (\"all event messaging across services\").\n\n**Note:** There is a separate, active decision (**DEC-10**) to deprecate *some* legacy RabbitMQ clusters in favor of Redis PubSub, but only for the specific use case of \"low-volume notifications.\" This does not resolve the broader Kafka vs. RabbitMQ contradiction.",
   "citations": [
     {
       "type": "ticket",
@@ -15,8 +15,7 @@
   "people": [
     "Alice Vance",
     "Bob Martin",
-    "Ian Malcolm",
-    "Kevin Flynn"
+    "Ian Malcolm"
   ],
   "primary_decision_id": "dec_98a223fad745",
   "graph_path": {
@@ -26,9 +25,10 @@
         "label": "Decision",
         "properties": {
           "title": "Adopt RabbitMQ for all event messaging across services",
+          "decision_code": "DEC-07",
+          "health": "contradicted",
           "status": "accepted",
-          "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision.",
-          "decision_code": "DEC-07"
+          "rationale": "The quote explicitly states a choice to use RabbitMQ for a specific purpose (all event messaging across services), which is a clear technology adoption decision."
         }
       },
       {
@@ -36,7 +36,10 @@
         "label": "Decision",
         "properties": {
           "title": "Adopt Kafka for all event messaging across services",
-          "decision_code": "DEC-04"
+          "decision_code": "DEC-04",
+          "health": "contradicted",
+          "status": "accepted",
+          "rationale": "The quote explicitly states a choice to use a specific technology (Kafka) for a defined purpose (all event messaging), which fits the definition of an engineering decision."
         }
       },
       {
@@ -44,26 +47,19 @@
         "label": "Decision",
         "properties": {
           "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+          "decision_code": "DEC-10",
+          "health": "active",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
-          "decision_code": "DEC-10"
-        }
-      },
-      {
-        "id": "dec_5b196394600e",
-        "label": "Decision",
-        "properties": {
-          "title": "Standardize application traces on Datadog APM across all production services",
-          "status": "accepted",
-          "rationale": "The text explicitly states a decision to standardize on a specific tool (Datadog APM) for a specific purpose (application traces) across a defined scope (all production services). This matches the definition of a decision to adopt/standardize a technology.",
-          "decision_code": "DEC-06"
+          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
         }
       },
       {
         "id": "Bob Martin",
         "label": "Person",
         "properties": {
-          "name": "Bob Martin"
+          "name": "Bob Martin",
+          "is_active": true,
+          "leave_date": null
         }
       },
       {
@@ -77,7 +73,9 @@
         "id": "Alice Vance",
         "label": "Person",
         "properties": {
-          "name": "Alice Vance"
+          "name": "Alice Vance",
+          "is_active": true,
+          "leave_date": null
         }
       },
       {
@@ -102,20 +100,6 @@
         }
       },
       {
-        "id": "Kevin Flynn",
-        "label": "Person",
-        "properties": {
-          "name": "Kevin Flynn"
-        }
-      },
-      {
-        "id": "Datadog",
-        "label": "System",
-        "properties": {
-          "name": "Datadog"
-        }
-      },
-      {
         "id": "TICK-106",
         "label": "Ticket",
         "properties": {
@@ -137,6 +121,14 @@
         "properties": {
           "ticket_id": "TICK-105",
           "title": "Need enterprise event bus for asynchronous order processing"
+        }
+      },
+      {
+        "id": "TICK-110",
+        "label": "Ticket",
+        "properties": {
+          "ticket_id": "TICK-110",
+          "title": "Memory pressure on legacy RabbitMQ broker during notifications spike"
         }
       }
     ],
@@ -226,24 +218,133 @@
         "properties": {}
       },
       {
-        "source": "dec_5b196394600e",
-        "target": "Kevin Flynn",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_5b196394600e",
-        "target": "Datadog",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Kevin Flynn",
-        "target": "Datadog",
-        "type": "owns",
+        "source": "dec_2c6a03017923",
+        "target": "TICK-110",
+        "type": "based_on",
         "properties": {}
       }
     ],
-    "omitted_count": 3
+    "omitted_count": 0
+  },
+  "intent": "why",
+  "entities": [
+    {
+      "label": "System",
+      "name": "Kafka"
+    },
+    {
+      "label": "System",
+      "name": "RabbitMQ"
+    },
+    {
+      "label": "Decision",
+      "name": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+      "id": "dec_2c6a03017923",
+      "decision_code": "DEC-10"
+    },
+    {
+      "label": "Decision",
+      "name": "Adopt Kafka for all event messaging across services",
+      "id": "dec_76772c5b323f",
+      "decision_code": "DEC-04"
+    },
+    {
+      "label": "Decision",
+      "name": "Adopt RabbitMQ for all event messaging across services",
+      "id": "dec_98a223fad745",
+      "decision_code": "DEC-07"
+    }
+  ],
+  "sections": [],
+  "experts": [],
+  "trace": {
+    "steps": [
+      {
+        "step": "understanding",
+        "label": "Understanding the question",
+        "status": "done",
+        "ms": 0.7,
+        "detail": "why"
+      },
+      {
+        "step": "matching",
+        "label": "Matching people, systems and decisions",
+        "status": "done",
+        "ms": 352.3,
+        "detail": "5 matched"
+      },
+      {
+        "step": "traversal",
+        "label": "Traversing the graph",
+        "status": "done",
+        "ms": 119.0,
+        "detail": "3 queries \u00b7 7 rows"
+      },
+      {
+        "step": "health",
+        "label": "Checking decision health",
+        "status": "done",
+        "ms": 0.5,
+        "detail": "3 decisions \u00b7 1 active, 2 contradicted"
+      },
+      {
+        "step": "composing",
+        "label": "Composing the answer",
+        "status": "done",
+        "ms": 4367.0,
+        "detail": "Streamed from the model"
+      }
+    ],
+    "queries": [
+      {
+        "step": "matching",
+        "name": "roster",
+        "query": "MATCH (n) WHERE n:Person OR n:System OR n:Decision RETURN labels(n)[0], coalesce(n.name, n.title), n.id",
+        "params": {},
+        "rows": 44,
+        "ms": 105.1
+      },
+      {
+        "step": "traversal",
+        "name": "decisions_by_id",
+        "query": "MATCH (d:Decision) WHERE d.id IN $decision_ids OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+        "params": {
+          "decision_ids": [
+            "dec_2c6a03017923",
+            "dec_76772c5b323f",
+            "dec_98a223fad745"
+          ]
+        },
+        "rows": 3,
+        "ms": 96.4
+      },
+      {
+        "step": "traversal",
+        "name": "decisions_by_system",
+        "query": "MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN $system_names OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+        "params": {
+          "system_names": [
+            "Kafka",
+            "RabbitMQ"
+          ]
+        },
+        "rows": 2,
+        "ms": 110.0
+      },
+      {
+        "step": "traversal",
+        "name": "system_owners",
+        "query": "MATCH (s:System) WHERE s.name IN $system_names OPTIONAL MATCH (s)<-[r:owns]-(p:Person) RETURN s.name, p.name, coalesce(p.is_active, true), coalesce(p.leave_date, '')",
+        "params": {
+          "system_names": [
+            "Kafka",
+            "RabbitMQ"
+          ]
+        },
+        "rows": 2,
+        "ms": 116.3
+      }
+    ],
+    "total_ms": 4842.4
   }
 }

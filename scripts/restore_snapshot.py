@@ -203,10 +203,19 @@ async def restore_graph_snapshot(
 
 
 if __name__ == "__main__":
-    action = sys.argv[1] if len(sys.argv) > 1 else "restore"
-    target = sys.argv[2] if len(sys.argv) > 2 else "company_brain"
+    import argparse
 
-    if action == "export":
-        asyncio.run(export_graph_snapshot(dataset_name=target))
+    from destructive_guard import CONFIRM_FLAG, FORCE_PRODUCTION_FLAG, guard_or_exit
+
+    parser = argparse.ArgumentParser(description="export (read-only) or restore (DELETES EVERY GRAPH) a snapshot.")
+    parser.add_argument("action", choices=["export", "restore"])
+    parser.add_argument("dataset", nargs="?", default="company_brain")
+    parser.add_argument(CONFIRM_FLAG, action="store_true", help="restore only: confirms every graph is deleted")
+    parser.add_argument(FORCE_PRODUCTION_FLAG, action="store_true", help="restore only: allow it on production")
+    args = parser.parse_args()
+
+    if args.action == "export":
+        asyncio.run(export_graph_snapshot(dataset_name=args.dataset))
     else:
-        asyncio.run(restore_graph_snapshot(dataset_name=target))
+        guard_or_exit(args.dataset, sys.argv[1:], action="restore_snapshot.py restore")
+        asyncio.run(restore_graph_snapshot(dataset_name=args.dataset))

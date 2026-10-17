@@ -130,15 +130,18 @@ def test_get_decision_not_found():
 
 def test_ask_refusal_when_no_entities_found():
     """Verify POST /ask returns refusal when no entities or matching decisions exist."""
-    with patch("app.api.ask._resolve_entities_in_question", new_callable=AsyncMock) as mock_resolve:
-        mock_resolve.return_value = {"people": [], "systems": [], "decision_ids": []}
+    with patch("app.askflow.pipeline.query_graph_threaded", new=AsyncMock(return_value=[])), \
+         patch("app.askflow.pipeline.get_decision_codes_cached", new=AsyncMock(return_value={})), \
+         patch("app.askflow.pipeline._match_decisions", return_value=[]), \
+         patch("app.askflow.pipeline._stream_llm") as llm:
         response = client.post(
             "/ask",
             json={"question": "What is the airspeed velocity of an unladen swallow?"},
         )
         assert response.status_code == 200
         data = response.json()
-        assert "could not find" in data["answer"].lower()
+        assert "not found" in data["answer"].lower()
+        llm.assert_not_called()
         assert data["citations"] == []
         assert data["graph_path"]["nodes"] == []
 

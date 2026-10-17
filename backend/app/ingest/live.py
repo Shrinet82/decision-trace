@@ -15,7 +15,7 @@ import json
 import logging
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, AsyncIterator, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -694,7 +694,77 @@ async def rollback(dataset: str, ingest_id: str, overrides: list[dict[str, Any]]
         cache.invalidate()
 
 
-async def reset_demo(dataset: str) -> dict[str, Any]:
+AUTO_RESET_MINUTES = 10
+
+
+def _parse_utc(stamp: Optional[str]) -> Optional[datetime]:
+    try:
+        return datetime.strptime(str(stamp), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return None
+
+
+async def demo_status(dataset: str, now: Optional[datetime] = None) -> dict[str, Any]:
+    """Whether demo-ingested data is in the graph, and when the automatic reset will remove it
+    (AUTO_RESET_MINUTES after the latest ingest). Tagged data without an ingest record (a crash
+    mid-ingest) is due at once."""
+    from app.brain.memory import query_graph_threaded
+
+    now = now or datetime.now(timezone.utc)
+    graph = await _changes_graph(dataset)
+
+    async def last_ingest() -> list[Any]:
+        try:
+            return await query_graph_threaded(
+                "MATCH (c:Change {kind: 'ingest'}) RETURN c.created_at ORDER BY c.created_at DESC LIMIT 1",
+                dataset_name=graph,
+            )
+        except Exception:  # noqa: BLE001 - no change log yet
+            return []
+
+    nodes, edges, latest = await asyncio.gather(
+        query_graph_threaded(
+            "MATCH (n) WHERE n.demo_ingest_id IS NOT NULL OR n.demo_modified_by IS NOT NULL RETURN count(n)",
+            dataset_name=dataset,
+        ),
+        query_graph_threaded("MATCH ()-[r]->() WHERE r.demo_ingest_id IS NOT NULL RETURN count(r)", dataset_name=dataset),
+        last_ingest(),
+    )
+    tagged_nodes = int(nodes[0][0]) if nodes else 0
+    tagged_edges = int(edges[0][0]) if edges else 0
+    last_at = str(latest[0][0]) if latest and latest[0] and latest[0][0] else None
+    has_demo = (tagged_nodes + tagged_edges) > 0
+    resets_at = None
+    if has_demo:
+        last = _parse_utc(last_at)
+        due = last + timedelta(minutes=AUTO_RESET_MINUTES) if last else now
+        resets_at = due.strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {
+        "has_demo_data": has_demo,
+        "tagged_nodes": tagged_nodes,
+        "tagged_edges": tagged_edges,
+        "last_ingest_at": last_at,
+        "resets_at": resets_at,
+        "seconds_left": max(0, int((_parse_utc(resets_at) - now).total_seconds())) if resets_at else None,
+        "auto_reset_minutes": AUTO_RESET_MINUTES,
+    }
+
+
+async def auto_reset_loop(dataset: str, interval_seconds: float = 60.0) -> None:
+    """Background task: reset demo data once it has sat untouched for AUTO_RESET_MINUTES."""
+    while True:
+        await asyncio.sleep(interval_seconds)
+        try:
+            state = await demo_status(dataset)
+            if state["has_demo_data"] and state["seconds_left"] == 0 and not INGEST_LOCK.locked():
+                async with INGEST_LOCK:
+                    result = await reset_demo(dataset, title="Automatic reset")
+                logger.info("Automatic demo reset: %s", result)
+        except Exception as exc:  # noqa: BLE001 - never let the loop die
+            logger.warning("Automatic demo reset check failed: %s", exc)
+
+
+async def reset_demo(dataset: str, title: str = "Reset demo data") -> dict[str, Any]:
     """Delete every tagged node/edge and restore every recorded override. Untagged data untouched."""
     graph = await _changes_graph(dataset)
     try:
@@ -737,7 +807,7 @@ async def reset_demo(dataset: str) -> dict[str, Any]:
         "edges": totals[1][0][0],
     }
     await record_change(dataset, {
-        "id": f"reset_{uuid.uuid4().hex[:8]}", "kind": "reset", "title": "Reset demo data",
+        "id": f"reset_{uuid.uuid4().hex[:8]}", "kind": "reset", "title": title,
         "created_at": _now(),
         "summary": f"Removed {result['removed_nodes']} nodes and {result['removed_edges']} edges, restored {restored} values",
     })

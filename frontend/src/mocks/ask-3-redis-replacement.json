@@ -1,20 +1,14 @@
 {
-  "answer": "The accepted decision was to migrate session storage to the embedded Keycloak cache, which replaced the Redis cluster (TICK-102). This decision was made by Alice Vance and superseded the earlier decision to migrate from Postgres to Redis (TICK-101).",
+  "answer": "The decision to migrate session storage to the embedded Keycloak cache replaced Redis for that purpose. This decision (DEC-11) was accepted and made by Alice Vance, superseding the previous decision (DEC-01) to use a Redis cluster. The source ticket was TICK-102.",
   "citations": [
     {
       "type": "ticket",
       "id": "TICK-102",
       "title": "Redis session cluster operational maintenance and failover complexity"
-    },
-    {
-      "type": "ticket",
-      "id": "TICK-101",
-      "title": "Severe latency on Postgres session store under peak load"
     }
   ],
   "people": [
     "Alice Vance",
-    "Diana Prince",
     "Ian Malcolm",
     "Julia Roberts"
   ],
@@ -26,9 +20,10 @@
         "label": "Decision",
         "properties": {
           "title": "Migrate session storage to embedded Keycloak cache",
+          "decision_code": "DEC-11",
+          "health": "active",
           "status": "accepted",
-          "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice.",
-          "decision_code": "DEC-11"
+          "rationale": "The quote explicitly states a decision was made by Alice Vance to migrate session storage to a specific system (Keycloak's embedded cache), which is a clear technology choice."
         }
       },
       {
@@ -36,17 +31,10 @@
         "label": "Decision",
         "properties": {
           "title": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
-          "decision_code": "DEC-01"
-        }
-      },
-      {
-        "id": "dec_e287aa298850",
-        "label": "Decision",
-        "properties": {
-          "title": "Adopt HashiCorp Vault as the exclusive store for secret credentials, deprecating Kubernetes secrets",
+          "decision_code": "DEC-01",
+          "health": "superseded",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to adopt a specific tool (Vault) and deprecate an alternative (Kubernetes secrets) for storing credentials, which fits the definition of an engineering decision about technology and policy.",
-          "decision_code": "DEC-05"
+          "rationale": "The quote explicitly states a migration action from one system (Postgres) to another (Redis cluster) to address a specific technical issue, which fits the definition of an engineering decision."
         }
       },
       {
@@ -54,16 +42,19 @@
         "label": "Decision",
         "properties": {
           "title": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+          "decision_code": "DEC-10",
+          "health": "active",
           "status": "accepted",
-          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation.",
-          "decision_code": "DEC-10"
+          "rationale": "The text explicitly states a decision to deprecate one technology (RabbitMQ) and adopt another (Redis PubSub) for a specific use case (low-volume notifications). This matches the definition of a decision about technology adoption and deprecation."
         }
       },
       {
         "id": "Alice Vance",
         "label": "Person",
         "properties": {
-          "name": "Alice Vance"
+          "name": "Alice Vance",
+          "is_active": true,
+          "leave_date": null
         }
       },
       {
@@ -71,20 +62,6 @@
         "label": "System",
         "properties": {
           "name": "Keycloak"
-        }
-      },
-      {
-        "id": "Diana Prince",
-        "label": "Person",
-        "properties": {
-          "name": "Diana Prince"
-        }
-      },
-      {
-        "id": "Vault",
-        "label": "System",
-        "properties": {
-          "name": "Vault"
         }
       },
       {
@@ -116,14 +93,6 @@
         "properties": {
           "ticket_id": "TICK-102",
           "title": "Redis session cluster operational maintenance and failover complexity"
-        }
-      },
-      {
-        "id": "TICK-107",
-        "label": "Ticket",
-        "properties": {
-          "ticket_id": "TICK-107",
-          "title": "Plaintext secret leakage risk in CI/CD pipeline variables"
         }
       },
       {
@@ -175,30 +144,6 @@
         "properties": {}
       },
       {
-        "source": "dec_e287aa298850",
-        "target": "Diana Prince",
-        "type": "decided_by",
-        "properties": {}
-      },
-      {
-        "source": "dec_e287aa298850",
-        "target": "Vault",
-        "type": "about_system",
-        "properties": {}
-      },
-      {
-        "source": "Diana Prince",
-        "target": "Vault",
-        "type": "owns",
-        "properties": {}
-      },
-      {
-        "source": "dec_e287aa298850",
-        "target": "TICK-107",
-        "type": "based_on",
-        "properties": {}
-      },
-      {
         "source": "dec_2c6a03017923",
         "target": "Ian Malcolm",
         "type": "decided_by",
@@ -242,5 +187,120 @@
       }
     ],
     "omitted_count": 0
+  },
+  "intent": "why",
+  "entities": [
+    {
+      "label": "System",
+      "name": "Redis"
+    },
+    {
+      "label": "Decision",
+      "name": "Migrate session storage from Postgres to Redis cluster to eliminate connection pool contention",
+      "id": "dec_fda8c9b4e631",
+      "decision_code": "DEC-01"
+    },
+    {
+      "label": "Decision",
+      "name": "Migrate session storage to embedded Keycloak cache",
+      "id": "dec_f564fcd15601",
+      "decision_code": "DEC-11"
+    },
+    {
+      "label": "Decision",
+      "name": "Deprecate legacy RabbitMQ clusters in favor of native Redis PubSub for low-volume notifications",
+      "id": "dec_2c6a03017923",
+      "decision_code": "DEC-10"
+    }
+  ],
+  "sections": [],
+  "experts": [],
+  "trace": {
+    "steps": [
+      {
+        "step": "understanding",
+        "label": "Understanding the question",
+        "status": "done",
+        "ms": 0.8,
+        "detail": "why"
+      },
+      {
+        "step": "matching",
+        "label": "Matching people, systems and decisions",
+        "status": "done",
+        "ms": 299.8,
+        "detail": "4 matched"
+      },
+      {
+        "step": "traversal",
+        "label": "Traversing the graph",
+        "status": "done",
+        "ms": 129.8,
+        "detail": "3 queries \u00b7 6 rows"
+      },
+      {
+        "step": "health",
+        "label": "Checking decision health",
+        "status": "done",
+        "ms": 0.5,
+        "detail": "3 decisions \u00b7 2 active, 1 superseded"
+      },
+      {
+        "step": "composing",
+        "label": "Composing the answer",
+        "status": "done",
+        "ms": 2504.7,
+        "detail": "Streamed from the model"
+      }
+    ],
+    "queries": [
+      {
+        "step": "matching",
+        "name": "roster",
+        "query": "MATCH (n) WHERE n:Person OR n:System OR n:Decision RETURN labels(n)[0], coalesce(n.name, n.title), n.id",
+        "params": {},
+        "rows": 44,
+        "ms": 85.7
+      },
+      {
+        "step": "traversal",
+        "name": "decisions_by_id",
+        "query": "MATCH (d:Decision) WHERE d.id IN $decision_ids OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+        "params": {
+          "decision_ids": [
+            "dec_fda8c9b4e631",
+            "dec_f564fcd15601",
+            "dec_2c6a03017923"
+          ]
+        },
+        "rows": 3,
+        "ms": 89.6
+      },
+      {
+        "step": "traversal",
+        "name": "decisions_by_system",
+        "query": "MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN $system_names OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person) OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person) RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')",
+        "params": {
+          "system_names": [
+            "Redis"
+          ]
+        },
+        "rows": 2,
+        "ms": 110.2
+      },
+      {
+        "step": "traversal",
+        "name": "system_owners",
+        "query": "MATCH (s:System) WHERE s.name IN $system_names OPTIONAL MATCH (s)<-[r:owns]-(p:Person) RETURN s.name, p.name, coalesce(p.is_active, true), coalesce(p.leave_date, '')",
+        "params": {
+          "system_names": [
+            "Redis"
+          ]
+        },
+        "rows": 1,
+        "ms": 127.5
+      }
+    ],
+    "total_ms": 2938.1
   }
 }

@@ -2,6 +2,9 @@
 export const decisionHref = (codeOrId: string) => `/decisions/${encodeURIComponent(codeOrId)}`;
 export const systemHref = (name: string) => `/systems/${encodeURIComponent(name)}`;
 export const personHref = (name: string) => `/people/${encodeURIComponent(name)}`;
+/** The Sources page with one source's drawer open. */
+export const sourceHref = (kind: string, key: string) =>
+  `/sources?open=${encodeURIComponent(`${kind}/${key}`)}`;
 export const exploreHref = (nodeId: string) => `/explore?node=${encodeURIComponent(nodeId)}`;
 
 /** Splits text around DEC-NN codes so each can be rendered as a link. */

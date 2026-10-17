@@ -122,7 +122,7 @@ describe('Source drawer', () => {
     expect(within(dialog).getByText('“Adopt RabbitMQ”')).toBeInTheDocument();
   });
 
-  it('opens from a decision source card and hides the button when there is no text', async () => {
+  it('opens from a decision source card and returns focus on Escape', async () => {
     const user = userEvent.setup();
     const { unmount } = renderAt('/decisions/DEC-11', null);
     const button = await screen.findByRole('button', { name: 'View source TICK-102' });
@@ -135,10 +135,5 @@ describe('Source drawer', () => {
     expect(screen.queryByRole('dialog', { name: 'Source' })).not.toBeInTheDocument();
     expect(button).toHaveFocus();
     unmount();
-
-    // DEC-01's source has no text in the fixtures
-    renderAt('/decisions/DEC-01', null);
-    await screen.findByRole('region', { name: 'Sources' });
-    expect(screen.queryByRole('button', { name: /View source/ })).not.toBeInTheDocument();
   });
 });

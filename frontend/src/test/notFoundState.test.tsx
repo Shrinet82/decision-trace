@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AskPage } from '../pages/AskPage';
+import { clearAskRuns } from '../hooks/useAskRun';
+
+// The first answer loads the recorded stream fixtures (a dynamic import), which can take a second
+const WAIT = { timeout: 5000 };
 
 function renderAsk() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -18,6 +22,8 @@ function renderAsk() {
 const PLACEHOLDER = 'Ask why a decision was made, who owns a system, or what replaced something';
 
 describe('AskPage', () => {
+  beforeEach(() => clearAskRuns());
+
   it('renders the page heading and composer', () => {
     renderAsk();
     expect(screen.getByRole('heading', { level: 1, name: 'Ask' })).toBeInTheDocument();
@@ -31,7 +37,7 @@ describe('AskPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
 
-    expect(await screen.findByRole('heading', { name: 'No decision found' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'No decision found' }, WAIT)).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Evidence path' })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Sources' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Still valid/)).not.toBeInTheDocument();
@@ -44,7 +50,7 @@ describe('AskPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
 
-    expect(await screen.findByText(/Marcus Aurelius/)).toBeInTheDocument();
+    expect(await screen.findByText(/Marcus Aurelius/, {}, WAIT)).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'No decision found' })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Evidence path' })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Sources' })).not.toBeInTheDocument();
@@ -57,10 +63,10 @@ describe('AskPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Ask' }));
 
-    expect(await screen.findByRole('region', { name: 'Evidence path' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('Validity checks')).toBeInTheDocument());
+    expect(await screen.findByRole('region', { name: 'Evidence path' }, WAIT)).toBeInTheDocument();
+    expect(await screen.findByRole('region', { name: 'Sources' }, WAIT)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('Validity checks')).toBeInTheDocument(), WAIT);
     // The server marks the Keycloak decision as primary; it is active, so the verdict says so.
-    expect((await screen.findAllByText('Still valid')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Still valid', {}, WAIT)).length).toBeGreaterThan(0);
   });
 });

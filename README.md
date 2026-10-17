@@ -57,11 +57,12 @@ company-brain/
 │       ├── main.py         # FastAPI entrypoint
 │       ├── config.py       # Pydantic settings & environment validation
 │       ├── schemas.py      # Request/response DTOs
-│       ├── api/            # API endpoints (/ask, /graph, /decisions[/{code}], /systems, /people, /health)
+│       ├── api/            # API endpoints (/ask, /ask/stream, /graph, /decisions[/{code}], /systems, /people, /sources, /ingest, /health)
+│       ├── askflow/        # Ask pipeline: intent rules, Cypher per intent, assembly, streamed answer
 │       ├── brain/          # Memory layer, graph models, and Cypher traversals
 │       └── ingest/         # Source processors (SQL DB, tickets, meeting notes)
 ├── data/                   # Synthetic enterprise dataset (SQL, tickets, notes)
-├── scripts/                # Utility scripts (seed.py, keepalive.py)
+├── scripts/                # Utility scripts (seed.py and restore_snapshot.py are guarded: see destructive_guard.py; keepalive.py)
 └── frontend/               # React + Vite TypeScript web client
 ```
 

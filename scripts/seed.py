@@ -194,5 +194,14 @@ async def run_seed(
 
 
 if __name__ == "__main__":
-    target = sys.argv[1] if len(sys.argv) > 1 else "company_brain"
-    asyncio.run(run_seed(target))
+    import argparse
+
+    from destructive_guard import CONFIRM_FLAG, FORCE_PRODUCTION_FLAG, guard_or_exit
+
+    parser = argparse.ArgumentParser(description="Rebuild the graph from scratch. DELETES EVERY GRAPH first.")
+    parser.add_argument("dataset", nargs="?", default="company_brain")
+    parser.add_argument(CONFIRM_FLAG, action="store_true", help="required: confirms every graph is deleted")
+    parser.add_argument(FORCE_PRODUCTION_FLAG, action="store_true", help="allow it when FALKORDB_GRAPH_NAME is production")
+    args = parser.parse_args()
+    guard_or_exit(args.dataset, sys.argv[1:], action="seed.py")
+    asyncio.run(run_seed(args.dataset))
