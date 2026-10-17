@@ -184,7 +184,7 @@ Suggested questions on the Ask page (also recorded in `ask-stream.json`): *Why d
 
 * **Stack**: React 18, Vite 6, TypeScript 5.7, Tailwind CSS 3.4, TanStack Query, Cytoscape.js.
 * **Design**: Linear-style, light only (Geist via Google Fonts, 13px base). Tokens are in `src/styles/tokens.css`. The mockups are in `frontend/design-ref/`.
-* **Pages**: Ask (`/`), Decisions (`/decisions`, `/decisions/:code`), Systems (`/systems`, `/systems/:name`), People (`/people`, `/people/:name`), Explore (`/explore`, the full map; `/graph` redirects there), Sources (`/sources`, with a type filter, counts, the last ingest, and a drawer with the full text and highlighted quotes; `?open=kind/key` deep-links a source), plus a command palette (Cmd/Ctrl+K) over decisions, systems and people.
+* **Pages**: Home (`/`: ask box + suggestions, brain stats, "Needs attention" from `GET /attention`, "Recent changes" from `/changes`; an old `/?q=` link redirects to `/ask?q=`), Ask (`/ask`), Connect an agent (`/agents`: MCP URL + copy button, Claude Code / Claude Desktop / Cursor snippets, tool list with example prompts), Decisions (`/decisions`, `/decisions/:code`), Systems (`/systems`, `/systems/:name`), People (`/people`, `/people/:name`), Explore (`/explore`, the full map; `/graph` redirects there), Sources (`/sources`, with a type filter, counts, the last ingest, and a drawer with the full text and highlighted quotes; `?open=kind/key` deep-links a source), plus a command palette (Cmd/Ctrl+K) over decisions, systems and people.
 * **Ask page**:
   * The answer streams in.
   * "How I found this" shows every step with its ms, the matched entities as chips, each Cypher query (collapsible) with its row count, and the total time. It sits in the right panel on desktop and in a disclosure above the answer under 900px.
@@ -194,8 +194,8 @@ Suggested questions on the Ask page (also recorded in `ask-stream.json`): *Why d
 * **Sidebar views**: Conflicts, Superseded, Orphaned systems (count from `/systems`).
 * **Data**: `useDecisions`, `useGraph`, `useDecisionDetail`, `useAsk` in `src/api/hooks.ts`. Mock mode (localhost / port 4173) serves frozen fixtures from `src/mocks/`, loaded lazily.
 * **Testing**:
-  * 129 Vitest unit tests.
-  * Playwright: `app.spec.ts` (journey, axe, screenshots), `ingest.spec.ts`, `ask-stream.spec.ts` (streamed Ask, impact, expertise, status, Sources, axe and screenshots at 1440 and 390px) and `design-compare.spec.ts`.
+  * 138 Vitest unit tests.
+  * Playwright: `app.spec.ts` (journey, axe, screenshots), `ingest.spec.ts`, `home-agents.spec.ts` (Home, Agents, axe + screenshots), `ask-stream.spec.ts` (streamed Ask, impact, expertise, status, Sources, axe and screenshots at 1440 and 390px) and `design-compare.spec.ts`.
   * Playwright runs with `reducedMotion: 'reduce'` and only in CI: no builds on the developer's machine.
   * Mock mode replays recorded Ask streams, waiting each step's recorded time (scaled 0.35, capped at 900 ms; instant under Vitest).
 * **Screenshots**: `frontend/screenshots/{ask,decisions,graph}-{1440,390}.png` and `compare-*.png` (design on the left, implementation on the right).
@@ -346,6 +346,17 @@ BYPASS_EXTRACTION_CACHE=1 PYTHONPATH=backend python scripts/evaluate_holdout.py 
 BYPASS_EXTRACTION_CACHE=1 PYTHONPATH=backend python scripts/evaluate_holdout2.py
 ```
 Scoring is per decision (rows are grouped by decision id/title). The holdout scripts reset only their own dataset, leave a graph behind, and should be deleted afterwards.
+
+---
+
+## 9b. MCP server and agent access (Phase 4)
+
+* `backend/app/mcp_server.py`: official `mcp` SDK (`FastMCP`, pinned `<2`), Streamable HTTP, stateless, served at `/mcp` by the FastAPI app itself (routes appended in `server.py`; DNS-rebinding protection off because the host is public). The session manager runs in its own task in `server.lifespan` (anyio requires enter/exit in one task and `main.py` starts/stops the lifespan from different ones).
+* Tools, all thin wrappers: `ask`, `get_decision`, `list_decisions`, `impact_of`, `who_knows` (these three reuse the Ask pipeline), `find_conflicts` (health map + contradicts edges + orphaned systems, no LLM), `add_source` (live ingest: `INGEST_LOCK`, 3/min limit, auto-reset; disabled with `MCP_READ_ONLY=true`). Every call is rate limited per IP (`check_rate_limits`) and recorded in the `/changes` feed as `kind: "agent"`.
+* `GET /attention` (`api/attention.py`): conflicts, orphaned systems, possibly stale decisions, superseded decisions whose systems have tickets opened after the replacement. Whitelisted in the Cloudflare proxy.
+* Intent fallback (`askflow/intent.py`): rules first; only when none match, one cached model call returns `{intent, entity}` (shown as "· by model" in the understanding step). A failing call leaves the question as `other`.
+* `scripts/mcp_smoke.py [URL]` connects with the official client, lists tools, calls every read tool and asserts the benchmark answers; `deploy-backend.yml` runs it against production after each deploy.
+* Client snippets (verified against official docs): Claude Code `claude mcp add --transport http` (code.claude.com/docs/en/mcp), Claude Desktop `npx -y mcp-remote <url> --transport http-only` in `claude_desktop_config.json` (modelcontextprotocol.io connect-local-servers + github.com/geelen/mcp-remote), Cursor `{"mcpServers": {name: {"url": ...}}}` in `.cursor/mcp.json` (cursor.com/docs/context/mcp).
 
 ---
 

@@ -47,6 +47,9 @@ class Settings(BaseSettings):
         description="Target graph database name",
     )
 
+    # MCP: true disables the one tool that writes (add_source)
+    MCP_READ_ONLY: bool = Field(default=False, description="Disable add_source on the MCP server")
+
     # LLM & Embedding Settings
     LLM_API_KEY: SecretStr = Field(..., description="API key for LLM provider")
     LLM_BASE_URL: str = Field(

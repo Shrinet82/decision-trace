@@ -48,7 +48,7 @@ test.beforeAll(() => {
 test.describe('streamed Ask', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
+    await page.goto('/ask');
   });
 
   test('steps stream in with times, then the answer, evidence path and total', async ({ page }) => {
@@ -151,7 +151,7 @@ for (const width of [1440, 390]) {
       ['ask-expertise', EXPERT_Q, 'People ranked by evidence'],
     ] as const) {
       test(`${file}`, async ({ page }) => {
-        await page.goto('/');
+        await page.goto('/ask');
         await suggested(page, question);
         await expect(page.getByRole('region', { name: ready })).toBeVisible();
         await expect(page.getByTestId('ask-total-ms').first()).toHaveText(/\d/);

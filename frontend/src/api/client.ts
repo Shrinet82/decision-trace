@@ -1,5 +1,6 @@
 import { parseSse, toAskEvent, toIngestEvent, type SseMessage } from './sse';
 import type {
+  Attention,
   AskRequest,
   AskResponse,
   AskStreamEvent,
@@ -412,4 +413,10 @@ export async function resetIngest(): Promise<ResetResult> {
 export async function listChanges(limit = 20): Promise<ChangeEntry[]> {
   if (USE_MOCKS) return (await loadMocks()).listMockChanges(limit);
   return getJson<ChangeEntry[]>(`/changes?limit=${limit}`, 'Failed to load changes');
+}
+
+/** GET /attention: conflicts, orphaned systems, stale and superseded-but-active decisions. */
+export async function getAttention(): Promise<Attention> {
+  if (USE_MOCKS) return (await loadMocks()).getMockAttention();
+  return getJson<Attention>('/attention', 'Failed to load the attention queue');
 }

@@ -1,0 +1,1 @@
+{"items":[{"kind":"conflict","title":"DEC-04 and DEC-07 conflict","reason":"Contradicted by 'Adopt RabbitMQ for all event messaging across services' decided by Bob Martin","decision_code":"DEC-04","system":null},{"kind":"orphaned","title":"Elasticsearch has no active owner","reason":"Marcus Aurelius left on 2025-11-30.","decision_code":null,"system":"Elasticsearch"}]}

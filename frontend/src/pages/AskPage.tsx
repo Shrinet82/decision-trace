@@ -233,7 +233,7 @@ export const AskPage: React.FC = () => {
     setInput('');
   };
 
-  // Deep link: /?q=... asks once, then clears the parameter.
+  // Deep link: /ask?q=... asks once, then clears the parameter.
   const seeded = useRef<string | null>(null);
   useEffect(() => {
     const q = params.get('q');
@@ -266,7 +266,7 @@ export const AskPage: React.FC = () => {
 
   const copyLink = async () => {
     if (!lastQuestion) return;
-    const url = `${window.location.origin}/?q=${encodeURIComponent(lastQuestion)}`;
+    const url = `${window.location.origin}/ask?q=${encodeURIComponent(lastQuestion)}`;
     try {
       await navigator.clipboard.writeText(url);
     } catch {

@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.admin import router as admin_router
 from app.api.ask import router as ask_router
+from app.api.attention import router as attention_router
 from app.api.decisions import router as decisions_router
 from app.api.graph import router as graph_router
 from app.api.ingest import router as ingest_router
@@ -29,6 +30,7 @@ from app.api.sources import router as sources_router
 from app.api.systems import router as systems_router
 from app.brain.memory import ping_falkordb
 from app.config import get_settings
+from app.mcp_server import mcp
 
 # Configure logging
 settings = get_settings()
@@ -74,7 +76,21 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     from app.ingest.live import auto_reset_loop
 
     auto_reset = asyncio.create_task(auto_reset_loop(settings.DATASET_NAME))
+    # The MCP session manager runs for the lifetime of the app, in a task of its own: it must be
+    # entered and exited by the same task, and the boot wrapper starts and stops the lifespan from
+    # different ones.
+    mcp_ready, mcp_stop = asyncio.Event(), asyncio.Event()
+
+    async def run_mcp() -> None:
+        async with mcp.session_manager.run():
+            mcp_ready.set()
+            await mcp_stop.wait()
+
+    mcp_task = asyncio.create_task(run_mcp())
+    await asyncio.wait({mcp_task, asyncio.create_task(mcp_ready.wait())}, return_when=asyncio.FIRST_COMPLETED)
     yield
+    mcp_stop.set()
+    await mcp_task
     warmer.cancel()
     auto_reset.cancel()
     logger.info("Shutting down Decision-Trace backend...")
@@ -103,12 +119,19 @@ app.add_middleware(
 
 app.include_router(decisions_router)
 app.include_router(ask_router)
+app.include_router(attention_router)
 app.include_router(graph_router)
 app.include_router(systems_router)
 app.include_router(people_router)
 app.include_router(sources_router)
 app.include_router(ingest_router)
 app.include_router(admin_router)
+
+
+# Agents connect to /mcp with an MCP client (Streamable HTTP); the route is served by the app itself
+# (no mount, so /mcp needs no redirect behind the Railway proxy)
+for _route in mcp.streamable_http_app().routes:
+    app.router.routes.append(_route)
 
 
 @app.middleware("http")

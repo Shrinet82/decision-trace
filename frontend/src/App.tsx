@@ -1,10 +1,12 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
+import { AgentsPage } from './pages/AgentsPage';
 import { AskPage } from './pages/AskPage';
 import { DecisionPage } from './pages/DecisionPage';
 import { DecisionsPage } from './pages/DecisionsPage';
 import { GraphPage } from './pages/GraphPage';
+import { HomePage } from './pages/HomePage';
 import { PeoplePage } from './pages/PeoplePage';
 import { PersonPage } from './pages/PersonPage';
 import { SourcesPage } from './pages/SourcesPage';
@@ -21,7 +23,9 @@ export const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<AppShell />}>
-        <Route index element={<AskPage />} />
+        <Route index element={<HomePage />} />
+        <Route path="ask" element={<AskPage />} />
+        <Route path="agents" element={<AgentsPage />} />
         <Route path="decisions" element={<DecisionsPage />} />
         <Route path="decisions/:code" element={<DecisionPage />} />
         <Route path="systems" element={<SystemsPage />} />

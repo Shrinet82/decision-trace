@@ -17,6 +17,7 @@
  *    - POST /ingest/reset
  *    - GET  /ingest/status
  *    - GET  /changes
+ *    - GET  /attention
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
  *    and unwhitelisted routes.
  */
@@ -83,7 +84,8 @@ export async function onRequest(context: {
     (method === 'GET' && normalizedPath === '/ingest/status') ||
     (method === 'POST' && normalizedPath === '/ingest') ||
     (method === 'POST' && normalizedPath === '/ingest/reset') ||
-    (method === 'GET' && normalizedPath === '/changes');
+    (method === 'GET' && normalizedPath === '/changes') ||
+    (method === 'GET' && normalizedPath === '/attention');
 
   if (!isWhitelisted) {
     return new Response(JSON.stringify({ error: 'Endpoint not found or method not allowed' }), {

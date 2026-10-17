@@ -140,7 +140,7 @@ export type IngestEvent =
 
 export interface ChangeEntry {
   id: string;
-  kind: 'ingest' | 'reset';
+  kind: 'ingest' | 'reset' | 'agent';
   title: string;
   type?: string;
   created_at: string;
@@ -312,4 +312,17 @@ export interface DemoStatus {
   resets_at: string | null;
   seconds_left: number | null;
   auto_reset_minutes: number;
+}
+
+/** One row of the home page's "needs attention" queue (GET /attention). */
+export interface AttentionItem {
+  kind: 'conflict' | 'orphaned' | 'stale' | 'superseded';
+  title: string;
+  reason: string;
+  decision_code?: string | null;
+  system?: string | null;
+}
+
+export interface Attention {
+  items: AttentionItem[];
 }

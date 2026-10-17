@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
+import { Bot, CheckCircle2, Home, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
 import { useDecisions, useGraph, usePeople, useSystems } from '../api/hooks';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
@@ -215,7 +215,8 @@ export const AppShell: React.FC = () => {
           </button>
 
           <nav aria-label="Primary" className="flex gap-px overflow-x-auto min-[900px]:flex-col">
-            <NavItem to="/" end icon={<MessageCircle size={15} aria-hidden="true" />} label="Ask" />
+            <NavItem to="/" end icon={<Home size={15} aria-hidden="true" />} label="Home" />
+            <NavItem to="/ask" icon={<MessageCircle size={15} aria-hidden="true" />} label="Ask" />
             <NavItem
               to="/decisions"
               icon={<CheckCircle2 size={15} aria-hidden="true" />}
@@ -235,6 +236,7 @@ export const AppShell: React.FC = () => {
               count={peopleQuery.data?.length}
             />
             <NavItem to="/explore" icon={<Network size={15} aria-hidden="true" />} label="Explore" />
+            <NavItem to="/agents" icon={<Bot size={15} aria-hidden="true" />} label="Agents" />
           </nav>
 
           {isDesktop ? (

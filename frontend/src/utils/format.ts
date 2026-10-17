@@ -68,11 +68,26 @@ export function questionAboutDecision(title: string): string {
 }
 
 export function askHref(question: string): string {
-  return `/?q=${encodeURIComponent(question)}`;
+  return `/ask?q=${encodeURIComponent(question)}`;
 }
 
 /** "212 ms" below a second, "1.4 s" above. */
 export function formatMs(ms: number | undefined | null): string {
   if (ms === undefined || ms === null) return '';
   return ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(1)} s`;
+}
+
+/** "just now", "5 min ago", "3 h ago", "2 d ago", else the date. */
+export function formatRelative(value: string | undefined | null, now: number = Date.now()): string {
+  const at = value ? Date.parse(value) : NaN;
+  if (Number.isNaN(at)) return '';
+  const seconds = Math.max(0, Math.round((now - at) / 1000));
+  if (seconds < 60) return 'just now';
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 30) return `${days} d ago`;
+  return new Date(at).toISOString().slice(0, 10);
 }
