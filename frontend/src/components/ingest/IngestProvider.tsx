@@ -13,12 +13,12 @@ export const IngestProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [latestDiff, setLatestDiffState] = useState<IngestDiff | null>(null);
   const touched = useRef(false);
-  const changes = useChanges(1);
+  const changes = useChanges(10);
 
   useEffect(() => {
     if (touched.current || !changes.data) return;
     touched.current = true;
-    const diff = recentDiff(changes.data[0]);
+    const diff = recentDiff(changes.data.find((c) => c.kind === 'ingest'));
     if (diff) setLatestDiffState(diff);
   }, [changes.data]);
 

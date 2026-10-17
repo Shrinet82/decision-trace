@@ -44,7 +44,7 @@ test.describe('journey', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
+    await page.goto('/ask');
     await expect(page.locator('h1')).toHaveText('Ask');
 
     await ask(page, REDIS_Q);
@@ -142,7 +142,7 @@ test.describe('journey', () => {
   test('unanswerable question shows the empty state with no evidence or citations', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto('/ask');
     await ask(page, QUANTUM_Q);
     await expect(page.getByRole('heading', { name: 'No decision found' })).toBeVisible();
     await expect(page.getByRole('region', { name: 'Evidence path' })).toHaveCount(0);
@@ -157,7 +157,7 @@ for (const width of [1440, 390]) {
     });
 
     test('Ask page (answer)', async ({ page }) => {
-      await page.goto('/');
+      await page.goto('/ask');
       await expectNoSeriousViolations(page);
       await ask(page, REDIS_Q);
       await expect(page.getByRole('region', { name: 'Evidence path' })).toBeVisible();
@@ -166,7 +166,7 @@ for (const width of [1440, 390]) {
     });
 
     test('Ask page (not found)', async ({ page }) => {
-      await page.goto('/');
+      await page.goto('/ask');
       await ask(page, QUANTUM_Q);
       await expect(page.getByRole('heading', { name: 'No decision found' })).toBeVisible();
       await expectNoSeriousViolations(page);
@@ -228,7 +228,7 @@ test.describe('screenshots', () => {
       test.setTimeout(90000);
       await page.setViewportSize({ width, height: 900 });
 
-      await page.goto('/');
+      await page.goto('/ask');
       await ask(page, PROMETHEUS_Q);
       await expect(page.getByRole('region', { name: 'Evidence path' })).toBeVisible();
       await expect(page.getByRole('complementary', { name: 'Decision properties' }).getByText('Validity checks')).toBeVisible();

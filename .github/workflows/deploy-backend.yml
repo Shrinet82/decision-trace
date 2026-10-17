@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'backend/**'
+      - 'scripts/mcp_smoke.py'
       - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
 
@@ -30,6 +31,21 @@ jobs:
           # Startup imports the LLM/ML stack (~10 s locally); the default 15 s healthcheck window is too tight
           railway variable set "RAILWAY_HEALTHCHECK_TIMEOUT_SEC=120" --service decision-trace-api
           railway up --service decision-trace-api -c
+
+      # Connect to the deployed /mcp with the official Python MCP client, list the tools, call every
+      # read tool and assert the benchmark answers (Keycloak -> DEC-11, Snowflake impact -> DEC-03/13/17)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: MCP smoke test against production
+        run: |
+          pip install "mcp>=1.28.1,<2"
+          for attempt in 1 2 3; do
+            python scripts/mcp_smoke.py && exit 0
+            echo "attempt $attempt failed; retrying in 30 s"; sleep 30
+          done
+          exit 1
 
       - name: Show runtime logs of a failed deployment
         if: failure()

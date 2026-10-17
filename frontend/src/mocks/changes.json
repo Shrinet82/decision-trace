@@ -1,0 +1,62 @@
+[
+ {
+  "id": "agent-8bff7282b775",
+  "kind": "agent",
+  "title": "find_conflicts",
+  "type": "mcp",
+  "created_at": "2026-10-17T16:59:03+00:00",
+  "summary": "decision conflicts and orphaned systems",
+  "diff": null,
+  "reverted": false
+ },
+ {
+  "id": "agent-5a4292bad115",
+  "kind": "agent",
+  "title": "list_decisions",
+  "type": "mcp",
+  "created_at": "2026-10-17T16:59:01+00:00",
+  "summary": "status=contradicted",
+  "diff": null,
+  "reverted": false
+ },
+ {
+  "id": "agent-a2fc16f62884",
+  "kind": "agent",
+  "title": "get_decision",
+  "type": "mcp",
+  "created_at": "2026-10-17T16:58:54+00:00",
+  "summary": "DEC-11",
+  "diff": null,
+  "reverted": false
+ },
+ {
+  "id": "agent-7ec7af63bc1a",
+  "kind": "agent",
+  "title": "who_knows",
+  "type": "mcp",
+  "created_at": "2026-10-17T16:58:52+00:00",
+  "summary": "Kafka",
+  "diff": null,
+  "reverted": false
+ },
+ {
+  "id": "agent-f502daff8ded",
+  "kind": "agent",
+  "title": "impact_of",
+  "type": "mcp",
+  "created_at": "2026-10-17T16:58:51+00:00",
+  "summary": "Snowflake",
+  "diff": null,
+  "reverted": false
+ },
+ {
+  "id": "agent-405624746fca",
+  "kind": "agent",
+  "title": "ask",
+  "type": "mcp",
+  "created_at": "2026-10-17T16:58:50+00:00",
+  "summary": "Why did we move sessions to Keycloak?",
+  "diff": null,
+  "reverted": false
+ }
+]

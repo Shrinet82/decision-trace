@@ -8,6 +8,8 @@ import ask7 from '../mocks/ask-7-unanswerable-oracle.json';
 import decisionsFixture from '../mocks/decisions.json';
 import decisionDetailsFixture from '../mocks/decision-details.json';
 import graphFixture from '../mocks/graph.json';
+import attentionFixture from '../mocks/attention.json';
+import changesFixture from '../mocks/changes.json';
 import systemsFixture from '../mocks/systems.json';
 import systemDetailsFixture from '../mocks/system-details.json';
 import peopleFixture from '../mocks/people.json';
@@ -21,6 +23,7 @@ import type {
   SourceDocument,
   SourceKind,
   SourceList,
+  Attention,
   ChangeEntry,
   DecisionDetail,
   DecisionSummary,
@@ -159,7 +162,7 @@ export function getMockIngestEvents(text: string): IngestEvent[] {
 }
 
 // In-memory change log so the mock app behaves like the API within one page session.
-let mockChanges: ChangeEntry[] = [];
+let mockChanges: ChangeEntry[] = changesFixture as unknown as ChangeEntry[];
 let mockIngestedNodes = 0;
 let mockIngestedEdges = 0;
 
@@ -274,4 +277,9 @@ export async function getMockSource(kind: SourceKind, key: string): Promise<Sour
     SourceDocument
   >;
   return all[`${kind}/${key}`];
+}
+
+/** Recorded GET /attention from the live graph. */
+export function getMockAttention(): Attention {
+  return attentionFixture as unknown as Attention;
 }

@@ -3,6 +3,7 @@ import {
   ApiError,
   askQuestion,
   getDecision,
+  getAttention,
   getDemoStatus,
   getSource,
   listSources,
@@ -15,6 +16,7 @@ import {
   listSystems,
 } from './client';
 import type {
+  Attention,
   AskResponse,
   ChangeEntry,
   DecisionDetail,
@@ -163,5 +165,14 @@ export function invalidateGraphQueries(queryClient: QueryClient): Promise<void> 
   const keys = new Set<string>(GRAPH_QUERY_KEYS);
   return queryClient.invalidateQueries({
     predicate: (query) => keys.has(String(query.queryKey[0])),
+  });
+}
+
+export function useAttention() {
+  return useQuery<Attention, ApiError>({
+    queryKey: ['attention'],
+    queryFn: getAttention,
+    staleTime: 60_000,
+    retry: 1,
   });
 }

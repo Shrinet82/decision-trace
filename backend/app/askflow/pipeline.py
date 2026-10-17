@@ -22,7 +22,7 @@ from typing import Any, AsyncIterator, Optional
 from app.api.primary import pick_primary_decision
 from app.api.rate_limiter import record_llm_call
 from app.askflow import assemble, queries
-from app.askflow.intent import classify_intent
+from app.askflow.intent import classify_with_fallback
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map
 from app.brain.memory import query_graph_threaded
@@ -254,8 +254,8 @@ async def run_ask(question: str, dataset: Optional[str] = None) -> AsyncIterator
 async def _pipeline(run: _Run, question: str, dataset: str) -> AsyncIterator[dict[str, Any]]:
     # 1. Understanding
     yield run.start("understanding")
-    parsed = classify_intent(question)
-    detail = parsed.intent + (f" ({parsed.focus})" if parsed.focus else "")
+    parsed = await classify_with_fallback(question)
+    detail = parsed.intent + (f" ({parsed.focus})" if parsed.focus else "") + (" · by model" if parsed.by_model else "")
     yield run.done("understanding", detail, intent=parsed.intent, focus=parsed.focus)
 
     # 2. Matching
@@ -269,6 +269,10 @@ async def _pipeline(run: _Run, question: str, dataset: str) -> AsyncIterator[dic
     systems = sorted({str(r[1]) for r in roster if r and r[0] == "System" and r[1]})
     decisions = [(str(r[2]), str(r[1])) for r in roster if r and r[0] == "Decision" and r[1] and r[2]]
     matched_people, matched_systems = match_names(question, people, systems)
+    if parsed.entity and not matched_systems:
+        # The model named the topic in words the whole-word match missed (a plural, a nickname)
+        wanted = parsed.entity.lower().strip()
+        matched_systems = [s for s in systems if s.lower() == wanted or s.lower() in wanted.split()][:1]
 
     intent = parsed.intent
     route = intent
