@@ -111,10 +111,10 @@ const QueryList: React.FC<{ queries: AskRunState['queries'] }> = ({ queries }) =
     {queries.map((q, i) => (
       <li key={`${q.name}-${i}`}>
         <details className="group rounded-control border border-divider bg-subtle">
-          <summary className="flex cursor-pointer list-none items-center gap-2 px-2 py-1 text-xs">
+          <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-2 gap-y-0.5 px-2 py-1 text-xs">
             <span aria-hidden="true" className="text-muted transition-transform group-open:rotate-90">›</span>
-            <code className="min-w-0 flex-1 break-all font-mono text-text-2">{q.name}</code>
-            <span className="shrink-0 tabular-nums text-muted">
+            <code className="whitespace-nowrap font-mono text-text-2">{q.name}</code>
+            <span className="ml-auto whitespace-nowrap tabular-nums text-muted">
               {q.rows} {q.rows === 1 ? 'row' : 'rows'} · {formatMs(q.ms)}
             </span>
           </summary>
