@@ -10,6 +10,7 @@ from typing import AsyncIterator
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
+from app import jobs
 from app.api.rate_limiter import check_rate_limits
 from app.api.schemas import AskRequest, AskResponse
 from app.askflow.pipeline import collect_ask, run_ask
@@ -41,7 +42,7 @@ async def ask_stream(request: AskRequest, http_request: Request) -> StreamingRes
             yield sse(event)
 
     return StreamingResponse(
-        stream(),
+        jobs.with_heartbeats(stream()),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
     )

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { FileText, UploadCloud, X } from 'lucide-react';
-import { streamBatch } from '../../api/client';
+import { cancelJob, parseBatchEvent, resumeLatestJob, streamBatch } from '../../api/client';
 import { invalidateGraphQueries } from '../../api/hooks';
 import type { BatchEvent, BatchFileEvent, BatchPlanFile, IngestDiff, UploadDocType } from '../../api/types';
 import {
@@ -47,6 +47,7 @@ export const UploadPanel: React.FC = () => {
   const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const jobRef = useRef<string | null>(null);
   const setLatestDiff = ingest?.setLatestDiff;
 
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -88,31 +89,23 @@ export const UploadPanel: React.FC = () => {
     }
   };
 
-  const start = async () => {
-    if (problem) return;
+  /** Run an upload (or re-attach to one) and settle the panel on its result. */
+  const track = async (run: (onEvent: (e: BatchEvent) => void, signal: AbortSignal) => Promise<unknown>) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    setPhase('running');
-    setRows([]);
-    setDiff(null);
-    setError(null);
     let gotDiff = false;
     let gotError = false;
     try {
-      await streamBatch(
-        toPayload(files),
-        (event) => {
-          if (controller.signal.aborted) return;
-          if (event.event === 'diff') gotDiff = true;
-          if (event.event === 'error') gotError = true;
-          apply(event);
-        },
-        controller.signal
-      );
-      if (controller.signal.aborted) return;
-      setPhase(gotDiff ? 'done' : 'error');
-      if (!gotDiff && !gotError) setError('The upload finished without a result. Try again.');
+      const outcome = await run((event) => {
+        if (controller.signal.aborted) return;
+        if (event.event === 'diff') gotDiff = true;
+        if (event.event === 'error') gotError = true;
+        apply(event);
+      }, controller.signal);
+      if (controller.signal.aborted || outcome === false) return; // false: there was no job to re-attach to
+      setPhase((p) => (p === 'running' ? (gotDiff ? 'done' : 'error') : p));
+      if (!gotDiff && !gotError) setError((e) => e ?? 'The upload finished without a result. Try again.');
     } catch (err) {
       if (controller.signal.aborted) return;
       setError(err instanceof Error ? err.message : 'The upload failed.');
@@ -122,11 +115,37 @@ export const UploadPanel: React.FC = () => {
     }
   };
 
+  const begin = () => {
+    setPhase('running');
+    setRows([]);
+    setDiff(null);
+    setError(null);
+  };
+
+  const start = async () => {
+    if (problem) return;
+    begin();
+    await track((onEvent, signal) =>
+      streamBatch(toPayload(files), onEvent, signal, (id) => {
+        jobRef.current = id;
+      })
+    );
+  };
+
+  // A reloaded page finds an upload that is still running (or just finished) and shows its progress
+  useEffect(() => {
+    void track((onEvent, signal) =>
+      resumeLatestJob('upload', parseBatchEvent, onEvent, signal, (id) => (jobRef.current = id), begin)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const cancel = () => {
     abortRef.current?.abort();
     abortRef.current = null;
+    if (jobRef.current) void cancelJob(jobRef.current);
     setPhase('pick');
-    setNotice('Upload cancelled. Files already read stay in the graph.');
+    setNotice('Upload cancelled; what it had added was removed.');
   };
 
   const again = () => {

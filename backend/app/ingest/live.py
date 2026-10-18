@@ -588,6 +588,10 @@ async def run_ingest(req: IngestRequest, dataset: str) -> AsyncIterator[dict[str
             "created_at": ingested_at, "summary": diff["summary"], "diff": diff, "overrides": overrides,
         })
         yield _event("diff", diff)
+    except asyncio.CancelledError:
+        if wrote_anything:
+            await asyncio.shield(rollback(dataset, ingest_id, overrides))
+        raise
     except Exception as exc:  # noqa: BLE001 - surfaced to the client as an error event
         logger.exception("Ingest %s failed", ingest_id)
         if wrote_anything:

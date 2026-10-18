@@ -25,6 +25,7 @@ from app.api.attention import router as attention_router
 from app.api.decisions import router as decisions_router
 from app.api.graph import router as graph_router
 from app.api.ingest import router as ingest_router
+from app.api.jobs import router as jobs_router
 from app.api.orgs import router as orgs_router
 from app.api.people import router as people_router
 from app.api.sources import router as sources_router
@@ -135,6 +136,7 @@ app.include_router(systems_router)
 app.include_router(people_router)
 app.include_router(sources_router)
 app.include_router(ingest_router)
+app.include_router(jobs_router)
 app.include_router(admin_router)
 app.include_router(orgs_router)
 

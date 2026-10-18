@@ -500,6 +500,151 @@ export async function getAttention(): Promise<Attention> {
 }
 
 /* ------------------------------------------------------------------------------------------ */
+/* Background jobs: imports and uploads run server-side and survive a dropped stream            */
+/* ------------------------------------------------------------------------------------------ */
+
+export interface JobSummary {
+  id: string;
+  kind: string;
+  status: 'running' | 'done' | 'error' | 'cancelled';
+  events: number;
+  created_at: number;
+  finished_at: number | null;
+  progress: unknown[];
+  result: unknown;
+  error: string | null;
+}
+
+/** How long a finished job is still offered to a reloaded page. */
+const RESUME_WINDOW_MS = 5 * 60_000;
+/** How long a dropped stream is retried before giving up on seeing the result. */
+const RECONNECT_FOR_MS = 15 * 60_000;
+const RECONNECT_EVERY_MS = 1500;
+
+/** GET /jobs/{id}, or null if the job is unknown (expired, or another organization's). */
+export async function getJob(jobId: string): Promise<JobSummary | null> {
+  if (USE_MOCKS) return null;
+  const response = await apiFetch(`${apiBase()}/jobs/${encodeURIComponent(jobId)}`, { headers: { Accept: 'application/json' } });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new ApiError(httpErrorMessage(response.status, null, 'The job'), response.status);
+  return response.json();
+}
+
+/** GET /jobs/latest?kind=: the newest job of that kind in this organization, or null. */
+export async function getLatestJob(kind: string): Promise<JobSummary | null> {
+  if (USE_MOCKS) return null;
+  const response = await apiFetch(`${apiBase()}/jobs/latest?kind=${encodeURIComponent(kind)}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new ApiError(httpErrorMessage(response.status, null, 'The job'), response.status);
+  return response.json();
+}
+
+/** DELETE /jobs/{id}: stop a running import; whatever it had written is removed. */
+export async function cancelJob(jobId: string): Promise<void> {
+  if (USE_MOCKS) return;
+  await apiFetch(`${apiBase()}/jobs/${encodeURIComponent(jobId)}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json', ...ownerHeaders() },
+  }).catch(() => undefined);
+}
+
+/**
+ * Read a job's event stream to its `diff` or `error`. The job keeps running on the server when the
+ * connection drops (a proxy, a phone going to sleep, a stalled read), so a dropped stream is not a
+ * failure: re-attach from the number of events already seen until the job reports its result.
+ * `first` is the response to the POST that started the job, or null to attach to an existing job
+ * (`jobId`), replaying its events from the beginning.
+ */
+async function followJob<E extends { event: string }>(
+  first: Response | null,
+  jobId: string | null,
+  parse: (m: SseMessage) => E | null,
+  onEvent: (event: E) => void,
+  signal?: AbortSignal,
+  onJob?: (jobId: string) => void
+): Promise<void> {
+  let id = jobId;
+  let count = 0;
+  let finished = false;
+  let response = first;
+  const started = Date.now();
+  if (id) onJob?.(id);
+
+  for (;;) {
+    try {
+      if (!response) {
+        response = await apiFetch(`${apiBase()}/jobs/${encodeURIComponent(id!)}/stream?from=${count}`, {
+          headers: { Accept: 'text/event-stream' },
+          signal,
+        });
+      }
+      if (response.status === 404) {
+        throw new ApiError(
+          'This import is no longer tracked (the server may have restarted). Reload the page to see whether it finished.',
+          404
+        );
+      }
+      if (!response.ok || !response.body) throw new ApiError(httpErrorMessage(response.status, null, 'The import'), response.status);
+      await readSse(response.body, (message) => {
+        count += 1;
+        if (message.event === 'job') {
+          try {
+            id = (JSON.parse(message.data) as { id: string }).id;
+            onJob?.(id);
+          } catch {
+            // an unreadable job event: the stream still works, it just cannot be re-attached
+          }
+          return;
+        }
+        const event = parse(message);
+        if (!event) return;
+        if (event.event === 'diff' || event.event === 'error') finished = true;
+        onEvent(event);
+      });
+      if (finished) return;
+    } catch (error) {
+      if (signal?.aborted || (error as { name?: string } | null)?.name === 'AbortError') throw error;
+      const status = error instanceof ApiError ? error.status : 0;
+      const retryable = !id ? false : status === 0 || status === 408 || status === 429 || status >= 500 || !(error instanceof ApiError);
+      if (finished || !retryable) throw error;
+    }
+    // The stream ended (or broke) before a result: the job is still running, or has finished unseen
+    response = null;
+    if (!id) throw new ApiError('The stream ended before a result arrived. Try again.', 0);
+    if (Date.now() - started > RECONNECT_FOR_MS) {
+      throw new ApiError('Lost the connection to the import. Reload the page to see where it got to.', 0);
+    }
+    await wait(RECONNECT_EVERY_MS, signal);
+  }
+}
+
+/**
+ * Pick up the newest job of `kind` after a page reload: a running one (or one that finished in the
+ * last few minutes) is replayed from its first event, so the panel shows exactly where it is.
+ * Resolves false when there is nothing to resume.
+ */
+export async function resumeLatestJob<E extends { event: string }>(
+  kind: string,
+  parse: (m: SseMessage) => E | null,
+  onEvent: (event: E) => void,
+  signal?: AbortSignal,
+  onJob?: (jobId: string) => void,
+  onFound?: (job: JobSummary) => void
+): Promise<boolean> {
+  const job = await getLatestJob(kind).catch(() => null);
+  if (!job) return false;
+  const recent = job.finished_at !== null && Date.now() / 1000 - job.finished_at < RESUME_WINDOW_MS / 1000;
+  if (job.status !== 'running' && !recent) return false;
+  onFound?.(job);
+  await followJob(null, job.id, parse, onEvent, signal, onJob);
+  return true;
+}
+
+export { toBatchEvent as parseBatchEvent, toGithubEvent as parseGithubEvent };
+
+/* ------------------------------------------------------------------------------------------ */
 /* Organizations                                                                               */
 /* ------------------------------------------------------------------------------------------ */
 
@@ -572,7 +717,8 @@ export async function deleteOrg(id: string): Promise<void> {
 export async function streamBatch(
   files: BatchFilePayload[],
   onEvent: (event: BatchEvent) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onJob?: (jobId: string) => void
 ): Promise<void> {
   if (USE_MOCKS) {
     const { getMockIngestEvents, recordMockIngest } = await loadMocks();
@@ -623,14 +769,7 @@ export async function streamBatch(
     throw new ApiError(ingestErrorMessage(response.status, body), response.status, body);
   }
   if (!response.body) throw new ApiError('The server returned an empty ingest stream.', response.status);
-  let finished = false;
-  await readSse(response.body, (message) => {
-    const event = toBatchEvent(message);
-    if (!event) return;
-    if (event.event === 'diff' || event.event === 'error') finished = true;
-    onEvent(event);
-  });
-  if (!finished) throw new ApiError('The ingest stream ended before a result arrived. Try again.', 0);
+  await followJob(response, null, toBatchEvent, onEvent, signal, onJob);
 }
 
 /* ------------------------------------------------------------------------------------------ */
@@ -653,7 +792,8 @@ export async function streamGithub(
   repoUrl: string,
   includePrs: boolean,
   onEvent: (event: GithubEvent) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onJob?: (jobId: string) => void
 ): Promise<void> {
   if (USE_MOCKS) {
     const { getMockIngestEvents } = await loadMocks();
@@ -695,14 +835,7 @@ export async function streamGithub(
     throw new ApiError(githubErrorMessage(response.status, body), response.status, body);
   }
   if (!response.body) throw new ApiError('The server returned an empty import stream.', response.status);
-  let finished = false;
-  await readSse(response.body, (message) => {
-    const event = toGithubEvent(message);
-    if (!event) return;
-    if (event.event === 'diff' || event.event === 'error') finished = true;
-    onEvent(event);
-  });
-  if (!finished) throw new ApiError('The import stream ended before a result arrived. Try again.', 0);
+  await followJob(response, null, toGithubEvent, onEvent, signal, onJob);
 }
 
 /** GET /orgs: the showcase organizations everyone can open (real data, read-only). */

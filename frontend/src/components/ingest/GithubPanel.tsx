@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { GitBranch } from 'lucide-react';
-import { streamGithub } from '../../api/client';
+import { cancelJob, parseGithubEvent, resumeLatestJob, streamGithub } from '../../api/client';
 import { invalidateGraphQueries } from '../../api/hooks';
 import type { GithubEvent, GithubImportStats, GithubPhase, GithubProgress, IngestDiff } from '../../api/types';
 import { useOrgAccess } from '../../org/useOrgAccess';
@@ -37,6 +37,7 @@ export const GithubPanel: React.FC = () => {
   const [diff, setDiff] = useState<(IngestDiff & { import?: GithubImportStats }) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const jobRef = useRef<string | null>(null);
   const setLatestDiff = ingest?.setLatestDiff;
 
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -44,35 +45,25 @@ export const GithubPanel: React.FC = () => {
   const disabled = isSample;
   const valid = REPO_URL.test(url.trim());
 
-  const start = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!valid || disabled) return;
+  /** Run an import (or re-attach to one) and settle the panel on its result. */
+  const track = async (run: (onEvent: (e: GithubEvent) => void, signal: AbortSignal) => Promise<unknown>) => {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    setPhase('running');
-    setProgress({ fetching: undefined, extracting: undefined, linking: undefined, writing: undefined, health: undefined });
-    setDiff(null);
-    setError(null);
     let gotDiff = false;
     let message: string | null = null;
     try {
-      await streamGithub(
-        url.trim(),
-        includePrs,
-        (event: GithubEvent) => {
-          if (controller.signal.aborted) return;
-          if (event.event === 'progress') setProgress((p) => ({ ...p, [event.data.phase]: event.data }));
-          else if (event.event === 'diff') {
-            gotDiff = true;
-            setDiff(event.data);
-            setLatestDiff?.(event.data);
-            void invalidateGraphQueries(queryClient);
-          } else message = event.data.message;
-        },
-        controller.signal
-      );
-      if (controller.signal.aborted) return;
+      const outcome = await run((event: GithubEvent) => {
+        if (controller.signal.aborted) return;
+        if (event.event === 'progress') setProgress((p) => ({ ...p, [event.data.phase]: event.data }));
+        else if (event.event === 'diff') {
+          gotDiff = true;
+          setDiff(event.data);
+          setLatestDiff?.(event.data);
+          void invalidateGraphQueries(queryClient);
+        } else message = event.data.message;
+      }, controller.signal);
+      if (controller.signal.aborted || outcome === false) return; // false: there was no job to re-attach to
       if (gotDiff) setPhase('done');
       else {
         setError(message ?? 'The import finished without a result. Try again.');
@@ -87,9 +78,40 @@ export const GithubPanel: React.FC = () => {
     }
   };
 
+  const begin = () => {
+    setPhase('running');
+    setProgress({ fetching: undefined, extracting: undefined, linking: undefined, writing: undefined, health: undefined });
+    setDiff(null);
+    setError(null);
+  };
+
+  const start = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!valid || disabled) return;
+    begin();
+    await track((onEvent, signal) =>
+      streamGithub(url.trim(), includePrs, onEvent, signal, (id) => {
+        jobRef.current = id;
+      })
+    );
+  };
+
+  // A reloaded page finds an import that is still running (or just finished) and shows its progress
+  useEffect(() => {
+    if (disabled) return;
+    void track((onEvent, signal) =>
+      resumeLatestJob('github', parseGithubEvent, onEvent, signal, (id) => (jobRef.current = id), (job) => {
+        begin();
+        void job;
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabled]);
+
   const cancel = () => {
     abortRef.current?.abort();
     abortRef.current = null;
+    if (jobRef.current) void cancelJob(jobRef.current);
     setPhase('form');
   };
 

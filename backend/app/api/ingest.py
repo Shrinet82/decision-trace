@@ -5,6 +5,7 @@ from typing import Any, AsyncIterator, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
+from app import jobs
 from app.api.orgs import require_owner
 from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_ingest_rate_limit
 from app.brain import orgctx
@@ -27,6 +28,21 @@ router = APIRouter(tags=["Live ingest"])
 _settings = get_settings()
 
 _BUSY = "Another ingest or reset is running. Try again in a moment."
+
+
+def _job_response(job: jobs.Job) -> StreamingResponse:
+    """Stream a job's events from the start. The job runs on its own: if this connection drops,
+    it carries on and the client re-attaches with GET /jobs/<id>/stream?from=<n>."""
+
+    async def stream() -> AsyncIterator[str]:
+        async for event in jobs.follow(job):
+            yield jobs.HEARTBEAT if event is None else sse(event)
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
+    )
 
 
 async def _count_sources() -> None:
@@ -67,7 +83,7 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
                     await _count_sources()
 
     return StreamingResponse(
-        stream(),
+        jobs.with_heartbeats(stream()),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
     )
@@ -85,21 +101,14 @@ async def ingest_batch(body: BatchRequest, request: Request) -> StreamingRespons
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_BUSY)
     dataset = _settings.DATASET_NAME
 
-    async def stream() -> AsyncIterator[str]:
-        if INGEST_LOCK.locked():
-            yield sse({"event": "error", "data": {"message": _BUSY}})
-            return
-        async with INGEST_LOCK:
-            async for event in run_batch(body.files, dataset):
-                yield sse(event)
-                if event["event"] == "diff":
-                    await _count_sources()
+    async def work() -> AsyncIterator[dict[str, Any]]:
+        async for event in run_batch(body.files, dataset):
+            yield event
+            if event["event"] == "diff":
+                await _count_sources()
 
-    return StreamingResponse(
-        stream(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
-    )
+    return _job_response(jobs.start("upload", work, INGEST_LOCK))
+
 
 
 @router.post("/ingest/github", dependencies=[Depends(require_owner)])
@@ -119,21 +128,14 @@ async def ingest_github(body: GithubRequest, request: Request) -> StreamingRespo
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_BUSY)
     dataset = _settings.DATASET_NAME
 
-    async def stream() -> AsyncIterator[str]:
-        if INGEST_LOCK.locked():
-            yield sse({"event": "error", "data": {"message": _BUSY}})
-            return
-        async with INGEST_LOCK:
-            async for event in run_github_import(body, dataset):
-                yield sse(event)
-                if event["event"] == "diff":
-                    await _count_sources()
+    async def work() -> AsyncIterator[dict[str, Any]]:
+        async for event in run_github_import(body, dataset):
+            yield event
+            if event["event"] == "diff":
+                await _count_sources()
 
-    return StreamingResponse(
-        stream(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
-    )
+    return _job_response(jobs.start("github", work, INGEST_LOCK))
+
 
 
 @router.post("/ingest/reset")
