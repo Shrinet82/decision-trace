@@ -1,95 +1,97 @@
 # Decision Trace
 
-**Why did we decide that? A company brain that traces every decision to who made it, what it was based on, and whether it still holds.**
+**Ask why any decision was made: who decided it, what it is based on, and whether it still holds.** A company brain that turns meeting notes, tickets, ADRs and org records into one FalkorDB graph and answers with the evidence path and the exact source quotes.
 
 Built for the [FalkorDB Hackathon](https://www.falkordb.com/) (WeMakeDevs), Track 03: *Company Brain*, on FalkorDB Cloud and Cognee.
 
 | | |
 | :-- | :-- |
 | **Landing page** | https://decision-trace.pages.dev |
-| **Live app** | https://decision-trace.pages.dev/app (sample organization; create your own from the menu at the top of the sidebar) |
+| **Live app** | https://decision-trace.pages.dev/app (Acme Corp sample; the Arachne real-repo organization is in the menu at the top of the sidebar) |
 | **Connect an agent (MCP)** | https://decision-trace.pages.dev/app/agents · endpoint `https://decision-trace-api-production.up.railway.app/mcp` |
 | **API health** | https://decision-trace-api-production.up.railway.app/health |
 | **Demo video** | _link to be added_ |
 
 <table>
   <tr>
-    <td width="33%"><img src="frontend/screenshots/home-1440.png" alt="Home: needs-attention queue, recent changes and brain stats"><br><sub><b>Home</b>: what needs attention right now</sub></td>
-    <td width="33%"><img src="frontend/screenshots/ask-stream-1440.png" alt="Ask: streamed answer, evidence path, and the How I found this panel"><br><sub><b>Ask</b>: answer, evidence path, and "How I found this" with every Cypher query</sub></td>
-    <td width="33%"><img src="frontend/screenshots/decision-DEC-11-1440.png" alt="Decision page with supersedes lineage"><br><sub><b>Decision page</b>: lineage, sources with quotes, health</sub></td>
+    <td width="50%"><img src="frontend/screenshots/landing-1440.png" alt="The landing page"><br><sub><b>Landing</b>: pitch, how it works, and the real-repo showcase</sub></td>
+    <td width="50%"><img src="frontend/screenshots/ask-stream-1440.png" alt="Ask: streamed answer, evidence path, and the How I found this panel"><br><sub><b>Ask</b>: answer, evidence path, and "How I found this" with every Cypher query</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="frontend/screenshots/decision-DEC-11-1440.png" alt="Decision page with supersedes lineage"><br><sub><b>Decision page</b>: lineage, sources with quotes, health</sub></td>
+    <td width="50%"><img src="frontend/screenshots/map-1440.png" alt="The company map: the whole graph coloured by type, sized by connections, with health on decisions"><br><sub><b>Company map</b>: colour is type, size is connections, borders show health</sub></td>
   </tr>
 </table>
 
-## Your own brain: organizations, file upload, GitHub import
+## The problem, and the idea
 
-- **Organizations.** Every organization is its own FalkorDB graph (`org_<id>_<random>`), created empty from the menu at the top of the sidebar. The sample organization (Acme Corp) is the original graph and stays read-only apart from its tagged demo ingests. Every endpoint, the Ask stream, the caches and the MCP tools take an organization (`/orgs/<id>/...`, or the optional `org` argument on a tool). Limits: 40-character names, 25 user organizations in total, 3 creations per hour per IP, deletion after 72 hours without activity, and a Delete option in the organization settings.
-- **File upload** (Add source, any organization). `.md`, `.txt` or `.pdf`, up to 10 files, 1 MB each and 50,000 characters in total. Each file is typed (meeting, ticket, document or ADR, detected from its content unless you choose), read in chunks by the same two-pass extractor, and the result is one combined diff. Scanned PDFs are skipped with a message.
-- **GitHub import** (your own organizations). Paste a public repository URL: ADR markdown from `docs/adr`, `doc/adr`, `docs/decisions`, `adr`, `architecture/decisions` or `ADR-*.md` (at most 40), plus, optionally, the last 30 closed PRs and issues that look like decisions. Status and "Supersedes ADR-n" lines become `supersedes` edges without a model call; authors become people, the repository a Project. Set `GITHUB_TOKEN` on the server for the 5,000/hour limit (without it GitHub allows 60 requests per hour and some dates are estimated, which the result says).
-- **Company map.** Explore opens the whole graph: colour is node type, size is connections, Decision borders show health, tickets are hidden until you ask, search finds a node, and clicking one lights up its neighbours.
+Engineering knowledge is scattered across tickets, meeting notes and org records, and the *reasons* behind decisions are the first thing to rot. Months later someone asks **why** we moved sessions to Keycloak, **who** decided it and whether they are still here, **what** it was based on, and whether it is **still valid** or was superseded or contradicted.
 
-## The problem
+Search finds documents; it does not tell you that two accepted decisions contradict each other, that a system's owner left in November, or what breaks if you drop Snowflake. Those are questions about *relationships*.
 
-Engineering knowledge is scattered across tickets, meeting notes and org records, and the *reasons* behind decisions are the first thing to rot. Months later someone asks:
-
-- **Why** did we move sessions to Keycloak?
-- **Who** decided it, and are they still here?
-- **What** was it based on, can I read the source?
-- Is it **still valid**, or was it superseded or contradicted?
-
-Search finds documents. It does not tell you that two accepted decisions contradict each other, that the owner of a system left in November, or what breaks if you drop Snowflake. Those are questions about *relationships*, and a graph answers them directly.
+**Decision Trace** reads the sources, keeps decisions, people, systems and evidence in one FalkorDB graph (a verbatim quote on every link to its source), derives health from the graph itself, and answers from a Cypher-computed subgraph, showing the path and the queries it ran.
 
 ## Track 03 (Company Brain) mapping
 
 | Focus area | What delivers it |
 | :-- | :-- |
-| **Docs, tickets and chats in one graph** | 80 tickets, 12 meeting notes and the company SQL database (15 people, 12 systems, 4 teams, 6 projects) are loaded into **one FalkorDB graph** (146 nodes, 374 edges). The **Sources** page lists every document with the decisions it backs. Meeting notes are the conversational source; chat connectors are a next step. |
-| **Who owns and who knows what** | `owns`, `member_of`, `leads` edges give ownership; **orphaned systems** flag owners who left; the `who_knows` ranking weighs decided (x3), owns (x3), meetings (x2) and tickets (x1) with the counts shown. People and Systems pages. |
-| **Tracing decisions back to their source** | Every decision has `based_on` edges to the ticket or meeting it came from, each with a **verbatim quote** that is checked against the source text at extraction time. The Decision page and the Ask **evidence path** walk decision → source → people → systems. |
-| **Keeping knowledge current** | **Live ingest**: paste a new note and watch two-pass extraction, entity matching and an LLM judge decide whether it supersedes, contradicts or reaffirms existing decisions. A **health engine** (superseded / contradicted / possibly stale) recomputes, and the **Needs attention** queue and change feed show what moved. |
+| **Docs, tickets and chats in one graph** | Tickets (CSV), meeting notes (Markdown), a company SQL database, **uploaded files** (.md, .txt, .pdf) and **GitHub repositories** (ADRs, decision PRs and issues) all land in **one FalkorDB graph per organization** (Acme: 146 nodes, 374 edges). The **Sources** page lists every document with the decisions it backs. Meeting notes are the conversational source; chat connectors are a next step. |
+| **Who owns and who knows what** | `owns`, `member_of`, `leads` edges give ownership; **orphaned systems** flag owners who left; the `who_knows` ranking weighs decided (x3), owns (x3), meetings (x2) and tickets (x1) with the counts shown. People and Systems pages, and the **company map**. |
+| **Tracing decisions back to their source** | Every decision has `based_on` edges to the ticket, meeting or document it came from, each with a **verbatim quote** checked against the source text at extraction time. The decision page and the Ask **evidence path** walk decision → source → people → systems. |
+| **Keeping knowledge current** | **Live ingest** (paste, upload or import): two-pass extraction, entity matching and an LLM judge decide whether a new decision supersedes, contradicts or reaffirms an existing one. A **health engine** (superseded / contradicted / possibly stale) recomputes, and the **Needs attention** queue and change feed show what moved. ADR "Supersedes" lines become `supersedes` edges with no model call. |
 | **Answers with sources** | `/ask` answers only from a graph subgraph computed by Cypher; citations must come from real `based_on` edges **and** be referenced in the answer. Each answer streams its steps, the Cypher it ran and its timings. The same tools are exposed to agents over **MCP**. |
 
 ## Try it in two minutes
 
-1. **Home** → click *Why did we move sessions to Keycloak?* The answer streams in with its evidence path and sources. Open *How I found this* to see each step and Cypher query.
-2. Click the **DEC-11** chip to open the **decision page**: lineage (it superseded DEC-01), the source ticket and its quote, health, deciders.
-3. Open **Add source** (top right) → preset **Arch sync: standardise on Kafka** → *Run*. Watch the seven pipeline steps, then the diff: a new decision, status changes, and a resolved conflict between DEC-04 and DEC-07.
-4. *Add another source* → preset **HR: Alice Vance leaves** → *Run*. Her decisions become *possibly stale* and Kafka becomes an orphaned system. *Reset demo data* puts everything back (it also resets itself after 10 idle minutes).
-5. Open **Agents**, copy the endpoint into Claude Code / Claude Desktop / Cursor and ask *"Ask Decision Trace why we use Keycloak."* Every call shows up in **Recent changes** on Home.
+1. **Sample question.** On [/app](https://decision-trace.pages.dev/app) click *Why did we move sessions to Keycloak?* The answer streams in with its evidence path and sources; open *How I found this* to see every step and Cypher query.
+2. **Decision page.** Click the **DEC-11** chip: lineage (it superseded DEC-01), the source ticket and its quote, health, deciders.
+3. **Add source, preset A then B.** *Add source* (top right) → **Arch sync: standardise on Kafka** → *Run*: a new decision, status changes and a resolved conflict between DEC-04 and DEC-07. Then **HR: Alice Vance leaves** → *Run*: her decisions become *possibly stale* and Kafka becomes an orphaned system. *Reset demo data* undoes it (it also resets itself after 10 idle minutes).
+4. **Switch to real data.** Open the menu at the top of the sidebar → **Arachne (real GitHub ADRs)**: the ADR log of an open-source framework, imported from GitHub. Ask *"Why did Arachne simplify the Chimera model?"* and open **Explore** for the company map.
+5. **Make your own.** Menu → *New organization*, then *Upload files* (drop in a `.md` or `.pdf`) or *GitHub* (try `https://github.com/npryce/adr-tools`). The result is a diff of what the brain learned; your organization is yours (see *Owner keys* below).
+6. **Connect Claude via MCP.** Open [/app/agents](https://decision-trace.pages.dev/app/agents), copy the endpoint into Claude Code, Claude Desktop or Cursor, and ask *"Use Decision Trace to tell me what is affected if we drop Snowflake."* Every call shows in *Recent changes* on Home.
+
+## Organizations, upload, GitHub import, company map
+
+- **Organizations.** Every organization is its own FalkorDB graph (`org_<id>_<random>`). **Acme Corp** (the original graph) and **Arachne** (real ADRs) are *sample* organizations: shared, read-only apart from tagged demo ingests that reset themselves, never deleted. You can create your own from the menu: 40-character names, 25 in total, 3 creations per hour per IP, deleted after 72 idle hours. Every endpoint, the Ask stream, the caches and the MCP tools take an organization (`/orgs/<id>/...`, or the optional `org` argument on a tool).
+- **Owner keys.** Creating an organization returns an `owner_key` once (stored server-side only as a hash, kept in your browser's localStorage). Adding sources, importing and deleting need it (`X-Org-Key`); *viewing* needs nothing, so anyone with a link can look. A browser without the key sees a clear read-only state. There is no sign-in: the key is the only credential.
+- **File upload.** `.md`, `.txt` or `.pdf` (text extracted; scanned PDFs are skipped with a message), up to 10 files, 1 MB each, 50,000 characters in total. Each file gets a type (meeting, ticket, document or ADR, auto-detected unless you choose), long files are read in chunks by the same two-pass extractor, and the result is one combined diff.
+- **GitHub import** (your own organizations). A public repository URL: ADR markdown from `docs/adr`, `doc/adr`, `docs/decisions`, `adr`, `architecture/decisions` or `ADR-*.md` (at most 40), plus, optionally, the last 30 closed PRs and issues that look like decisions. Status and "Supersedes ADR-n" lines become `supersedes` edges deterministically; authors become people; the repository becomes a Project. The model only names systems per ADR and judges PRs and issues, capped at 80,000 estimated tokens per import. Set `GITHUB_TOKEN` on the server for GitHub's 5,000/hour limit (without it: 60 requests per hour, and some dates are estimated, which the result says).
+- **Company map.** Explore opens the whole graph: colour is node type, size is connections, Decision borders show health, tickets are hidden until you ask, search finds a node, clicking one lights up its neighbours. *Focus* narrows to one node's neighbourhood.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
   subgraph SRC[Sources]
-    T[80 tickets<br/>CSV]
-    M[12 meeting notes<br/>Markdown]
-    S[(company.db<br/>SQL records)]
-    N[New source<br/>pasted live or via MCP]
+    SQL[(company.db<br/>SQL records)]
+    T[Tickets<br/>CSV]
+    M[Meeting notes<br/>Markdown]
+    UP[File upload<br/>md, txt, pdf]
+    GH[GitHub<br/>ADRs, PRs, issues]
   end
   subgraph ING[Ingest]
-    E[Two-pass decision extraction<br/>quotes verified verbatim]
-    R[Entity matching and<br/>supersedes/contradicts judge]
+    E[Two-pass extraction<br/>quotes verified verbatim]
+    R[Reconciliation and judge<br/>supersedes, contradicts, reaffirms]
   end
-  C[Cognee<br/>graph + vector adapters]
-  F[(FalkorDB Cloud<br/>single graph, Cypher)]
-  L[(LanceDB<br/>local embeddings)]
+  C[Cognee<br/>graph adapter]
+  F[(FalkorDB Cloud<br/>one graph per organization)]
   subgraph API[FastAPI on Railway]
     A[Ask stream<br/>intent, Cypher, compose]
     H[Health engine]
-    I[Live ingest + change log]
-    X[MCP server<br/>/mcp, 7 tools]
+    I[Ingest + change log]
+    X[MCP server, 7 tools]
   end
   subgraph WEB[Cloudflare Pages]
-    UI[React + Vite SPA]
+    UI[React SPA]
     P[Pages Function<br/>hardened proxy]
   end
+  SQL --> C
   T --> E
   M --> E
-  S --> C
-  N --> E
+  UP --> E
+  GH --> E
   E --> R --> C
   C --> F
-  C --> L
   F <--> A
   F <--> H
   F <--> I
@@ -101,27 +103,30 @@ flowchart LR
   CI -.-> WEB
 ```
 
-- **Backend**: FastAPI (Python 3.12) with per-IP rate limits, a daily LLM token budget, bounded queries and streaming (SSE) for Ask and ingest. Deployed to Railway from a lean multi-stage Dockerfile.
-- **Graph**: FalkorDB Cloud holds everything structured. Embeddings for decision-title matching live in local LanceDB (FastEmbed `bge-small-en-v1.5`), which keeps the 100 MB free tier free for the graph.
+- **Backend**: FastAPI (Python 3.12) with per-IP rate limits, a daily LLM token budget, bounded queries and streaming (SSE) for Ask and ingest. A request to `/orgs/<id>/...` is rewritten to the plain route by a middleware that sets the organization's graph for that request (a context variable), so every query, cache and lock is per organization. Deployed to Railway from a lean multi-stage Dockerfile.
+- **Graph**: FalkorDB Cloud holds everything structured. Decision-title similarity uses FastEmbed (`bge-small-en-v1.5`) computed locally (Cognee's vector store is a local LanceDB), which keeps the 100 MB free tier for the graph.
 - **Frontend**: React, TypeScript, Vite, Tailwind, Cytoscape. Cloudflare Pages serves it and a Pages Function proxies `/api/*` to Railway with a path whitelist.
-- **CI**: GitHub Actions lints, type-checks and unit-tests, runs about 60 Playwright tests with axe accessibility checks at 1440 and 390 px, deploys, then smoke-tests the live MCP endpoint with the official client.
+- **CI**: GitHub Actions lints, type-checks and unit-tests, runs about 90 Playwright tests with axe accessibility checks at 1440 and 390 px, deploys, then smoke-tests the live MCP endpoint with the official client.
 
 ## How FalkorDB is used
 
 Everything the UI and the agents show is a Cypher query; Python only assembles rows. The Ask step list and the decision page both display the exact statements and their timings ("Show Cypher").
 
-**Schema** (146 nodes, 374 edges)
+**Schema** (Acme: 146 nodes, 374 edges)
 
 | Nodes | Count | Relationships | Count |
 | :-- | --: | :-- | --: |
 | `Decision` | 17 | `assigned_to`, `raised_by`, `mentions` (Ticket → Person/System) | 80 each |
 | `Person` | 15 | `attended_by` (Meeting → Person) | 38 |
 | `System` | 12 | `decided_by` (Decision → Person) | 19 |
-| `Team` | 4 | `based_on` (Decision → Ticket/Meeting, with a verbatim `quote`) | 18 |
+| `Team` | 4 | `based_on` (Decision → Ticket/Meeting/Document, with a verbatim `quote`) | 18 |
 | `Project` | 6 | `about_system` (Decision → System) | 18 |
 | `Ticket` | 80 | `member_of`, `leads` (Person → Team/Project) | 15, 10 |
 | `Meeting` | 12 | `owns` (Person → System) | 12 |
-| | | `supersedes`, `contradicts` (Decision ↔ Decision) | 3, 1 |
+| `Document` | 0 (uploads, ADRs) | `supersedes`, `contradicts` (Decision ↔ Decision) | 3, 1 |
+| | | `part_of` (Decision → Project, GitHub imports) | |
+
+**Multi-tenant graphs.** Each organization is a separate FalkorDB graph; a small `dt_registry` graph lists them. Switching organization changes only the graph name a query runs on, so the same Cypher serves every tenant, deleting an organization is `GRAPH.DELETE`, and one organization's slow ingest never blocks another's. A 112-node, 156-edge import (the 40 ADRs of the Backstage repository) used about 1.1 MB of the instance.
 
 **Real queries from the code**
 
@@ -185,22 +190,32 @@ RETURN s.name, p.name, p.leave_date
 
 **Method.** `data/GROUND_TRUTH.md` lists the decisions, deciders, supersedes and contradicts relations in the main corpus. Two further sets of hand-written documents, `data/holdout/` (3 tickets, 3 meeting notes) and `data/holdout2/` (8 documents, 3 of them with no decision, to catch false positives), were written with their ground truth (`HOLDOUT_TRUTH.md`, `HOLDOUT2_TRUTH.md`) **before** the extractor was run on them. They avoid the "decided:" markers of the main data and bury decisions in discussion. Extraction is checked per decision against the truth by embedding similarity, and every extracted quote must appear verbatim in its source or the decision is dropped.
 
-**Current numbers** (`bedrock/deepseek.v3.2`, temperature 0, re-run after the ticket-date fix; the graph itself did not change, 146 nodes and 374 edges):
+**Current numbers** (`bedrock/deepseek.v3.2`, temperature 0; re-run on 2026-10-18 after the Ask citation change, which does not touch extraction; the Acme graph did not change, so the snapshot was not re-frozen):
 
 | Set | Truth | Extracted | Recall | Precision | Decider accuracy |
 | :-- | --: | --: | --: | --: | --: |
 | Main corpus (`scripts/evaluate.py`, live graph) | 16 | 17 | 100% (16/16) | 94.1% | 100% |
-| Holdout 1 (cold extraction) | 6 | 7 | 100% (6/6) | 85.7% | 100% |
+| Holdout 1 (cold extraction) | 6 | 5 | 83.3% (5/6) | 100% | 100% |
 | Holdout 2 (cold extraction, 3 negative docs) | 5 | 4 | 80% (4/5) | 100% | 100% |
 
-Relationships on the main corpus: `supersedes` 3/3 recall and precision, `contradicts` 1/1 recall and precision. The governance check (a system owned by someone who left) finds Elasticsearch / Marcus Aurelius, who left 2025-11-30. The seven Ask benchmark questions and the five suggested questions are frozen as fixtures and re-verified live after each deploy.
+Relationships on the main corpus: `supersedes` 3/3 recall and precision, `contradicts` 1/1 recall and precision. The governance check finds Elasticsearch / Marcus Aurelius, who left 2025-11-30. The Ask benchmark questions are frozen as fixtures and re-verified live after each deploy.
 
-For comparison, the three runs recorded before the final tuning (`data/verification_freeze_report.json`) had holdout 1 at 83 to 100% precision and recall and holdout 2 at 80 to 100%; the spread between them is the model's run-to-run variation, not an improvement or a regression.
+**Against Phase 2** (the three runs recorded in `data/verification_freeze_report.json`): main corpus 100% recall, 88.9% precision, 100% decider accuracy in all three; holdout 1 83 to 100% precision and recall; holdout 2 80 to 100% recall, 100% precision. Today's numbers sit inside that range. The differences between runs (holdout 1 was 100% recall and 85.7% precision a few hours earlier today) are the model's run-to-run variation, not an improvement or a regression.
+
+**Real repositories** (the GitHub importer, no ground truth to score against, so these are counts, not accuracy):
+
+| Repository | ADRs read | PR/issue decisions | `supersedes` links | Decisions | Time | Model tokens (est.) |
+| :-- | --: | --: | --: | --: | --: | --: |
+| `arachne-framework/architecture` (the Arachne showcase organization; imported in production) | 16 | 1 of 2 | 2 | 17 | 34 s | 12.6k |
+| `npryce/adr-tools` | 9 | 5 of 20 | 0 | 14 | 28 s | 12.9k |
+| `backstage/backstage` | 40 | 0 | 1 | 40 | 38 s | 26.9k |
+
+I checked the supersession links by reading the ADRs: Arachne's ADR 17 states it supersedes ADRs 15 and 16, and Backstage's ADR 13 is marked superseded by ADR 14. These imports run the importer's ADR parsing and a small model call per ADR (systems) or per PR/issue (is it a decision), so the model is not extracting decisions from ADR prose; it only names systems.
 
 **Honest limits.**
-- The corpus is **synthetic**, generated to contain known decisions, a conflict, supersessions and a departed owner. It shows the pipeline works end to end; it does not prove accuracy on messy real company data.
+- The Acme corpus is **synthetic**, generated to contain known decisions, a conflict, supersessions and a departed owner. It shows the pipeline works end to end; it does not prove accuracy on messy real company data. The real-repository imports are the other half of the evidence, and they are structured ADRs, the easy case.
 - The extractor prompts were tuned on the main corpus, so the 94.1% there is optimistic. The holdouts are the fairer number, and they are small (11 truth decisions). Treat the percentages as indicative.
-- Extraction is an LLM call: results vary a little between runs (see above), and the one main-corpus "false positive" is a real decision (decommissioning Snowflake) that the ground truth file does not list.
+- Extraction is an LLM call: results vary a little between runs, and the one main-corpus "false positive" is a real decision (decommissioning Snowflake) that the ground truth file does not list.
 - A "why" question about something not in the graph returns *not found* rather than a guess. Questions are routed by rules plus one cheap model call for unusual phrasings; the router can still misroute a very odd question.
 
 ## Run locally
@@ -209,7 +224,7 @@ For comparison, the three runs recorded before the final tuning (`data/verificat
 
 ### Just the frontend (no backend, no keys)
 
-The frontend ships recorded fixtures from the live API, so you can click through everything without a backend:
+The frontend ships recorded fixtures from the live API, so you can click through everything, including creating an organization, without a backend:
 
 ```bash
 cd frontend
@@ -246,27 +261,30 @@ cd frontend && npm ci
 VITE_USE_MOCKS=false VITE_API_BASE_URL=http://localhost:8000 npm run dev
 ```
 
-**Safety.** `scripts/seed.py` (re-runs the whole LLM pipeline) and `scripts/restore_snapshot.py restore` delete *every* graph on the FalkorDB instance. They refuse to run without `--i-know-this-deletes-all-graphs` and the graph name typed back, and refuse the production graph unless `--force-production` is also given. Never point them at a shared instance.
+Organizations, upload and GitHub import work against this local stack too (create one from the menu; `GITHUB_TOKEN` is optional). The showcase organization is created by a script, only if you want it locally: `PYTHONPATH=backend python scripts/create_showcase_org.py`.
+
+**Environment variables.** All of them, with comments and no values, are in [`.env.example`](.env.example) and [`frontend/.env.example`](frontend/.env.example): FalkorDB connection, LLM provider and key, `LLM_DAILY_TOKEN_BUDGET`, `MCP_READ_ONLY`, `GITHUB_TOKEN`, CORS origin and the rest.
+
+**Safety flags.** `scripts/seed.py` (re-runs the whole LLM pipeline) and `scripts/restore_snapshot.py restore` delete *every* graph on the FalkorDB instance. They refuse to run without `--i-know-this-deletes-all-graphs` and the graph name typed back, and refuse the production graph unless `--force-production` is also given. Never point them at a shared instance. `scripts/create_showcase_org.py` only touches its own organization's graphs.
 
 **Tests and checks**
 
 ```bash
-PYTHONPATH=backend pytest backend/tests -m "not integration"     # 140+ backend tests, no network
+PYTHONPATH=backend pytest backend/tests -m "not integration"     # 180+ backend tests, no network
 ruff check backend
-cd frontend && npx vitest run && npx eslint . && npx tsc --noEmit  # 150+ unit tests, lint, types
-cd frontend && npm run build && npx playwright install chromium && npx playwright test   # 60 e2e tests with axe
+cd frontend && npx vitest run && npx eslint . && npx tsc --noEmit  # 170+ unit tests, lint, types
+cd frontend && npm run build && npx playwright install chromium && npx playwright test   # about 90 e2e tests with axe
 PYTHONPATH=backend python scripts/evaluate.py                    # score the loaded graph (read-only)
+PYTHONPATH=backend pytest -m integration backend/tests/test_orgs_integration.py   # live: create an org, upload, ask, delete (needs your keys)
 ```
 
 Other scripts: `scripts/load_test.py` and `scripts/live_walkthrough.mjs` (production load test and a fresh-browser walkthrough), `scripts/mcp_smoke.py [URL]` (calls every MCP read tool), `scripts/evaluate_holdout.py` / `evaluate_holdout2.py` (cold extraction on their own dataset; delete the graph they leave behind).
-
-All environment variables are documented in [`.env.example`](.env.example) and [`frontend/.env.example`](frontend/.env.example).
 
 ## Connect an agent (MCP)
 
 Endpoint (Streamable HTTP, no sign-in, 20 calls a minute per IP): `https://decision-trace-api-production.up.railway.app/mcp`
 
-Tools: `ask`, `get_decision`, `list_decisions`, `impact_of`, `who_knows`, `find_conflicts` (all read-only) and `add_source` (writes demo data that removes itself after 10 idle minutes; disable with `MCP_READ_ONLY=true`).
+Tools: `ask`, `get_decision`, `list_decisions`, `impact_of`, `who_knows`, `find_conflicts` (all read-only) and `add_source` (demo data in the sample organizations that removes itself after 10 idle minutes; disable with `MCP_READ_ONLY=true`). Every tool takes an optional `org` (for example `arachne`); `add_source` into an organization you created also needs its `owner_key`.
 
 **Claude Desktop and claude.ai (recommended):** Settings → Connectors → *Add custom connector* → paste the endpoint URL.
 
@@ -296,34 +314,35 @@ claude mcp add --transport http decision-trace https://decision-trace-api-produc
 }
 ```
 
-Formats checked against the [Claude Code](https://code.claude.com/docs/en/mcp), [MCP](https://modelcontextprotocol.io/docs/develop/connect-remote-servers) and [Cursor](https://cursor.com/docs/context/mcp) docs and the [mcp-remote](https://github.com/geelen/mcp-remote) README. Try: *"Use Decision Trace to tell me what is affected if we drop Snowflake."*
+Formats checked against the [Claude Code](https://code.claude.com/docs/en/mcp), [MCP](https://modelcontextprotocol.io/docs/develop/connect-remote-servers) and [Cursor](https://cursor.com/docs/context/mcp) docs and the [mcp-remote](https://github.com/geelen/mcp-remote) README.
 
-## Built during the hackathon, and how
+## Built during the event (Oct 15 to 18), and how
 
-The commit history is the timeline (84 commits, all public):
+The commit history is the timeline. The repository scaffold and the first data work predate the event window; I say so rather than hide it:
 
 | Dates | What was built |
 | :-- | :-- |
-| **Oct 11** | Repository scaffold: configuration, FalkorDB adapter, Cognee memory wiring, health endpoint, Dockerfile, first tests. |
-| **Oct 14** | Graph model, decision identity reconciliation, the synthetic company dataset with ground truth, SQL/ticket/meeting ingestion, the seed pipeline and the first evaluation. |
+| **Oct 11** (before the event) | Repository scaffold: configuration, FalkorDB adapter, Cognee memory wiring, health endpoint, Dockerfile, first tests. |
+| **Oct 14** (before the event) | Graph model, decision identity reconciliation, the synthetic company dataset with ground truth, SQL/ticket/meeting ingestion, the seed pipeline and the first evaluation. |
 | **Oct 15 to 16** | Two-pass extraction with verified quotes, the decision health engine, citation integrity, deployment (Railway, Cloudflare Pages, CI), the Linear-style UI, decision pages, Systems and People, live ingest with the change diff. |
-| **Oct 17 to 18** | Streamed Ask with impact, expertise and status intents, Sources, demo safety, the MCP server, Home and Agents pages, hardening (timeouts, token budget, error states), this README. |
+| **Oct 17** | Streamed Ask with impact, expertise and status intents, Sources, demo safety, the MCP server, Home and Agents pages, hardening (timeouts, token budget, error states), the first submission package. |
+| **Oct 18** | Landing page, organizations (one graph each), file upload, GitHub import, the company map, the Arachne showcase, owner keys, this README. |
 
-**How coding assistants were used, honestly:** an AI coding agent (Claude Code) wrote most of the code under my direction, and I used Claude for design discussions, prompt design and review. I made the product and architecture decisions (what the graph models, the health rules, the evaluation method, what to cut), set the acceptance criteria phase by phase, and verified the results: running the evaluation, checking live answers against the ground truth, reviewing screenshots, and testing the deployed app. The `docs/AGENT_HANDOFF.md` file is the running context document the agent worked from.
+**How coding assistants were used, honestly:** an AI coding agent (Claude Code) wrote most of the code under my direction. I used Claude for product design, UI design, prompt design and review. I made the product and architecture decisions (what the graph models, the health rules, the evaluation method, what to cut), set the acceptance criteria phase by phase, and verified the results: running the evaluation, checking live answers against the ground truth, reviewing screenshots, and testing the deployed app. [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md) is the running context document the agent worked from.
 
 ## Limits and next steps
 
-- **Synthetic, single-tenant data.** One company, one graph, no per-user access control; the public demo has no sign-in and relies on rate limits, a daily token budget and automatic reset of demo ingests.
-- **Sources.** Tickets (CSV), Markdown meeting notes and a SQL database. Next: Slack, Jira, GitHub and Confluence connectors so decisions are captured where they happen.
-- **Auth and permissions.** Decisions inherit the visibility of their sources; that needs real identity and per-source ACLs.
-- **Scale.** The free FalkorDB tier and a single backend instance are fine for a demo; larger graphs need incremental ingest and cached health.
-- **Extraction quality.** An LLM judges supersedes and contradicts; a review queue for low-confidence links would make that safe for real use.
+- **No sign-in.** Organizations are protected by an owner key kept in the browser, not by identity: losing the browser's storage loses the ability to change that organization (it can still be viewed), and anyone with a link can read it. Next: SSO and per-user permissions.
+- **Connectors.** Sources are tickets (CSV), Markdown, PDF, ADRs and PR/issue text from GitHub. Next: Slack, Jira and Confluence so decisions are captured where they happen.
+- **Permissions.** Decisions should inherit the visibility of their sources; that needs real identity and per-source ACLs.
+- **Scale.** The free FalkorDB tier (100 MB) and a single backend instance are fine for a demo: the registry caps user organizations at 25 and deletes idle ones after 72 hours. Larger graphs need incremental ingest and cached health.
+- **Extraction quality.** An LLM judges supersedes and contradicts for prose sources; a review queue for low-confidence links would make that safe for real use. ADR supersession is read from the text, which is reliable only when the ADR states it.
 
 ## Credits
 
 - **[FalkorDB](https://www.falkordb.com/)**: the graph database powering every query ([GitHub](https://github.com/FalkorDB/FalkorDB)).
 - **[Cognee](https://www.cognee.ai/)**: memory and knowledge-graph orchestration ([GitHub](https://github.com/topoteretes/cognee), Apache-2.0) with the [FalkorDB community adapter](https://pypi.org/project/cognee-community-hybrid-adapter-falkor/).
 - **[WeMakeDevs](https://www.wemakedevs.org/)**: for running the hackathon.
-- [FastEmbed](https://github.com/qdrant/fastembed), [LanceDB](https://github.com/lancedb/lancedb), [FastAPI](https://fastapi.tiangolo.com/), [Cytoscape.js](https://js.cytoscape.org/), [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk).
+- The [Arachne framework](https://github.com/arachne-framework/architecture) team, whose public ADRs are the showcase data; [FastEmbed](https://github.com/qdrant/fastembed), [FastAPI](https://fastapi.tiangolo.com/), [Cytoscape.js](https://js.cytoscape.org/), [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk).
 
 Licensed under the [MIT License](LICENSE).
