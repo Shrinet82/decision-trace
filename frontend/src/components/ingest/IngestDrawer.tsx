@@ -266,7 +266,7 @@ export const IngestDrawer: React.FC = () => {
           id="ingest-panel-paste"
           aria-labelledby={tabs.length > 1 ? 'ingest-tab-paste' : undefined}
           hidden={!canWrite || (tabs.length > 1 && ingest.tab !== 'paste')}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-4 [&[hidden]]:hidden"
         >
         {phase === 'form' ? (
           <form onSubmit={submit} className="flex flex-col gap-3" aria-label="Source">

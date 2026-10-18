@@ -134,6 +134,7 @@ test.describe('Owner key and showcase', () => {
   test('the organization this browser created keeps its owner key and can add sources', async ({ page }) => {
     await page.goto('/app');
     await createOrg(page, 'Mine');
+    await expect(page).toHaveURL(/\/app\/o\/mine-/);
     const stored = await page.evaluate(() => JSON.parse(window.localStorage.getItem('dt.orgs.v1') ?? '[]'));
     expect(stored[0].owner_key).toMatch(/^ok_/);
     await expect(page.getByRole('button', { name: /Upload files/ })).toBeVisible();

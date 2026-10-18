@@ -28,7 +28,7 @@ export const EmptyOrgHome: React.FC<{ orgName: string }> = ({ orgName }) => {
             or create your own organization from the menu at the top of the sidebar.
           </p>
         )}
-        <div className="flex flex-col gap-3 min-[600px]:flex-row" hidden={!canWrite}>
+        <div className="flex flex-col gap-3 min-[600px]:flex-row [&[hidden]]:hidden" hidden={!canWrite}>
           {FEATURES.upload && (
             <button type="button" className={big} onClick={() => ingest?.openDrawer('files')}>
               <FileUp size={18} aria-hidden="true" className="text-accent" />
