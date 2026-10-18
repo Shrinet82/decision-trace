@@ -656,6 +656,7 @@ export async function streamGithub(
       [{ event: 'progress', data: { phase: 'extracting', status: 'done', label: 'Extracting systems and decisions', detail: '12 ADR decisions, 2 of 3 PRs/issues recorded a decision' } }],
       [{ event: 'progress', data: { phase: 'linking', status: 'done', label: 'Linking decisions', detail: '2 supersedes links' } }],
       [{ event: 'progress', data: { phase: 'writing', status: 'done', label: 'Writing to FalkorDB', detail: '61 nodes, 89 edges' } }],
+      [{ event: 'progress', data: { phase: 'health', status: 'done', label: 'Recomputing health', detail: '14 new decisions' } }],
     ];
     if (/nope|missing/i.test(repoUrl)) {
       await wait(MOCK_EVENT_INTERVAL_MS, signal);

@@ -31,7 +31,7 @@ async function expectNoHorizontalScroll(page: Page) {
 }
 
 async function settleGraph(page: Page) {
-  await expect(page.getByTestId('graph-canvas')).toBeVisible();
+  await expect(page.getByTestId(/graph-canvas|company-map/)).toBeVisible();
   await page.waitForTimeout(900);
 }
 
