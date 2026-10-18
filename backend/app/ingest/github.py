@@ -19,7 +19,7 @@ import re
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, AsyncIterator, Literal, Optional
+from typing import Any, AsyncIterator, Awaitable, Callable, Literal, Optional
 from urllib.parse import urlparse
 
 import httpx
@@ -48,7 +48,7 @@ MAX_ITEMS = 30
 MAX_BODY = 3000
 TOKEN_CAP = 80_000  # estimated model tokens per import
 HTTP_TIMEOUT = 20.0
-LLM_CONCURRENCY = 4
+LLM_CONCURRENCY = 5
 KEYWORDS = re.compile(r"\b(decision|decided|rfc|adr|proposal|proposed)\b", re.IGNORECASE)
 API = "https://api.github.com"
 RAW = "https://raw.githubusercontent.com"
@@ -380,9 +380,43 @@ async def _gather_limited(coros: list[Any], limit: int) -> list[Any]:
     return await asyncio.gather(*(run(c) for c in coros), return_exceptions=True)
 
 
+async def _with_progress(
+    work: list[tuple[str, Callable[[], Awaitable[None]]]], limit: int, phase: str, label: str
+) -> AsyncIterator[dict[str, Any]]:
+    """Run the jobs `limit` at a time and yield a progress event as each one finishes
+    ("12/40: ADR-012 Use Kafka"). One failing job is logged and skipped, never fatal."""
+    total = len(work)
+    queue: asyncio.Queue[str] = asyncio.Queue()
+    sem = asyncio.Semaphore(limit)
+
+    async def run(name: str, fn: Callable[[], Awaitable[None]]) -> None:
+        try:
+            async with sem:
+                await fn()
+        except Exception as exc:  # noqa: BLE001 - skip this item
+            logger.warning("%s: %s failed: %s", label, name, exc)
+        finally:
+            queue.put_nowait(name)
+
+    tasks = [asyncio.create_task(run(name, fn)) for name, fn in work]
+    try:
+        for done in range(1, total + 1):
+            name = await queue.get()
+            yield _progress(phase, "running", label, f"{done}/{total}: {name}")
+    finally:
+        for t in tasks:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
 # --------------------------------------------------------------------------------------------
 # The import
 # --------------------------------------------------------------------------------------------
+
+def adr_label(a: "Adr") -> str:
+    """"ADR-012 Use Kafka": how an ADR is named in progress messages."""
+    return f"ADR-{a.number:03d} {a.title[:50]}" if a.number is not None else a.title[:60]
+
 
 def _progress(phase: str, status: str, label: str, detail: Optional[str] = None) -> dict[str, Any]:
     data: dict[str, Any] = {"phase": phase, "status": status, "label": label}
@@ -459,51 +493,69 @@ async def run_github_import(req: GithubRequest, dataset: str, client: Optional[G
         undated = [a for a in adrs if not a.date]
         fallback_date = _day(info.get("pushed_at")) or _now()[:10]
         estimated = 0
-        for a in undated:
-            if gh.remaining is not None and gh.remaining < 12:
-                break
-            try:
+
+        # Unauthenticated GitHub allows 60 requests an hour: look up only as many as the limit leaves room for
+        room = len(undated) if gh.remaining is None else max(0, gh.remaining - 12)
+
+        def date_lookup(a: Adr) -> Callable[[], Awaitable[None]]:
+            async def go() -> None:
                 commits = await gh.api(f"/repos/{owner}/{repo}/commits", path=a.path, per_page=1)
-            except GithubError:
-                break
-            if commits:
-                c = commits[0]
-                a.date = _day(c["commit"]["author"]["date"])
-                author = (c.get("commit", {}).get("author") or {}).get("name")
-                if not a.deciders and author:
-                    a.deciders = [author]
+                if commits:
+                    c = commits[0]
+                    a.date = _day(c["commit"]["author"]["date"])
+                    author = (c.get("commit", {}).get("author") or {}).get("name")
+                    if not a.deciders and author:
+                        a.deciders = [author]
+
+            return go
+
+        if undated[:room]:
+            async for ev in _with_progress(
+                [(adr_label(a), date_lookup(a)) for a in undated[:room]], LLM_CONCURRENCY, "fetching", "Looking up dates"
+            ):
+                yield ev
+            yield _progress("fetching", "done", "Fetching repository", f"found {len(adrs)} ADRs and {len(items)} decision-like PRs/issues")
         for a in adrs:
             if not a.date:
                 a.date = fallback_date
                 estimated += 1
 
-        # 2. Extracting: systems per ADR, decisions from PRs/issues (bounded)
-        yield _progress("extracting", "running", "Extracting systems and decisions", f"{len(adrs)} ADRs, {len(items)} PRs/issues")
+        # 2. Extracting: systems per ADR, decisions from PRs/issues (bounded, a few at a time)
+        yield _progress("extracting", "running", "Extracting systems and decisions", f"0/{len(adrs) + len(items)}")
+        label = "Extracting systems and decisions"
 
-        async def adr_systems(a: Adr) -> None:
-            sample = f"{a.title}\n{a.body[:2200]}"
-            if not meter.can_afford(SYSTEMS_PROMPT, sample, reply=120):
-                return
-            meter.spend(SYSTEMS_PROMPT, sample, reply=120)
-            out = await _llm(SYSTEMS_PROMPT, sample, AdrSystems, 120)
-            a.systems = [s.strip() for s in out.systems if 0 < len(s.split()) <= 3 and len(s) <= 40][:3]
+        def adr_systems(a: Adr) -> Callable[[], Awaitable[None]]:
+            async def go() -> None:
+                sample = f"{a.title}\n{a.body[:2200]}"
+                if not meter.can_afford(SYSTEMS_PROMPT, sample, reply=120):
+                    return
+                meter.spend(SYSTEMS_PROMPT, sample, reply=120)
+                out = await _llm(SYSTEMS_PROMPT, sample, AdrSystems, 120)
+                a.systems = [x.strip() for x in out.systems if 0 < len(x.split()) <= 3 and len(x) <= 40][:3]
 
-        await _gather_limited([adr_systems(a) for a in adrs], LLM_CONCURRENCY)
+            return go
 
         judged: list[dict[str, Any]] = []
 
-        async def judge(item: dict[str, Any]) -> None:
-            text = f"{item['title']}\n\n{item['body']}"
-            if not meter.can_afford(ITEM_PROMPT, text, reply=250):
-                return
-            meter.spend(ITEM_PROMPT, text, reply=250)
-            out = await _llm(ITEM_PROMPT, text, ItemJudgement, 250)
-            if out.is_decision and out.quote and quote_in(out.quote, text):
-                judged.append({**item, "decision": out})
+        def judge(item: dict[str, Any]) -> Callable[[], Awaitable[None]]:
+            async def go() -> None:
+                text = f"{item['title']}\n\n{item['body']}"
+                if not meter.can_afford(ITEM_PROMPT, text, reply=250):
+                    return
+                meter.spend(ITEM_PROMPT, text, reply=250)
+                out = await _llm(ITEM_PROMPT, text, ItemJudgement, 250)
+                if out.is_decision and out.quote and quote_in(out.quote, text):
+                    judged.append({**item, "decision": out})
 
-        await _gather_limited([judge(i) for i in items], LLM_CONCURRENCY)
+            return go
+
+        work = [(adr_label(a), adr_systems(a)) for a in adrs] + [
+            (f"{i['kind']}-{i['number']} {i['title'][:50]}", judge(i)) for i in items
+        ]
+        async for ev in _with_progress(work, LLM_CONCURRENCY, "extracting", label):
+            yield ev
         yield _progress(
-            "extracting", "done", "Extracting systems and decisions",
+            "extracting", "done", label,
             f"{len(adrs)} ADR decisions, {len(judged)} of {len(items)} PRs/issues recorded a decision · ~{meter.used:,} model tokens",
         )
 
@@ -654,6 +706,11 @@ async def run_github_import(req: GithubRequest, dataset: str, client: Optional[G
             "summary": diff["summary"], "diff": diff, "overrides": [],
         })
         yield _event("diff", diff)
+    except asyncio.CancelledError:
+        # Cancelled (or the job's task was torn down): remove what was written, then let it end
+        if wrote:
+            await asyncio.shield(rollback(dataset, ingest_id, []))
+        raise
     except GithubError as exc:
         if wrote:
             await rollback(dataset, ingest_id, [])

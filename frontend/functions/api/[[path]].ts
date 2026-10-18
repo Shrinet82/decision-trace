@@ -18,7 +18,8 @@
  *    - GET  /ingest/status
  *    - GET  /changes
  *    - GET  /attention
- *    - POST /ingest/batch, POST /ingest/github   (streams)
+ *    - POST /ingest/batch, POST /ingest/github   (streams; they run as jobs)
+ *    - GET /jobs/latest, GET /jobs/:id, GET /jobs/:id/stream (stream), DELETE /jobs/:id
  *    - POST /orgs, GET /orgs (showcase list), GET|DELETE /orgs/:id
  *    - everything above under /orgs/:id/... for a user organization
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
@@ -87,6 +88,10 @@ export async function onRequest(context: {
     "^/sources/(ticket|meeting|document|person|team|project|system)/[A-Za-z0-9 _.&'(),:-]{1,120}$"
   );
 
+  // Jobs: a long import runs server-side; these let a client re-attach or poll after a dropped stream
+  const JOB_STATUS = /^\/jobs\/job_[a-f0-9]{12}$/;
+  const JOB_STREAM = /^\/jobs\/job_[a-f0-9]{12}\/stream$/;
+
   // Strict whitelist check
   const isWhitelisted =
     (method === 'GET' && orgPath === '/health') ||
@@ -106,6 +111,8 @@ export async function onRequest(context: {
     (method === 'GET' && orgPath === '/attention') ||
     (method === 'POST' && orgPath === '/ingest/batch') ||
     (method === 'POST' && orgPath === '/ingest/github') ||
+    (method === 'GET' && (orgPath === '/jobs/latest' || JOB_STATUS.test(orgPath) || JOB_STREAM.test(orgPath))) ||
+    (method === 'DELETE' && JOB_STATUS.test(orgPath)) ||
     (method === 'POST' && orgPath === '/orgs') ||
     (method === 'GET' && orgPath === '/orgs:list') ||
     ((method === 'GET' || method === 'DELETE') && orgPath === '/orgs/:id');
@@ -140,11 +147,17 @@ export async function onRequest(context: {
   // Never wait forever on the API: plain requests get 30 s; the two streams get long enough for
   // their own per-step limits (Ask 45 s per model call, ingest several calls).
   const isStream =
-    orgPath === '/ask/stream' || orgPath === '/ingest' || orgPath === '/ingest/batch' || orgPath === '/ingest/github';
+    orgPath === '/ask/stream' ||
+    orgPath === '/ingest' ||
+    orgPath === '/ingest/batch' ||
+    orgPath === '/ingest/github' ||
+    JOB_STREAM.test(orgPath);
   let upstream: Response;
   try {
     upstream = await fetch(modifiedRequest, {
-      signal: AbortSignal.timeout(isStream ? 170_000 : 30_000),
+      // Streams carry keep-alive comments every 10 s and imports run as jobs a client can re-attach to,
+      // so a long stream is allowed to stay open; plain requests still get 30 s.
+      signal: AbortSignal.timeout(isStream ? 600_000 : 30_000),
     });
   } catch (error) {
     const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
