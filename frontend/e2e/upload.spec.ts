@@ -49,7 +49,7 @@ test.describe('File upload', () => {
     await dialog.getByRole('button', { name: 'Ingest 2 files' }).click();
     const progress = dialog.getByRole('list', { name: 'Upload progress' });
     await expect(progress.getByRole('listitem')).toHaveCount(2);
-    const result = dialog.getByRole('region', { name: 'Result' });
+    const result = dialog.getByRole('region', { name: 'Result', exact: true });
     await expect(result).toBeVisible();
     await expect(progress.locator('[data-file-status="done"]')).toHaveCount(2);
     await expect(dialog.getByRole('button', { name: 'Upload more files' })).toBeVisible();

@@ -14,6 +14,7 @@ import {
   countByStatus,
   type StatusKind,
 } from '../utils/model';
+import { hiddenTypesFromParams, hideParamValue } from '../utils/companyMap';
 import { CommandPalette } from './CommandPalette';
 import { IngestProvider } from './ingest/IngestProvider';
 import { StatusIcon } from './StatusIcon';
@@ -88,7 +89,7 @@ const Views: React.FC<{
 
 const GraphTypeFilters: React.FC<{ counts: Map<string, number> | null }> = ({ counts }) => {
   const [params, setParams] = useSearchParams();
-  const hidden = new Set((params.get('hide') ?? '').split(',').filter(Boolean));
+  const hidden = hiddenTypesFromParams(params);
   const types = NODE_TYPES.filter((t) => (counts?.get(t) ?? 0) > 0);
 
   const toggle = (type: string) => {
@@ -96,8 +97,7 @@ const GraphTypeFilters: React.FC<{ counts: Map<string, number> | null }> = ({ co
     if (next.has(type)) next.delete(type);
     else next.add(type);
     const copy = new URLSearchParams(params);
-    if (next.size > 0) copy.set('hide', [...next].join(','));
-    else copy.delete('hide');
+    copy.set('hide', hideParamValue(next));
     setParams(copy, { replace: true });
   };
 
