@@ -313,7 +313,7 @@ export interface DemoStatus {
   last_ingest_at: string | null;
   resets_at: string | null;
   seconds_left: number | null;
-  auto_reset_minutes: number;
+  auto_reset_minutes: number | null;
 }
 
 /** One row of the home page's "needs attention" queue (GET /attention). */
@@ -327,4 +327,17 @@ export interface AttentionItem {
 
 export interface Attention {
   items: AttentionItem[];
+}
+
+/** An organization: its own graph. `sample` is the read-mostly demo company. */
+export interface OrgInfo {
+  id: string;
+  name: string;
+  sample: boolean;
+  created_at: string | null;
+  last_active?: string | null;
+  source_count?: number;
+  nodes?: number;
+  edges?: number;
+  idle_hours_before_deletion?: number | null;
 }

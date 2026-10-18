@@ -13,12 +13,13 @@ import inspect
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Callable, Literal, Optional
+from typing import Annotated, Any, Awaitable, Callable, Literal, Optional
 
 from fastapi import HTTPException
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
+from pydantic import Field
 
 from app.api import systems as systems_api
 from app.api.rate_limiter import (
@@ -28,12 +29,14 @@ from app.api.rate_limiter import (
     check_rate_limits,
 )
 from app.askflow.pipeline import collect_ask
+from app.brain import orgctx
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map
 from app.brain.lineage import build_decision_detail
 from app.brain.memory import query_graph
 from app.config import get_settings
 from app.ingest.live import INGEST_LOCK, IngestRequest, record_change, run_ingest
+from app.orgs import registry
 
 logger = logging.getLogger("decision_trace.mcp")
 _settings = get_settings()
@@ -58,6 +61,11 @@ mcp = FastMCP(
 )
 
 _ToolFn = Callable[..., Awaitable[dict[str, Any]]]
+
+ORG_DESCRIPTION = (
+    "Optional organization id. Omit it to use the sample organization (Acme Corp). Organizations "
+    "created in the web app have ids like 'acme-labs-3f9a1c'."
+)
 
 
 def _dataset() -> str:
@@ -88,26 +96,36 @@ def logged(name: str, summarize: Callable[..., str], *, ingest: bool = False) ->
                     (check_ingest_rate_limit if ingest else check_rate_limits)(request)
             except HTTPException as exc:
                 raise ToolError(str(exc.detail)) from exc
-            try:
-                result = await fn(*args, **kwargs)
-            except ToolError:
-                raise
-            except Exception as exc:  # noqa: BLE001 - agents get a short message, details go to the log
-                logger.exception("MCP tool %s failed", name)
-                raise ToolError("The Company Brain could not complete that request. Try again in a moment.") from exc
-            try:
-                await record_change(_dataset(), {
-                    "id": f"agent-{uuid.uuid4().hex[:12]}", "kind": "agent", "title": name,
-                    "type": "smoke" if smoke else "mcp", "created_at": _now(), "summary": summarize(*args, **kwargs),
-                })
-            except Exception:  # noqa: BLE001 - logging a call must never fail the call
-                logger.warning("Could not record MCP call %s in the change feed", name)
+            org_id = kwargs.pop("org", None)
+            org = await registry.get(org_id) if org_id else None
+            if org_id and org is None:
+                raise ToolError(f"Organization '{org_id}' does not exist. Omit `org` to use the sample organization.")
+            graph = None if org is None or org["sample"] else org["graph_name"]
+            with orgctx.org_scope(None if graph is None else org_id, graph):
+                try:
+                    result = await fn(*args, **kwargs)
+                except ToolError:
+                    raise
+                except Exception as exc:  # noqa: BLE001 - agents get a short message, details go to the log
+                    logger.exception("MCP tool %s failed", name)
+                    raise ToolError("The Company Brain could not complete that request. Try again in a moment.") from exc
+                try:
+                    await record_change(_dataset(), {
+                        "id": f"agent-{uuid.uuid4().hex[:12]}", "kind": "agent", "title": name,
+                        "type": "smoke" if smoke else "mcp", "created_at": _now(), "summary": summarize(*args, **kwargs),
+                    })
+                except Exception:  # noqa: BLE001 - logging a call must never fail the call
+                    logger.warning("Could not record MCP call %s in the change feed", name)
             return result
 
         # FastMCP builds the tool schema from the signature and injects `ctx` by its annotation
         sig = inspect.signature(fn)
         inner.__signature__ = sig.replace(parameters=[
             *sig.parameters.values(),
+            inspect.Parameter(
+                "org", inspect.Parameter.KEYWORD_ONLY, default=None,
+                annotation=Annotated[Optional[str], Field(description=ORG_DESCRIPTION)],
+            ),
             inspect.Parameter("ctx", inspect.Parameter.KEYWORD_ONLY, annotation=Context),
         ])
         inner.__annotations__ = {**getattr(fn, "__annotations__", {}), "ctx": Context}

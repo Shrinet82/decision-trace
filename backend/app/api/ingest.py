@@ -5,8 +5,11 @@ from typing import Any, AsyncIterator, Optional
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
+from app.brain.memory import query_graph
 from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_ingest_rate_limit
+from app.brain import orgctx
 from app.config import get_settings
+from app.orgs import registry
 from app.ingest.live import (
     INGEST_LOCK,
     IngestRequest,
@@ -21,6 +24,18 @@ router = APIRouter(tags=["Live ingest"])
 _settings = get_settings()
 
 _BUSY = "Another ingest or reset is running. Try again in a moment."
+
+
+async def _count_sources() -> None:
+    """Keep a user organization's source count current (shown in the organization list)."""
+    slug = orgctx.current_slug()
+    if not slug:
+        return
+    try:
+        rows = await query_graph("MATCH (s) WHERE s:Ticket OR s:Meeting OR s:Document RETURN count(s)")
+        await registry.set_source_count(slug, int(rows[0][0]) if rows else 0)
+    except Exception:  # noqa: BLE001 - bookkeeping only
+        pass
 
 
 @router.post("/ingest")
@@ -45,6 +60,8 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
         async with INGEST_LOCK:
             async for event in run_ingest(body, dataset):
                 yield sse(event)
+                if event["event"] == "diff":
+                    await _count_sources()
 
     return StreamingResponse(
         stream(),
@@ -56,6 +73,11 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
 @router.post("/ingest/reset")
 async def reset(request: Request) -> dict[str, Any]:
     """Remove all demo-ingested nodes/edges and restore changed values (e.g. a person leaving)."""
+    if orgctx.current_graph():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Organizations you create keep their data. Delete the organization to start over.",
+        )
     check_ingest_rate_limit(request)
     if INGEST_LOCK.locked():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_BUSY)

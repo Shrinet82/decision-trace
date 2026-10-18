@@ -1,9 +1,11 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
+import { getCurrentOrg } from '../org/orgState';
 import {
   ApiError,
   askQuestion,
   getDecision,
   getAttention,
+  getOrg,
   getDemoStatus,
   getSource,
   listSources,
@@ -17,6 +19,7 @@ import {
 } from './client';
 import type {
   Attention,
+  OrgInfo,
   AskResponse,
   ChangeEntry,
   DecisionDetail,
@@ -34,9 +37,14 @@ import type {
 
 const FIVE_MINUTES = 1000 * 60 * 5;
 
+/** Query keys end with the organization, so two organizations never share cached data (and key[0] stays the resource name). */
+function orgKey<T extends unknown[]>(key: T): [...T, string] {
+  return [...key, getCurrentOrg() ?? 'sample'];
+}
+
 export function useDecisions() {
   return useQuery<DecisionSummary[]>({
-    queryKey: ['decisions'],
+    queryKey: orgKey(['decisions']),
     queryFn: listDecisions,
     staleTime: FIVE_MINUTES,
   });
@@ -44,7 +52,7 @@ export function useDecisions() {
 
 export function useGraph() {
   return useQuery<GraphResponse>({
-    queryKey: ['graph'],
+    queryKey: orgKey(['graph']),
     queryFn: getGraph,
     staleTime: FIVE_MINUTES,
   });
@@ -53,7 +61,7 @@ export function useGraph() {
 /** A decision page by DEC code, id, or title. */
 export function useDecisionDetail(decisionId: string | undefined) {
   return useQuery<DecisionDetail, ApiError>({
-    queryKey: ['decision', decisionId],
+    queryKey: orgKey(['decision', decisionId]),
     queryFn: () => getDecision(decisionId!),
     enabled: Boolean(decisionId),
     staleTime: FIVE_MINUTES,
@@ -62,7 +70,7 @@ export function useDecisionDetail(decisionId: string | undefined) {
 
 export function useAsk(question: string | null) {
   return useQuery<AskResponse, ApiError>({
-    queryKey: ['ask', question],
+    queryKey: orgKey(['ask', question]),
     queryFn: () => askQuestion({ question: question! }),
     enabled: Boolean(question && question.trim().length >= 2),
     staleTime: FIVE_MINUTES,
@@ -72,7 +80,7 @@ export function useAsk(question: string | null) {
 
 export function useSystems() {
   return useQuery<SystemSummary[], ApiError>({
-    queryKey: ['systems'],
+    queryKey: orgKey(['systems']),
     queryFn: listSystems,
     staleTime: FIVE_MINUTES,
   });
@@ -80,7 +88,7 @@ export function useSystems() {
 
 export function useSystem(name: string | undefined) {
   return useQuery<SystemDetail, ApiError>({
-    queryKey: ['system', name?.toLowerCase()],
+    queryKey: orgKey(['system', name?.toLowerCase()]),
     queryFn: () => getSystem(name!),
     enabled: Boolean(name),
     staleTime: FIVE_MINUTES,
@@ -90,7 +98,7 @@ export function useSystem(name: string | undefined) {
 
 export function usePeople() {
   return useQuery<PersonSummary[], ApiError>({
-    queryKey: ['people'],
+    queryKey: orgKey(['people']),
     queryFn: listPeople,
     staleTime: FIVE_MINUTES,
   });
@@ -98,7 +106,7 @@ export function usePeople() {
 
 export function usePerson(name: string | undefined) {
   return useQuery<PersonDetail, ApiError>({
-    queryKey: ['person', name?.toLowerCase()],
+    queryKey: orgKey(['person', name?.toLowerCase()]),
     queryFn: () => getPerson(name!),
     enabled: Boolean(name),
     staleTime: FIVE_MINUTES,
@@ -109,7 +117,7 @@ export function usePerson(name: string | undefined) {
 /** The change log (ingests and resets), newest first. */
 export function useChanges(limit = 20) {
   return useQuery<ChangeEntry[], ApiError>({
-    queryKey: ['changes', limit],
+    queryKey: orgKey(['changes', limit]),
     queryFn: () => listChanges(limit),
     staleTime: 30_000,
     retry: false,
@@ -118,7 +126,7 @@ export function useChanges(limit = 20) {
 
 export function useSources() {
   return useQuery<SourceList, ApiError>({
-    queryKey: ['sources'],
+    queryKey: orgKey(['sources']),
     queryFn: listSources,
     staleTime: FIVE_MINUTES,
   });
@@ -126,7 +134,7 @@ export function useSources() {
 
 export function useSource(kind: SourceKind | undefined, key: string | undefined) {
   return useQuery<SourceDocument, ApiError>({
-    queryKey: ['source', kind, key],
+    queryKey: orgKey(['source', kind, key]),
     queryFn: () => getSource(kind!, key!),
     enabled: Boolean(kind && key),
     staleTime: FIVE_MINUTES,
@@ -137,7 +145,7 @@ export function useSource(kind: SourceKind | undefined, key: string | undefined)
 /** Demo data presence and the automatic reset time; polled while `enabled` (the drawer is open). */
 export function useDemoStatus(enabled: boolean) {
   return useQuery<DemoStatus, ApiError>({
-    queryKey: ['demo-status'],
+    queryKey: orgKey(['demo-status']),
     queryFn: getDemoStatus,
     enabled,
     refetchInterval: enabled ? 30_000 : false,
@@ -170,9 +178,19 @@ export function invalidateGraphQueries(queryClient: QueryClient): Promise<void> 
 
 export function useAttention() {
   return useQuery<Attention, ApiError>({
-    queryKey: ['attention'],
+    queryKey: orgKey(['attention']),
     queryFn: getAttention,
     staleTime: 60_000,
     retry: 1,
+  });
+}
+
+/** The current organization (name, size). A 404 means it was deleted or expired. */
+export function useOrgInfo(slug: string | null) {
+  return useQuery<OrgInfo, ApiError>({
+    queryKey: ['org', slug ?? 'sample'],
+    queryFn: () => getOrg(slug ?? 'sample'),
+    staleTime: FIVE_MINUTES,
+    retry: (count, error) => error.status !== 404 && count < 1,
   });
 }

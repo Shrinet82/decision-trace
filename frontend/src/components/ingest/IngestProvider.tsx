@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useChanges } from '../../api/hooks';
 import type { IngestDiff } from '../../api/types';
 import { recentDiff } from '../../utils/changes';
-import { IngestContext, type IngestContextValue } from './ingestContext';
+import { IngestContext, type IngestContextValue, type IngestTab } from './ingestContext';
 import { IngestDrawer } from './IngestDrawer';
 
 /**
@@ -11,6 +11,7 @@ import { IngestDrawer } from './IngestDrawer';
  */
 export const IngestProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [tab, setTab] = useState<IngestTab>('paste');
   const [latestDiff, setLatestDiffState] = useState<IngestDiff | null>(null);
   const touched = useRef(false);
   const changes = useChanges(10);
@@ -26,12 +27,16 @@ export const IngestProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     touched.current = true;
     setLatestDiffState(diff);
   }, []);
-  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const openDrawer = useCallback((requested?: unknown) => {
+    // onClick handlers pass the click event; only a tab name selects a tab
+    if (requested === 'paste' || requested === 'files' || requested === 'github') setTab(requested);
+    setDrawerOpen(true);
+  }, []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const value = useMemo<IngestContextValue>(
-    () => ({ drawerOpen, openDrawer, closeDrawer, latestDiff, setLatestDiff }),
-    [drawerOpen, openDrawer, closeDrawer, latestDiff, setLatestDiff]
+    () => ({ drawerOpen, tab, setTab, openDrawer, closeDrawer, latestDiff, setLatestDiff }),
+    [drawerOpen, tab, openDrawer, closeDrawer, latestDiff, setLatestDiff]
   );
 
   return (

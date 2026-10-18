@@ -14,17 +14,24 @@ import type {
   GraphResponse,
   IngestEvent,
   IngestRequest,
+  OrgInfo,
   PersonDetail,
   PersonSummary,
   ResetResult,
   SystemDetail,
   SystemSummary,
 } from './types';
+import { apiOrgPrefix, getCurrentOrg } from '../org/orgState';
 // Fixtures are loaded on demand so they stay out of the production bundle.
 const loadMocks = () => import('./mocks');
 
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? '/api' : 'http://localhost:8000');
+
+/** API base for the current organization: `/orgs/<id>` is added for every organization but the sample. */
+function apiBase(): string {
+  return `${API_BASE_URL}${apiOrgPrefix()}`;
+}
 
 export const USE_MOCKS =
   import.meta.env.VITE_USE_MOCKS !== undefined
@@ -33,6 +40,11 @@ export const USE_MOCKS =
       (window.location.port === '4173' ||
         window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1');
+
+/** In mock mode every organization but the sample is a new, empty one. */
+function mockEmptyOrg(): boolean {
+  return USE_MOCKS && getCurrentOrg() !== null;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -106,7 +118,7 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
     return getMockAskResponse(payload.question);
   }
 
-  const response = await apiFetch(`${API_BASE_URL}/ask`, {
+  const response = await apiFetch(`${apiBase()}/ask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -127,6 +139,7 @@ export async function askQuestion(payload: AskRequest): Promise<AskResponse> {
  * Fetch a full decision page by DEC code (DEC-11), id, or exact title.
  */
 export async function getDecision(decisionId: string): Promise<DecisionDetail> {
+  if (mockEmptyOrg()) throw new ApiError('Not found', 404);
   if (USE_MOCKS) {
     const { findDecisionDetail } = await loadMocks();
     const mock = findDecisionDetail(decisionId);
@@ -134,7 +147,7 @@ export async function getDecision(decisionId: string): Promise<DecisionDetail> {
     return mock;
   }
 
-  const response = await apiFetch(`${API_BASE_URL}/decisions/${encodeURIComponent(decisionId)}`, {
+  const response = await apiFetch(`${apiBase()}/decisions/${encodeURIComponent(decisionId)}`, {
     headers: {
       Accept: 'application/json',
     },
@@ -153,7 +166,7 @@ export async function getDecision(decisionId: string): Promise<DecisionDetail> {
 }
 
 async function getJson<T>(path: string, failure: string): Promise<T> {
-  const response = await apiFetch(`${API_BASE_URL}${path}`, {
+  const response = await apiFetch(`${apiBase()}${path}`, {
     headers: { Accept: 'application/json' },
   });
 
@@ -169,6 +182,7 @@ async function getJson<T>(path: string, failure: string): Promise<T> {
  * Fetch all decisions with computed health.
  */
 export async function listDecisions(): Promise<DecisionSummary[]> {
+  if (mockEmptyOrg()) return [];
   if (USE_MOCKS) return (await loadMocks()).MOCK_DECISIONS;
   return getJson<DecisionSummary[]>('/decisions?limit=500', 'Failed to load decisions');
 }
@@ -177,16 +191,19 @@ export async function listDecisions(): Promise<DecisionSummary[]> {
  * Fetch the full graph (the API caps a response at 500 nodes).
  */
 export async function getGraph(): Promise<GraphResponse> {
+  if (mockEmptyOrg()) return { nodes: [], edges: [], total_nodes: 0, total_edges: 0 } as unknown as GraphResponse;
   if (USE_MOCKS) return (await loadMocks()).MOCK_GRAPH;
   return getJson<GraphResponse>('/graph?limit=500', 'Failed to load graph');
 }
 
 export async function listSystems(): Promise<SystemSummary[]> {
+  if (mockEmptyOrg()) return [];
   if (USE_MOCKS) return (await loadMocks()).MOCK_SYSTEMS;
   return getJson<SystemSummary[]>('/systems', 'Failed to load systems');
 }
 
 export async function getSystem(name: string): Promise<SystemDetail> {
+  if (mockEmptyOrg()) throw new ApiError('Not found', 404);
   if (USE_MOCKS) {
     const { MOCK_SYSTEM_DETAILS, findByName } = await loadMocks();
     const mock = findByName(MOCK_SYSTEM_DETAILS, name);
@@ -197,11 +214,13 @@ export async function getSystem(name: string): Promise<SystemDetail> {
 }
 
 export async function listPeople(): Promise<PersonSummary[]> {
+  if (mockEmptyOrg()) return [];
   if (USE_MOCKS) return (await loadMocks()).MOCK_PEOPLE;
   return getJson<PersonSummary[]>('/people', 'Failed to load people');
 }
 
 export async function getPerson(name: string): Promise<PersonDetail> {
+  if (mockEmptyOrg()) throw new ApiError('Not found', 404);
   if (USE_MOCKS) {
     const { MOCK_PERSON_DETAILS, findByName } = await loadMocks();
     const mock = findByName(MOCK_PERSON_DETAILS, name);
@@ -291,7 +310,7 @@ export async function streamIngest(
     return;
   }
 
-  const response = await apiFetch(`${API_BASE_URL}/ingest`, {
+  const response = await apiFetch(`${apiBase()}/ingest`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
     body: JSON.stringify(request),
@@ -380,7 +399,7 @@ export async function streamAsk(
     return;
   }
 
-  const response = await apiFetch(`${API_BASE_URL}/ask/stream`, {
+  const response = await apiFetch(`${apiBase()}/ask/stream`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
     body: JSON.stringify({ question }),
@@ -407,11 +426,13 @@ export async function streamAsk(
 /* ------------------------------------------------------------------------------------------ */
 
 export async function listSources(): Promise<SourceList> {
+  if (mockEmptyOrg()) return { items: [], counts: {} };
   if (USE_MOCKS) return (await loadMocks()).getMockSources();
   return getJson<SourceList>('/sources', 'Failed to load sources');
 }
 
 export async function getSource(kind: SourceKind, key: string): Promise<SourceDocument> {
+  if (mockEmptyOrg()) throw new ApiError('Not found', 404);
   if (USE_MOCKS) {
     const mock = await (await loadMocks()).getMockSource(kind, key);
     if (!mock) throw new ApiError(`Source ${key} not found`, 404);
@@ -425,6 +446,7 @@ export async function getSource(kind: SourceKind, key: string): Promise<SourceDo
 
 /** GET /ingest/status: whether demo data is present and when it resets automatically. */
 export async function getDemoStatus(): Promise<DemoStatus> {
+  if (mockEmptyOrg()) return { has_demo_data: false, tagged_nodes: 0, tagged_edges: 0, last_ingest_at: null, resets_at: null, seconds_left: null, auto_reset_minutes: null };
   if (USE_MOCKS) return (await loadMocks()).getMockDemoStatus();
   return getJson<DemoStatus>('/ingest/status', 'Failed to load demo status');
 }
@@ -435,7 +457,7 @@ export async function resetIngest(): Promise<ResetResult> {
     await wait(300);
     return (await loadMocks()).resetMockIngest();
   }
-  const response = await apiFetch(`${API_BASE_URL}/ingest/reset`, {
+  const response = await apiFetch(`${apiBase()}/ingest/reset`, {
     method: 'POST',
     headers: { Accept: 'application/json' },
   });
@@ -454,12 +476,69 @@ export async function resetIngest(): Promise<ResetResult> {
 
 /** GET /changes, newest first. */
 export async function listChanges(limit = 20): Promise<ChangeEntry[]> {
+  if (mockEmptyOrg()) return [];
   if (USE_MOCKS) return (await loadMocks()).listMockChanges(limit);
   return getJson<ChangeEntry[]>(`/changes?limit=${limit}`, 'Failed to load changes');
 }
 
 /** GET /attention: conflicts, orphaned systems, stale and superseded-but-active decisions. */
 export async function getAttention(): Promise<Attention> {
+  if (mockEmptyOrg()) return { conflicts: [], orphaned_systems: [], stale: [], superseded_active: [] } as unknown as Attention;
   if (USE_MOCKS) return (await loadMocks()).getMockAttention();
   return getJson<Attention>('/attention', 'Failed to load the attention queue');
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Organizations                                                                               */
+/* ------------------------------------------------------------------------------------------ */
+
+const SAMPLE_ORG: OrgInfo = { id: 'sample', name: 'Acme Corp (sample)', sample: true, created_at: null };
+
+/** POST /orgs: a new, empty organization with its own graph. */
+export async function createOrg(name: string): Promise<OrgInfo> {
+  if (USE_MOCKS) {
+    await wait(120);
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'org';
+    return { id: `${slug}-3f9a1c`, name, sample: false, created_at: new Date().toISOString() };
+  }
+  const response = await apiFetch(`${API_BASE_URL}/orgs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(httpErrorMessage(response.status, body, 'The organization'), response.status, body);
+  }
+  return response.json();
+}
+
+/** GET /orgs/{id}: the organization, or a 404 ApiError if it was deleted or expired. */
+export async function getOrg(id: string): Promise<OrgInfo> {
+  if (id === 'sample') return SAMPLE_ORG;
+  if (USE_MOCKS) return { id, name: id.replace(/-[0-9a-f]{6}$/, '').replace(/-/g, ' '), sample: false, created_at: null, nodes: 0, edges: 0, idle_hours_before_deletion: 72 };
+  const response = await apiFetch(`${API_BASE_URL}/orgs/${encodeURIComponent(id)}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(httpErrorMessage(response.status, body, 'The organization'), response.status, body);
+  }
+  return response.json();
+}
+
+/** DELETE /orgs/{id}: removes the organization and its graph. */
+export async function deleteOrg(id: string): Promise<void> {
+  if (USE_MOCKS) {
+    await wait(120);
+    return;
+  }
+  const response = await apiFetch(`${API_BASE_URL}/orgs/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  });
+  if (!response.ok && response.status !== 404) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(httpErrorMessage(response.status, body, 'The organization'), response.status, body);
+  }
 }

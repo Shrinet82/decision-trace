@@ -5,6 +5,8 @@ import functools
 import time
 from typing import Any, Awaitable, Callable, Optional
 
+from app.brain import orgctx
+
 _store: dict[tuple[str, str], tuple[float, Any]] = {}
 _locks: dict[tuple[str, str], asyncio.Lock] = {}
 
@@ -12,7 +14,9 @@ _locks: dict[tuple[str, str], asyncio.Lock] = {}
 async def cached(
     namespace: str, key: str, ttl_seconds: float, compute: Callable[[], Awaitable[Any]]
 ) -> Any:
-    """Return the cached value for (namespace, key) if younger than ttl, else compute and store it."""
+    """Return the cached value for (namespace, key) if younger than ttl, else compute and store it.
+    Values are kept per organization: the same key in two graphs never shares an entry."""
+    key = f"{orgctx.scope()}|{key}"
     hit = _store.get((namespace, key))
     if hit and time.monotonic() - hit[0] < ttl_seconds:
         return hit[1]
@@ -49,6 +53,7 @@ def clear_cache() -> None:
 
 def put(namespace: str, key: str, value: Any) -> None:
     """Store a freshly computed value (used by the background refresher)."""
+    key = f"{orgctx.scope()}|{key}"
     _store[(namespace, key)] = (time.monotonic(), value)
 
 

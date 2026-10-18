@@ -23,6 +23,7 @@ import cognee  # noqa: E402
 from cognee import SearchType, prune  # noqa: E402
 from cognee.infrastructure.databases.graph import get_graph_engine  # noqa: E402
 
+from app.brain import orgctx
 from app.brain.models import CompanyBrainGraph
 
 # Re-export environment in case Cognee's internal dotenv loader clobbered preset env vars
@@ -118,6 +119,16 @@ class MemoryOperationError(Exception):
 
 async def resolve_active_graph_name(dataset_name: Optional[str] = None) -> str:
     """Resolve the active FalkorDB graph name for a given dataset."""
+    # A user organization's graph (set by the org middleware) stands in for the default dataset;
+    # explicit graph names, such as an activity-log graph, still resolve as themselves.
+    org_graph = orgctx.current_graph()
+    if org_graph and (
+        not dataset_name
+        or dataset_name == "company_brain"
+        or dataset_name == getattr(_settings, "DATASET_NAME", None)
+    ):
+        return org_graph
+
     # Priority 1: If FALKORDB_GRAPH_NAME is configured, honor it directly for default datasets
     configured_graph = getattr(_settings, "FALKORDB_GRAPH_NAME", None)
     if configured_graph and (
@@ -587,6 +598,58 @@ async def query_graph(
         )
         return res.result_set if res.result_set else []
     return await asyncio.wait_for(engine.query(query, params or {}), timeout=_QUERY_WAIT_SECONDS)
+
+
+_direct_driver: Any = None
+
+
+def _driver() -> Any:
+    """A plain FalkorDB client, separate from the Cognee graph engine. Organization bookkeeping
+    (registry, creating and deleting graphs) uses it: it needs no embedding model or Cognee setup."""
+    global _direct_driver
+    if _direct_driver is None:
+        from falkordb import FalkorDB
+
+        _direct_driver = FalkorDB(
+            host=_settings.FALKORDB_HOST,
+            port=_settings.FALKORDB_PORT,
+            username=_settings.FALKORDB_USERNAME,
+            password=_settings.FALKORDB_PASSWORD.get_secret_value(),
+        )
+    return _direct_driver
+
+
+async def run_on_graph(graph_name: str, query: str, params: Optional[dict[str, Any]] = None) -> list[Any]:
+    """Run Cypher on a graph named exactly, bypassing dataset and organization resolution.
+    Used for the organization registry and for creating or deleting organization graphs."""
+    graph = _driver().select_graph(graph_name)
+    res = await asyncio.wait_for(
+        asyncio.to_thread(graph.query, query, params or {}, timeout=QUERY_TIMEOUT_MS),
+        timeout=_QUERY_WAIT_SECONDS,
+    )
+    return res.result_set if res.result_set else []
+
+
+async def delete_graph(graph_name: str) -> bool:
+    """Delete one graph by exact name (False if it did not exist). Refuses the production graph."""
+    if graph_name in (PRODUCTION_GRAPH, getattr(_settings, "FALKORDB_GRAPH_NAME", None)):
+        raise DestructiveResetRefused("The sample organization's graph cannot be deleted")
+    try:
+        await asyncio.to_thread(_driver().select_graph(graph_name).delete)
+        return True
+    except Exception as exc:  # noqa: BLE001 - a missing key is not an error here
+        logger.info("Delete of graph %s: %s", graph_name, exc)
+        return False
+
+
+async def graph_memory_bytes(graph_name: str) -> Optional[int]:
+    """Memory used by one graph (GRAPH.MEMORY USAGE), or None if the server cannot say."""
+    try:
+        raw = await asyncio.to_thread(_driver().execute_command, "GRAPH.MEMORY", "USAGE", graph_name)
+        items = [x.decode() if isinstance(x, bytes) else x for x in raw]
+        return int(float(items[items.index("total_graph_sz_mb") + 1]) * 1024 * 1024) if "total_graph_sz_mb" in items else None
+    except Exception:  # noqa: BLE001
+        return None
 
 
 # Kept for existing callers: query_graph is now always threaded
