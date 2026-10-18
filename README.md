@@ -6,8 +6,9 @@ Built for the [FalkorDB Hackathon](https://www.falkordb.com/) (WeMakeDevs), Trac
 
 | | |
 | :-- | :-- |
-| **Live app** | https://decision-trace.pages.dev |
-| **Connect an agent (MCP)** | https://decision-trace.pages.dev/agents · endpoint `https://decision-trace-api-production.up.railway.app/mcp` |
+| **Landing page** | https://decision-trace.pages.dev |
+| **Live app** | https://decision-trace.pages.dev/app (sample organization; create your own from the menu at the top of the sidebar) |
+| **Connect an agent (MCP)** | https://decision-trace.pages.dev/app/agents · endpoint `https://decision-trace-api-production.up.railway.app/mcp` |
 | **API health** | https://decision-trace-api-production.up.railway.app/health |
 | **Demo video** | _link to be added_ |
 
@@ -18,6 +19,13 @@ Built for the [FalkorDB Hackathon](https://www.falkordb.com/) (WeMakeDevs), Trac
     <td width="33%"><img src="frontend/screenshots/decision-DEC-11-1440.png" alt="Decision page with supersedes lineage"><br><sub><b>Decision page</b>: lineage, sources with quotes, health</sub></td>
   </tr>
 </table>
+
+## Your own brain: organizations, file upload, GitHub import
+
+- **Organizations.** Every organization is its own FalkorDB graph (`org_<id>_<random>`), created empty from the menu at the top of the sidebar. The sample organization (Acme Corp) is the original graph and stays read-only apart from its tagged demo ingests. Every endpoint, the Ask stream, the caches and the MCP tools take an organization (`/orgs/<id>/...`, or the optional `org` argument on a tool). Limits: 40-character names, 25 user organizations in total, 3 creations per hour per IP, deletion after 72 hours without activity, and a Delete option in the organization settings.
+- **File upload** (Add source, any organization). `.md`, `.txt` or `.pdf`, up to 10 files, 1 MB each and 50,000 characters in total. Each file is typed (meeting, ticket, document or ADR, detected from its content unless you choose), read in chunks by the same two-pass extractor, and the result is one combined diff. Scanned PDFs are skipped with a message.
+- **GitHub import** (your own organizations). Paste a public repository URL: ADR markdown from `docs/adr`, `doc/adr`, `docs/decisions`, `adr`, `architecture/decisions` or `ADR-*.md` (at most 40), plus, optionally, the last 30 closed PRs and issues that look like decisions. Status and "Supersedes ADR-n" lines become `supersedes` edges without a model call; authors become people, the repository a Project. Set `GITHUB_TOKEN` on the server for the 5,000/hour limit (without it GitHub allows 60 requests per hour and some dates are estimated, which the result says).
+- **Company map.** Explore opens the whole graph: colour is node type, size is connections, Decision borders show health, tickets are hidden until you ask, search finds a node, and clicking one lights up its neighbours.
 
 ## The problem
 
