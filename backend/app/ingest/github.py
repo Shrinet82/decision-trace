@@ -197,6 +197,8 @@ def parse_adr(path: str, text: str) -> Adr:
     if hm:
         number = number if number is not None else int(hm.group(1))
         title = hm.group(2).strip()
+    # "Architecture Decision Record: Use ADRs" -> "Use ADRs" (the prefix says nothing the type does not)
+    title = re.sub(r"(?i)^(?:architecture decision record|adr)\s*[:\-–—]\s*", "", title).strip() or title
     if not title:
         stem = re.sub(r"\.(md|markdown)$", "", base, flags=re.IGNORECASE)
         title = re.sub(r"^(?:adr[-_ ]?)?\d+[-_.]?", "", stem, flags=re.IGNORECASE).replace("-", " ").replace("_", " ").strip().capitalize() or stem

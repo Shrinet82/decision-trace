@@ -38,6 +38,7 @@ _touched: dict[str, float] = {}
 _loaded_at = 0.0
 # A showcase organization created from outside the running app (a script) becomes visible within this long
 _RELOAD_AFTER_SECONDS = 30.0
+_REFRESH_EVERY_SECONDS = 120.0
 
 
 def _now() -> str:
@@ -111,7 +112,9 @@ async def get(slug: str) -> Optional[dict[str, Any]]:
     if slug == SAMPLE_ID:
         return sample_org()
     await load()
-    if slug not in _orgs and time.monotonic() - _loaded_at > _RELOAD_AFTER_SECONDS:
+    age = time.monotonic() - _loaded_at
+    # Pick up organizations created or replaced from outside this process (the showcase script)
+    if (slug not in _orgs and age > _RELOAD_AFTER_SECONDS) or age > _REFRESH_EVERY_SECONDS:
         await load(force=True)
     return _orgs.get(slug)
 
