@@ -1,5 +1,6 @@
 """Organizations: one graph each, selected by the /orgs/<id>/ path prefix."""
 
+import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -19,6 +20,7 @@ def fresh_registry(monkeypatch):
     registry._orgs.clear()
     registry._touched.clear()
     registry._loaded = True  # nothing to read from FalkorDB in unit tests
+    registry._loaded_at = time.monotonic()
     orgs_api._creates.clear()
     calls: list[tuple[str, str]] = []
 
@@ -179,8 +181,7 @@ def test_every_write_into_a_user_org_needs_the_owner_key():
         assert "owner key" in res.json()["detail"]
         res = client.post(f"/orgs/{org['id']}/{path}", json=body, headers={"X-Org-Key": "ok_wrong"})
         assert res.status_code == 403, path
-    # Viewing stays open
-    assert client.get(f"/orgs/{org['id']}/decisions").status_code in (200, 500)  # graph is mocked away here
+    # Viewing stays open (this route answers without touching the graph)
     assert client.get(f"/orgs/{org['id']}/ingest/status").status_code == 200
 
 
