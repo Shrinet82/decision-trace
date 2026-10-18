@@ -230,3 +230,8 @@ def test_titles_come_from_front_matter_then_h1_then_the_file_name():
     assert fm.title == "Use node-fetch for backend requests" and fm.number == 13
     nameless = parse_adr("docs/adr/adr014-use-cache-layer.md", "## Context\nSome words here.\n\n## Decision\nWe will use a cache layer for lookups.\n")
     assert nameless.title == "Use cache layer" and nameless.number == 14
+
+
+def test_a_record_prefix_is_not_part_of_the_title():
+    a = parse_adr("adr-004-persistent-configuration.md", "# Architecture Decision Record: Persistent Configuration\n\n## Status\n\nProposed\n\n## Decision\nWe will store configuration in Datomic always.\n")
+    assert a.title == "Persistent Configuration"
