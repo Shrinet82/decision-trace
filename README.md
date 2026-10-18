@@ -4,13 +4,14 @@
 
 Built for the [FalkorDB Hackathon](https://www.falkordb.com/) (WeMakeDevs), Track 03: *Company Brain*, on FalkorDB Cloud and Cognee.
 
+**Demo video: [link]**
+
 | | |
 | :-- | :-- |
 | **Landing page** | https://decision-trace.pages.dev |
 | **Live app** | https://decision-trace.pages.dev/app (Acme Corp sample; the Arachne real-repo organization is in the menu at the top of the sidebar) |
 | **Connect an agent (MCP)** | https://decision-trace.pages.dev/app/agents · endpoint `https://decision-trace-api-production.up.railway.app/mcp` |
 | **API health** | https://decision-trace-api-production.up.railway.app/health |
-| **Demo video** | _link to be added_ |
 
 <table>
   <tr>
@@ -30,6 +31,113 @@ Engineering knowledge is scattered across tickets, meeting notes and org records
 Search finds documents; it does not tell you that two accepted decisions contradict each other, that a system's owner left in November, or what breaks if you drop Snowflake. Those are questions about *relationships*.
 
 **Decision Trace** reads the sources, keeps decisions, people, systems and evidence in one FalkorDB graph (a verbatim quote on every link to its source), derives health from the graph itself, and answers from a Cypher-computed subgraph, showing the path and the queries it ran.
+
+## Graph model
+
+The schema below is read from the code and the frozen snapshot, not drawn from memory: labels and relationship names are exactly what the Cypher in `backend/app` and the ingest writers use (relationship types are lower-case in FalkorDB). Edges are directed as shown.
+
+```mermaid
+flowchart LR
+  D["<b>Decision</b><br/>id, title, summary, rationale<br/>status, confidence<br/>evidence_quote, decided_on<br/>source_url, adr_number (GitHub)"]
+  P["<b>Person</b><br/>name, role, email, start_date<br/>is_active, leave_date"]
+  S["<b>System</b><br/>name, system_type<br/>vendor, status"]
+  T["<b>Ticket</b><br/>ticket_id, title, status<br/>opened, closed, body"]
+  M["<b>Meeting</b><br/>title, meeting_date<br/>file_name, body"]
+  DOC["<b>Document</b><br/>title, date, body<br/>source_type (doc, adr), url"]
+  TM["<b>Team</b><br/>name, department"]
+  PR["<b>Project</b><br/>name, status, description"]
+  D -->|decided_by| P
+  D -->|about_system| S
+  D -->|"based_on {quote}"| T
+  D -->|"based_on {quote}"| M
+  D -->|"based_on {quote}"| DOC
+  D -->|supersedes| D
+  D -->|contradicts| D
+  D -->|"part_of (GitHub import)"| PR
+  P -->|owns| S
+  P -->|member_of| TM
+  P -->|leads| TM
+  P -->|leads| PR
+  T -->|assigned_to| P
+  T -->|raised_by| P
+  T -->|mentions| S
+  M -->|attended_by| P
+```
+
+- **On the `based_on` edge:** every link from a decision to its source carries the **verbatim `quote`** that justifies it, checked against the source text when it is written.
+- **Stored on nodes:** `Person.is_active` and `leave_date` (who has left), `Decision.status` (the lifecycle the extractor or the ADR stated: accepted, proposed, rejected, reverted, deprecated).
+- **Computed, never stored:** *health* (`active`, `superseded`, `contradicted`, `possibly_stale`) comes from Cypher plus the rules in `brain/health.py` (a `supersedes` edge points at it, a `contradicts` edge touches it, a decider has left, or it is over 180 days old with nothing newer on its systems); `decision_code` (`DEC-01` ...) is numbered by date on read (`brain/codes.py`); a system is *orphaned* when a Person who `owns` it has left.
+- **Bookkeeping:** items written by an ingest carry `demo_ingest_id` and `ingested_at` so a reset removes exactly them. Each organization is its own graph; a small `dt_registry` graph holds one `:Org` node per organization, and `<graph>__changes` holds the activity log (`:Change` nodes).
+- **Counts in the Acme sample:** 146 nodes and 374 edges (17 Decision, 15 Person, 12 System, 4 Team, 6 Project, 80 Ticket, 12 Meeting). `Document` and `part_of` appear in organizations built from uploads and GitHub imports.
+
+## How the agent queries the graph
+
+Every answer is a short pipeline whose steps are shown in the app under *How I found this* (with each statement and its timing). Here is one question end to end, run against the live Acme graph.
+
+**"Why did we move sessions to Keycloak?"**
+
+1. **Intent (no model call).** Wording rules in `askflow/intent.py` classify it as `why` (impact, expertise and status have their own rules; only a question no rule matches gets one cheap model call to pick an intent).
+2. **Entity match.** One Cypher statement lists every name the question could mean, and Python matches whole words against it, plus local embeddings (not an LLM) against decision titles:
+   ```cypher
+   MATCH (n) WHERE n:Person OR n:System OR n:Decision RETURN labels(n)[0], coalesce(n.name, n.title), n.id
+   ```
+   That returned 44 rows. `Keycloak` matches the **System**, and three **Decision** titles score above the threshold: DEC-11 (migrate session storage to embedded Keycloak cache), DEC-02 (adopt Keycloak for company-wide SSO) and DEC-12 (Keycloak OAuth2 tokens for the API gateway).
+3. **Traversal.** Three statements run together (`askflow/queries.py`; shown here with line breaks added, the text is otherwise identical). The first takes the decision ids from step 2:
+   ```cypher
+   MATCH (d:Decision) WHERE d.id IN $decision_ids
+   OPTIONAL MATCH (d)-[r_dec:decided_by]->(p:Person)
+   OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System)
+   OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket)
+   OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting)
+   OPTIONAL MATCH (d)-[r_doc:based_on]->(dc:Document)
+   OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision)
+   OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d)
+   OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision)
+   OPTIONAL MATCH (s)<-[r_own:owns]-(owner:Person)
+   RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), coalesce(d.status, 'accepted'),
+          p.name, s.name, t.ticket_id, t.title, m.title, m.date, d_sup.id, d_sup.title,
+          d_sup_by.id, d_sup_by.title, d_con.id, d_con.title,
+          owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, ''), dc.title, dc.date
+   ```
+   The second is the same `RETURN` and neighbours, starting from the system instead of the ids (`MATCH (d:Decision)-[r_sys:about_system]->(s:System) WHERE s.name IN $system_names ...`), and the third finds the owner:
+   ```cypher
+   MATCH (s:System) WHERE s.name IN $system_names
+   OPTIONAL MATCH (s)<-[r:owns]-(p:Person)
+   RETURN s.name, p.name, coalesce(p.is_active, true), coalesce(p.leave_date, '')
+   ```
+   **Rows returned (7).** DEC-11 `decided_by` Alice Vance, `about_system` Keycloak, `based_on` **TICK-102**, `supersedes` DEC-01 (*migrate session storage from Postgres to Redis cluster*); DEC-02 `decided_by` Julia Roberts, `based_on` the meeting *IAM Architecture Modernization*; DEC-12 `decided_by` Julia Roberts, `based_on` TICK-111; and Keycloak is `owns`-ed by Julia Roberts, who is active.
+4. **Health check (cached Cypher).** The health map is the result of four whole-graph statements (decisions with their dates, `supersedes` pairs, `contradicts` pairs, deciders who left), recomputed after every ingest and cached for five minutes. Applied to these four decisions: *3 active, 1 superseded* (DEC-01, replaced by DEC-11).
+5. **Evidence path.** Python assembles the nodes and edges that were returned into the `graph_path` the UI draws, and picks the primary decision (DEC-11) by scoring over the rows.
+6. **Answer.** One model call receives only the rows above, as text, and is told to phrase them. The recorded answer:
+   > **Decision:** The accepted decision was to "Migrate session storage to embedded Keycloak cache" (DEC-11).
+   > **Rationale:** The decision was made to address "Redis session cluster operational maintenance and failover complexity" (TICK-102).
+   > **Decided by:** Alice Vance.
+   > **Supersedes:** This decision replaced the earlier one to "Migrate session storage from Postgres to Redis cluster" (DEC-01).
+7. **Citations.** A source is cited only if a real `based_on` edge from the traversal points at it **and** the answer text names it (its id or title, or the DEC code of the decision it backs). TICK-102 passes; anything the model invented would be dropped.
+
+**"What's affected if we drop Snowflake?"** Intent `impact` (rule match on *drop*). Three statements: `IMPACT_DECISIONS` follows `about_system` to the decisions on Snowflake and then `supersedes*1..5` in both directions, `IMPACT_PEOPLE` finds the owner, ticket participants and the teams and projects two hops away through `member_of`/`leads`, and `IMPACT_TICKETS` lists tickets that `mention` it. Rows: DEC-03 (*adopt Snowflake*, superseded by DEC-13), DEC-13 (*migrate reporting queries from Snowflake*), DEC-17 (*decommission Snowflake*), owner Fiona Gallagher, the Data Platform team, five tickets. Health marks DEC-03 superseded; the model only phrases the list.
+
+**"Who knows the most about Kafka?"** Intent `expertise`. One statement (`EXPERTISE`) returns five evidence lists for the system: people who `decided_by` its decisions, who `owns` it, who `attended_by` a meeting that is a source of its decisions or mentions it, and who `raised_by`/`assigned_to` a ticket that `mentions` it. Python counts each list and weights it (decided x3, owns x3, meetings x2, tickets x1): Alice Vance 9 (decided DEC-04, owns Kafka, one meeting, one ticket), Bob Martin 7, Carlos Mendez 5, with the counts shown so the ranking can be checked.
+
+## What comes from the graph vs the LLM
+
+| Job | Done by | When |
+| :-- | :-- | :-- |
+| Reading a source and proposing decisions, deciders, systems and the verbatim quote | **LLM** (two passes; a quote that is not in the source text is dropped) | ingest |
+| Whether a new decision supersedes, contradicts or reaffirms an existing one (prose sources) | **LLM** judge, then written as a `supersedes` / `contradicts` edge | ingest |
+| ADR "Supersedes ADR-n" and status lines (GitHub import) | **Code** (text parsing), no model | ingest |
+| Matching extracted names to existing people and systems; decision identity | **Rules + local embeddings** (reconciliation), no hosted LLM | ingest |
+| Intent of a question | **Rules**; one cheap **LLM** call only when no rule matches | query |
+| Matching a question to people, systems and decisions | **Cypher** roster + whole-word match + **local embeddings** on decision titles | query |
+| Lineage (what replaced what, in both directions), conflicts | **Cypher** (`supersedes*1..5`, `contradicts`) | query |
+| Health and staleness, departed deciders, orphaned systems | **Cypher** + rules in code | query |
+| Impact of dropping a system | **Cypher** | query |
+| Expertise ranking | **Cypher** evidence lists, counted and weighted in code | query |
+| The evidence path (`graph_path`), the primary decision, the citations | **Cypher rows + code**; citations must be real `based_on` edges | query |
+| Separate customers' data | **FalkorDB graphs**, one per organization | always |
+| The wording of the final answer | **LLM**, from the rows only | query |
+
+**The LLM never decides a relationship at query time.** At query time it receives only the rows Cypher returned and phrases them; every edge, status, owner, date and citation in an answer comes from the graph. Relationships that came from a model (a prose source's `supersedes` or `contradicts`) were written to the graph at ingest (live-ingest edges carry the judge's one-sentence `reason`) and are queryable and fixable like any other data. The model can still mis-phrase a result, so wording about status is corrected in code after generation and unsupported citations are dropped.
 
 ## Track 03 (Company Brain) mapping
 
@@ -318,7 +426,7 @@ Formats checked against the [Claude Code](https://code.claude.com/docs/en/mcp), 
 
 ## Built during the event (Oct 15 to 18), and how
 
-The commit history is the timeline. The repository scaffold and the first data work predate the event window; I say so rather than hide it:
+The commit history is the timeline. The repository scaffold and the first data work started before Oct 15, and the table shows it:
 
 | Dates | What was built |
 | :-- | :-- |
@@ -327,6 +435,8 @@ The commit history is the timeline. The repository scaffold and the first data w
 | **Oct 15 to 16** | Two-pass extraction with verified quotes, the decision health engine, citation integrity, deployment (Railway, Cloudflare Pages, CI), the Linear-style UI, decision pages, Systems and People, live ingest with the change diff. |
 | **Oct 17** | Streamed Ask with impact, expertise and status intents, Sources, demo safety, the MCP server, Home and Agents pages, hardening (timeouts, token budget, error states), the first submission package. |
 | **Oct 18** | Landing page, organizations (one graph each), file upload, GitHub import, the company map, the Arachne showcase, owner keys, this README. |
+
+The organizers confirmed on the event Discord that building before Oct 15 was allowed; the table shows exactly what was built when.
 
 **How coding assistants were used, honestly:** an AI coding agent (Claude Code) wrote most of the code under my direction. I used Claude for product design, UI design, prompt design and review. I made the product and architecture decisions (what the graph models, the health rules, the evaluation method, what to cut), set the acceptance criteria phase by phase, and verified the results: running the evaluation, checking live answers against the ground truth, reviewing screenshots, and testing the deployed app. [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md) is the running context document the agent worked from.
 
