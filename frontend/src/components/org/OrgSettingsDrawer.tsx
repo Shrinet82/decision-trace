@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ApiError, deleteOrg } from '../../api/client';
 import { useOrgSlug } from '../../org/OrgContext';
 import { forgetOrg } from '../../org/orgStore';
+import { useOrgAccess } from '../../org/useOrgAccess';
 import { Drawer } from '../Drawer';
 import { btnOutline } from '../ui';
 
@@ -14,6 +15,7 @@ export const OrgSettingsDrawer: React.FC<{ open: boolean; onClose: () => void; n
   name,
 }) => {
   const slug = useOrgSlug();
+  const { canWrite } = useOrgAccess();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [confirm, setConfirm] = useState(false);
@@ -57,6 +59,13 @@ export const OrgSettingsDrawer: React.FC<{ open: boolean; onClose: () => void; n
           <dt className="text-muted">Retention</dt>
           <dd className="m-0 text-text-2">Deleted after 72 hours without activity.</dd>
         </dl>
+        {!canWrite && (
+          <p role="note" className="m-0 rounded-control border border-border bg-subtle px-3 py-2 text-text-2">
+            You can view this organization, but only the browser that created it holds its owner key, so it
+            cannot be changed or deleted from here.
+          </p>
+        )}
+        {canWrite && (
         <section aria-labelledby="danger" className="flex flex-col gap-2 rounded-panel border border-status-conflict-border bg-status-conflict-bg p-3">
           <h3 id="danger" className="m-0 text-sm font-semibold text-status-conflict-text">
             Delete organization
@@ -89,6 +98,7 @@ export const OrgSettingsDrawer: React.FC<{ open: boolean; onClose: () => void; n
             </div>
           )}
         </section>
+        )}
       </div>
     </Drawer>
   );

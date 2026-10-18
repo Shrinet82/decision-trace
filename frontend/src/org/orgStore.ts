@@ -1,4 +1,5 @@
-/** Organizations created in this browser, remembered in localStorage (never required to work). */
+/** Organizations created in this browser, remembered in localStorage (never required to work).
+ *  The owner key is kept with the organization: it is what lets this browser change it. */
 import type { OrgInfo } from '../api/types';
 
 const KEY = 'dt.orgs.v1';
@@ -8,6 +9,7 @@ export interface StoredOrg {
   id: string;
   name: string;
   created_at: string | null;
+  owner_key?: string;
 }
 
 export function loadOrgs(): StoredOrg[] {
@@ -32,12 +34,21 @@ function save(orgs: StoredOrg[]): void {
   window.dispatchEvent(new Event('dt-orgs-changed'));
 }
 
-export function rememberOrg(org: OrgInfo): void {
+/** Remember an organization (and its owner key, if this browser just created it). */
+export function rememberOrg(org: OrgInfo, ownerKey?: string): void {
   if (org.sample) return;
+  const previous = loadOrgs().find((o) => o.id === org.id);
   const rest = loadOrgs().filter((o) => o.id !== org.id);
-  save([{ id: org.id, name: org.name, created_at: org.created_at }, ...rest]);
+  const key = ownerKey ?? previous?.owner_key;
+  save([{ id: org.id, name: org.name, created_at: org.created_at, ...(key ? { owner_key: key } : {}) }, ...rest]);
 }
 
 export function forgetOrg(id: string): void {
   save(loadOrgs().filter((o) => o.id !== id));
+}
+
+/** The owner key this browser holds for an organization, if any. */
+export function getOwnerKey(id: string | null): string | undefined {
+  if (!id) return undefined;
+  return loadOrgs().find((o) => o.id === id)?.owner_key;
 }

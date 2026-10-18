@@ -113,3 +113,44 @@ test.describe('Organizations', () => {
     });
   }
 });
+
+test.describe('Owner key and showcase', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  test('an organization this browser did not create can be viewed but not changed', async ({ page }) => {
+    await page.goto('/app/o/someone-else-123abc');
+    await expect(page.getByRole('heading', { name: 'This brain is empty. Add your first sources.' })).toBeVisible();
+    await expect(page.getByRole('note')).toContainText('only the browser that created it');
+    await expect(page.getByRole('button', { name: 'Upload files' })).toBeHidden();
+    await switcher(page).click();
+    await page.getByRole('button', { name: 'Organization settings' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Organization settings' });
+    await expect(dialog.getByRole('note')).toContainText('owner key');
+    await expect(dialog.getByRole('button', { name: 'Delete organization…' })).toHaveCount(0);
+  });
+
+  test('the organization this browser created keeps its owner key and can add sources', async ({ page }) => {
+    await page.goto('/app');
+    await createOrg(page, 'Mine');
+    const stored = await page.evaluate(() => JSON.parse(window.localStorage.getItem('dt.orgs.v1') ?? '[]'));
+    expect(stored[0].owner_key).toMatch(/^ok_/);
+    await expect(page.getByRole('button', { name: /Upload files/ })).toBeVisible();
+  });
+
+  test('the Arachne showcase organization is listed below Acme and opens read-only with its data', async ({ page }) => {
+    await page.goto('/app');
+    await switcher(page).click();
+    const group = page.getByRole('group', { name: 'Organizations' });
+    const names = await group.getByRole('link').allTextContents();
+    expect(names[0]).toContain('Acme Corp (sample)');
+    expect(names[1]).toContain('Arachne (real GitHub ADRs)');
+    await group.getByRole('link', { name: /Arachne/ }).click();
+    await expect(page).toHaveURL(/\/app\/o\/arachne$/);
+    await expect(switcher(page)).toContainText('Arachne (real GitHub ADRs)');
+    // A showcase organization has no settings or delete, and GitHub import is closed like in Acme
+    await switcher(page).click();
+    await expect(page.getByRole('button', { name: 'Organization settings' })).toHaveCount(0);
+  });
+});

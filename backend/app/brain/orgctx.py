@@ -14,6 +14,7 @@ from typing import Iterator, Optional
 
 _graph: ContextVar[Optional[str]] = ContextVar("org_graph", default=None)
 _slug: ContextVar[Optional[str]] = ContextVar("org_slug", default=None)
+_sample: ContextVar[bool] = ContextVar("org_sample", default=True)
 
 
 def current_graph() -> Optional[str]:
@@ -25,20 +26,28 @@ def current_slug() -> Optional[str]:
     return _slug.get()
 
 
+def is_user_org() -> bool:
+    """True inside an organization somebody created. The sample organizations (Acme and the
+    showcase repositories) are shared and read-only apart from tagged demo data that resets."""
+    return _graph.get() is not None and not _sample.get()
+
+
 def scope() -> str:
     """A string that tells organizations apart in caches and locks ('' = the sample organization)."""
     return _graph.get() or ""
 
 
 @contextmanager
-def org_scope(slug: Optional[str], graph: Optional[str]) -> Iterator[None]:
-    """Work on one organization inside the block. `graph` None means the sample organization."""
-    t1, t2 = _graph.set(graph), _slug.set(slug)
+def org_scope(slug: Optional[str], graph: Optional[str], sample: bool = False) -> Iterator[None]:
+    """Work on one organization inside the block. `graph` None means the Acme sample organization;
+    `sample` marks a showcase organization that has its own graph but behaves like Acme."""
+    t1, t2, t3 = _graph.set(graph), _slug.set(slug), _sample.set(sample or graph is None)
     try:
         yield
     finally:
         _graph.reset(t1)
         _slug.reset(t2)
+        _sample.reset(t3)
 
 
 class ScopedLock:

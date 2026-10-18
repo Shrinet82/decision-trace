@@ -15,6 +15,17 @@ async function expectNoSeriousViolations(page: Page) {
   ).toEqual([]);
 }
 
+
+/** Pretend this browser created the organization (it holds its owner key). */
+async function ownOrg(page: Page, id: string, name = 'Acme Labs') {
+  await page.addInitScript(
+    ([orgId, orgName]) => {
+      window.localStorage.setItem('dt.orgs.v1', JSON.stringify([{ id: orgId, name: orgName, created_at: null, owner_key: 'ok_test' }]));
+    },
+    [id, name]
+  );
+}
+
 test.beforeAll(() => {
   fs.mkdirSync(screenshotsDir, { recursive: true });
 });
@@ -35,6 +46,7 @@ test.describe('GitHub import', () => {
   });
 
   test('import a repository: steps, then the decisions it found', async ({ page }) => {
+    await ownOrg(page, 'acme-labs-3f9a1c');
     await page.goto('/app/o/acme-labs-3f9a1c');
     await page.getByRole('button', { name: /Import from GitHub/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Add source' });
@@ -51,6 +63,7 @@ test.describe('GitHub import', () => {
   });
 
   test('a repository that is not found shows the reason and a way back', async ({ page }) => {
+    await ownOrg(page, 'acme-labs-3f9a1c');
     await page.goto('/app/o/acme-labs-3f9a1c');
     await page.getByRole('button', { name: /Import from GitHub/ }).click();
     const dialog = page.getByRole('dialog', { name: 'Add source' });
@@ -64,6 +77,7 @@ test.describe('GitHub import', () => {
   for (const width of [1440, 390]) {
     test(`GitHub tab at ${width}px: accessible, screenshot`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
+      await ownOrg(page, 'acme-labs-3f9a1c');
       await page.goto('/app/o/acme-labs-3f9a1c');
       await page.getByRole('button', { name: /Import from GitHub/ }).click();
       const dialog = page.getByRole('dialog', { name: 'Add source' });

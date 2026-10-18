@@ -19,7 +19,7 @@
  *    - GET  /changes
  *    - GET  /attention
  *    - POST /ingest/batch, POST /ingest/github   (streams)
- *    - POST /orgs, GET|DELETE /orgs/:id
+ *    - POST /orgs, GET /orgs (showcase list), GET|DELETE /orgs/:id
  *    - everything above under /orgs/:id/... for a user organization
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
  *    and unwhitelisted routes.
@@ -69,8 +69,8 @@ export async function onRequest(context: {
   const ORG_ID = '[a-z0-9][a-z0-9-]{0,63}';
   let orgPath = normalizedPath;
   const orgMatch = new RegExp(`^/orgs/(${ORG_ID})(/.*)?$`).exec(normalizedPath);
-  if (method === 'POST' && normalizedPath === '/orgs') {
-    orgPath = '/orgs';
+  if ((method === 'POST' || method === 'GET') && normalizedPath === '/orgs') {
+    orgPath = method === 'GET' ? '/orgs:list' : '/orgs';
   } else if (orgMatch && !orgMatch[2]) {
     orgPath = method === 'GET' || method === 'DELETE' ? '/orgs/:id' : '/blocked';
   } else if (orgMatch) {
@@ -107,6 +107,7 @@ export async function onRequest(context: {
     (method === 'POST' && orgPath === '/ingest/batch') ||
     (method === 'POST' && orgPath === '/ingest/github') ||
     (method === 'POST' && orgPath === '/orgs') ||
+    (method === 'GET' && orgPath === '/orgs:list') ||
     ((method === 'GET' || method === 'DELETE') && orgPath === '/orgs/:id');
 
   if (!isWhitelisted) {

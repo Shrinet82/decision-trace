@@ -62,9 +62,14 @@ mcp = FastMCP(
 
 _ToolFn = Callable[..., Awaitable[dict[str, Any]]]
 
+OWNER_KEY_DESCRIPTION = (
+    "Owner key of the organization, needed only to add a source to an organization you created "
+    "(the sample and showcase organizations take demo sources without a key)."
+)
 ORG_DESCRIPTION = (
-    "Optional organization id. Omit it to use the sample organization (Acme Corp). Organizations "
-    "created in the web app have ids like 'acme-labs-3f9a1c'."
+    "Optional organization id. Omit it to use the sample organization (Acme Corp). 'arachne' is the "
+    "showcase organization with real GitHub ADRs; organizations created in the web app have ids like "
+    "'acme-labs-3f9a1c'."
 )
 
 
@@ -100,8 +105,14 @@ def logged(name: str, summarize: Callable[..., str], *, ingest: bool = False) ->
             org = await registry.get(org_id) if org_id else None
             if org_id and org is None:
                 raise ToolError(f"Organization '{org_id}' does not exist. Omit `org` to use the sample organization.")
-            graph = None if org is None or org["sample"] else org["graph_name"]
-            with orgctx.org_scope(None if graph is None else org_id, graph):
+            owner_key = kwargs.pop("owner_key", None)
+            if ingest and org is not None and not org["sample"] and not registry.key_matches(org, owner_key):
+                raise ToolError(
+                    "Adding sources to an organization you created needs its owner key: pass `owner_key` "
+                    "(shown once when the organization was created)."
+                )
+            graph = None if org is None or org_id == registry.SAMPLE_ID else org["graph_name"]
+            with orgctx.org_scope(None if graph is None else org_id, graph, sample=org is None or bool(org["sample"])):
                 try:
                     result = await fn(*args, **kwargs)
                 except ToolError:
@@ -125,6 +136,13 @@ def logged(name: str, summarize: Callable[..., str], *, ingest: bool = False) ->
             inspect.Parameter(
                 "org", inspect.Parameter.KEYWORD_ONLY, default=None,
                 annotation=Annotated[Optional[str], Field(description=ORG_DESCRIPTION)],
+            ),
+            *(
+                [inspect.Parameter(
+                    "owner_key", inspect.Parameter.KEYWORD_ONLY, default=None,
+                    annotation=Annotated[Optional[str], Field(description=OWNER_KEY_DESCRIPTION)],
+                )]
+                if ingest else []
             ),
             inspect.Parameter("ctx", inspect.Parameter.KEYWORD_ONLY, annotation=Context),
         ])

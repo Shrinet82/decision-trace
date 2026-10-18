@@ -2,9 +2,10 @@
 
 from typing import Any, AsyncIterator, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
+from app.api.orgs import require_owner
 from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_ingest_rate_limit
 from app.brain import orgctx
 from app.brain.memory import query_graph
@@ -31,7 +32,7 @@ _BUSY = "Another ingest or reset is running. Try again in a moment."
 async def _count_sources() -> None:
     """Keep a user organization's source count current (shown in the organization list)."""
     slug = orgctx.current_slug()
-    if not slug:
+    if not slug or not orgctx.is_user_org():
         return
     try:
         rows = await query_graph("MATCH (s) WHERE s:Ticket OR s:Meeting OR s:Document RETURN count(s)")
@@ -40,7 +41,7 @@ async def _count_sources() -> None:
         pass
 
 
-@router.post("/ingest")
+@router.post("/ingest", dependencies=[Depends(require_owner)])
 async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
     """Ingest one source and stream each pipeline step, ending with a `diff` (or `error`) event.
 
@@ -72,7 +73,7 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
     )
 
 
-@router.post("/ingest/batch")
+@router.post("/ingest/batch", dependencies=[Depends(require_owner)])
 async def ingest_batch(body: BatchRequest, request: Request) -> StreamingResponse:
     """Ingest up to 10 uploaded files (.md, .txt, .pdf) and stream progress per file, ending with
     one combined `diff`. In the sample organization everything is tagged demo data and resets
@@ -101,12 +102,12 @@ async def ingest_batch(body: BatchRequest, request: Request) -> StreamingRespons
     )
 
 
-@router.post("/ingest/github")
+@router.post("/ingest/github", dependencies=[Depends(require_owner)])
 async def ingest_github(body: GithubRequest, request: Request) -> StreamingResponse:
     """Import ADRs (and optionally decision-like PRs and issues) from a public GitHub repository,
     streaming progress, ending with a `diff`. Only available in organizations you create: the sample
     organization is read-only apart from its tagged demo data."""
-    if not orgctx.current_graph():
+    if not orgctx.is_user_org():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="GitHub import is available in organizations you create, not in the sample organization.",
@@ -138,7 +139,7 @@ async def ingest_github(body: GithubRequest, request: Request) -> StreamingRespo
 @router.post("/ingest/reset")
 async def reset(request: Request) -> dict[str, Any]:
     """Remove all demo-ingested nodes/edges and restore changed values (e.g. a person leaving)."""
-    if orgctx.current_graph():
+    if orgctx.is_user_org():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Organizations you create keep their data. Delete the organization to start over.",

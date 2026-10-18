@@ -36,7 +36,7 @@ export const NewOrgDrawer: React.FC<{ open: boolean; onClose: () => void }> = ({
     setError(null);
     try {
       const org = await createOrg(trimmed);
-      rememberOrg(org);
+      rememberOrg(org, org.owner_key);
       onClose();
       navigate(appBase(org.id));
     } catch (err) {

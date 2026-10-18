@@ -11,7 +11,7 @@ import { applyIngestEvent, initialRun, miniGraphElements, type RunState } from '
 import { CytoscapeGraph } from '../CytoscapeGraph';
 import { Drawer } from '../Drawer';
 import { FEATURES } from '../../config/features';
-import { useOrgSlug } from '../../org/OrgContext';
+import { useOrgAccess } from '../../org/useOrgAccess';
 import { GithubPanel } from './GithubPanel';
 import { UploadPanel } from './UploadPanel';
 import { btnOutline, btnPrimary } from '../ui';
@@ -124,7 +124,7 @@ const ResetControl: React.FC<{ disabled: boolean; onReset: () => void }> = ({ di
 
 export const IngestDrawer: React.FC = () => {
   const ingest = useIngest();
-  const orgSlug = useOrgSlug();
+  const { isSample, canWrite } = useOrgAccess();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<IngestForm>(emptyForm);
   const [phase, setPhase] = useState<Phase>('form');
@@ -232,10 +232,16 @@ export const IngestDrawer: React.FC = () => {
       title="Add source"
       titleId="ingest-drawer-title"
       keepMounted
-      footer={orgSlug ? undefined : <ResetControl disabled={phase === 'running'} onReset={newSource} />}
+      footer={isSample ? <ResetControl disabled={phase === 'running'} onReset={newSource} /> : undefined}
     >
       <div className="flex flex-col gap-4 p-4">
-        {tabs.length > 1 && (
+        {!canWrite && (
+          <p role="note" className="m-0 rounded-control border border-border bg-subtle px-3 py-2 text-text-2">
+            You can view this organization, but only the browser that created it can add sources to it. Create
+            your own organization from the menu at the top of the sidebar to add files or import a repository.
+          </p>
+        )}
+        {canWrite && tabs.length > 1 && (
           <div role="tablist" aria-label="How to add a source" className="flex gap-1 border-b border-divider">
             {tabs.map((t) => (
               <button
@@ -259,7 +265,7 @@ export const IngestDrawer: React.FC = () => {
           role={tabs.length > 1 ? 'tabpanel' : undefined}
           id="ingest-panel-paste"
           aria-labelledby={tabs.length > 1 ? 'ingest-tab-paste' : undefined}
-          hidden={tabs.length > 1 && ingest.tab !== 'paste'}
+          hidden={!canWrite || (tabs.length > 1 && ingest.tab !== 'paste')}
           className="flex flex-col gap-4"
         >
         {phase === 'form' ? (
@@ -488,12 +494,12 @@ export const IngestDrawer: React.FC = () => {
         )}
         </div>
         {FEATURES.upload && (
-          <div role="tabpanel" id="ingest-panel-files" aria-labelledby="ingest-tab-files" hidden={ingest.tab !== 'files'}>
+          <div role="tabpanel" id="ingest-panel-files" aria-labelledby="ingest-tab-files" hidden={!canWrite || ingest.tab !== 'files'}>
             <UploadPanel />
           </div>
         )}
         {FEATURES.github && (
-          <div role="tabpanel" id="ingest-panel-github" aria-labelledby="ingest-tab-github" hidden={ingest.tab !== 'github'}>
+          <div role="tabpanel" id="ingest-panel-github" aria-labelledby="ingest-tab-github" hidden={!canWrite || ingest.tab !== 'github'}>
             <GithubPanel />
           </div>
         )}

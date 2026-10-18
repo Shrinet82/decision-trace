@@ -150,6 +150,22 @@ export const LandingPage: React.FC = () => {
           </div>
         </section>
 
+        <section aria-labelledby="real-repo" className="mx-auto max-w-[1080px] px-4 pb-14 min-[900px]:px-6">
+          <div className="flex flex-col gap-3 rounded-panel border border-border bg-subtle p-6 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
+            <div>
+              <h2 id="real-repo" className="text-xl font-semibold">See it on a real open-source repo</h2>
+              <p className="mt-2 max-w-[640px] text-base text-text-2">
+                The Arachne framework&rsquo;s architecture decision records, imported straight from GitHub: 16 ADRs, who wrote
+                them, which ones supersede others, every decision traced to its source file. Nothing here was written
+                for the demo.
+              </p>
+            </div>
+            <Link to="/app/o/arachne" className={secondaryBtn}>
+              Open the Arachne organization <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+        </section>
+
         <section className="mx-auto max-w-[1080px] px-4 pb-16 min-[900px]:px-6">
           <div className="rounded-panel border border-border bg-surface p-8 text-center">
             <h2 className="text-xl font-semibold">See it on a real graph</h2>

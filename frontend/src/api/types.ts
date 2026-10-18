@@ -332,6 +332,8 @@ export interface Attention {
 /** An organization: its own graph. `sample` is the read-mostly demo company. */
 export interface OrgInfo {
   id: string;
+  /** Returned once, when an organization is created: the key that lets its owner change it. */
+  owner_key?: string;
   name: string;
   sample: boolean;
   created_at: string | null;
