@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import type { AnswerSection, SectionItem } from '../../api/types';
 import { formatLongDate } from '../../utils/format';
 import { decisionHref, personHref, sourceHref, systemHref } from '../../utils/links';

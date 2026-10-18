@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import type { MatchedEntity } from '../../api/types';
 import type { AskRunState } from '../../utils/askRun';
 import { formatMs } from '../../utils/format';

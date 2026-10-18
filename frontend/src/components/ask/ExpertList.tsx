@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import type { Expert } from '../../api/types';
 import { EVIDENCE, evidenceSummary } from '../../utils/expertise';
 import { personHref } from '../../utils/links';

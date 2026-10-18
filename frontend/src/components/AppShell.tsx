@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useSearchParams } from '../router';
 import { Bot, CheckCircle2, FileText, Home, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
 import { useDecisions, useGraph, usePeople, useSources, useSystems } from '../api/hooks';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';

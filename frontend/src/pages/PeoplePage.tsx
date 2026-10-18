@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../router';
 import { usePeople } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
 import { LeftBadge } from '../components/entity/Badge';

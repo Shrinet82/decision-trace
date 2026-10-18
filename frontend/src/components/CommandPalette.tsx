@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '../router';
 import { Search } from 'lucide-react';
 import type { PersonSummary, SystemSummary } from '../api/types';
 import type { DecisionRow } from '../utils/model';

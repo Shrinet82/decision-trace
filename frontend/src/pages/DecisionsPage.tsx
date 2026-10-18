@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from '../router';
 import { LayoutGrid, SlidersHorizontal, X } from 'lucide-react';
 import { useDecisions, useGraph } from '../api/hooks';
 import { Avatar } from '../components/Avatar';

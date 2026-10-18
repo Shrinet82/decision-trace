@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import { decisionHref } from '../../utils/links';
 import type { DecisionDetail } from '../../api/types';
 import { formatLongDate } from '../../utils/format';

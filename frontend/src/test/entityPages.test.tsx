@@ -36,7 +36,7 @@ describe('Decision page', () => {
 
     const timeline = screen.getByRole('region', { name: 'System timeline' });
     const current = within(timeline).getByRole('link', { current: 'page' });
-    expect(current).toHaveAttribute('href', `/decisions/${keycloak.decision_code}`);
+    expect(current).toHaveAttribute('href', `/app/decisions/${keycloak.decision_code}`);
 
     const sources = screen.getByRole('region', { name: 'Sources' });
     expect(within(sources).getByText('TICK-102')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('Decision page', () => {
     const superseded = keycloak.lineage.supersedes[0];
     expect(within(panel).getByRole('link', { name: superseded.decision_code! })).toHaveAttribute(
       'href',
-      `/decisions/${superseded.decision_code}`
+      `/app/decisions/${superseded.decision_code}`
     );
   });
 
@@ -90,7 +90,7 @@ describe('Systems', () => {
 describe('People', () => {
   it('lists people', async () => {
     renderAt('/people');
-    expect(await screen.findByRole('link', { name: /Alice Vance/ })).toHaveAttribute('href', '/people/Alice%20Vance');
+    expect(await screen.findByRole('link', { name: /Alice Vance/ })).toHaveAttribute('href', '/app/people/Alice%20Vance');
   });
 
   it("shows a person's decisions and owned systems", async () => {
@@ -99,7 +99,7 @@ describe('People', () => {
     const decisions = screen.getByRole('region', { name: 'Decisions made' });
     expect(within(decisions).getAllByRole('link').length).toBeGreaterThanOrEqual(3);
     const owned = screen.getByRole('region', { name: 'Systems owned' });
-    expect(within(owned).getByRole('link', { name: /Kafka/ })).toHaveAttribute('href', '/systems/Kafka');
+    expect(within(owned).getByRole('link', { name: /Kafka/ })).toHaveAttribute('href', '/app/systems/Kafka');
   });
 
   it('marks a departed person and their orphaned system', async () => {

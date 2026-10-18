@@ -48,7 +48,7 @@ function renderApp() {
         <IngestProvider>
           <Routes>
             <Route path="/" element={<PageFrame header={<span>Home</span>}>Home body</PageFrame>} />
-            <Route path="/decisions/:code" element={<PageFrame header={<span>Decision</span>}>Decision body</PageFrame>} />
+            <Route path="/app/decisions/:code" element={<PageFrame header={<span>Decision</span>}>Decision body</PageFrame>} />
           </Routes>
         </IngestProvider>
       </MemoryRouter>
@@ -152,9 +152,9 @@ describe('Add source drawer', () => {
     const result = await within(dialog).findByRole('region', { name: 'Ingest result' });
     expect(within(result).getByText('1 new decision · 2 status changes · conflict resolved')).toBeInTheDocument();
     const newDecisions = within(result).getByRole('region', { name: 'New decisions' });
-    expect(within(newDecisions).getByRole('link', { name: 'DEC-18' })).toHaveAttribute('href', '/decisions/DEC-18');
+    expect(within(newDecisions).getByRole('link', { name: 'DEC-18' })).toHaveAttribute('href', '/app/decisions/DEC-18');
     const statuses = within(result).getByRole('region', { name: 'Status changes' });
-    expect(within(statuses).getByRole('link', { name: 'DEC-07' })).toHaveAttribute('href', '/decisions/DEC-07');
+    expect(within(statuses).getByRole('link', { name: 'DEC-07' })).toHaveAttribute('href', '/app/decisions/DEC-07');
     expect(statuses).toHaveTextContent('DEC-07Contradicted→Superseded');
     const links = within(result).getByRole('region', { name: 'Links the judge made' });
     expect(links).toHaveTextContent(/DEC-18\s*supersedes\s*DEC-07/);
@@ -191,7 +191,7 @@ describe('Add source drawer', () => {
     const people = await within(dialog).findByRole('region', { name: 'People' });
     expect(people).toHaveTextContent('Alice Vance: active → left company');
     const orphaned = within(dialog).getByRole('region', { name: 'Orphaned systems' });
-    expect(within(orphaned).getByRole('link', { name: 'Kafka' })).toHaveAttribute('href', '/systems/Kafka');
+    expect(within(orphaned).getByRole('link', { name: 'Kafka' })).toHaveAttribute('href', '/app/systems/Kafka');
     expect(orphaned).toHaveTextContent('Redis: owned → orphaned');
     // Every step completes; the steps with nothing to do report it in their detail
     const steps = within(dialog)

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../router';
 import { useSource } from '../api/hooks';
 import type { SourceKind } from '../api/types';
 import { formatLongDate } from '../utils/format';
