@@ -25,7 +25,10 @@ jobs:
       - name: Deploy Backend to Railway (Remote Cloud Build)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          # Personal access token (public read only) for the GitHub importer: 5,000 requests an hour instead of 60
+          GH_IMPORT_TOKEN: ${{ secrets.GH_IMPORT_TOKEN }}
         run: |
+          if [ -n "$GH_IMPORT_TOKEN" ]; then railway variable set "GITHUB_TOKEN=$GH_IMPORT_TOKEN" --service decision-trace-api; fi
           railway variable set "FALKORDB_GRAPH_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
           railway variable set "DATASET_NAME=c87aa0cf-1c09-5296-8518-a3e8b9a1e744" --service decision-trace-api
           # Startup imports the LLM/ML stack (~10 s locally); the default 15 s healthcheck window is too tight
