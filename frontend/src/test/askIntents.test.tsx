@@ -46,11 +46,11 @@ describe('Ask: suggested questions and intents', () => {
       expect(within(impact).getByRole('region', { name: title })).toBeInTheDocument();
     }
     const decisions = within(impact).getByRole('region', { name: /^Decisions, / });
-    expect(within(decisions).getByRole('link', { name: /DEC-13/ })).toHaveAttribute('href', '/decisions/DEC-13');
+    expect(within(decisions).getByRole('link', { name: /DEC-13/ })).toHaveAttribute('href', '/app/decisions/DEC-13');
     // Trace: each step, the matched system chip, the Cypher queries and the total time
     const traces = await screen.findAllByRole('region', { name: 'How I found this' }, WAIT);
     const trace = traces[0];
-    expect(within(trace).getByRole('link', { name: /Snowflake/ })).toHaveAttribute('href', '/systems/Snowflake');
+    expect(within(trace).getByRole('link', { name: /Snowflake/ })).toHaveAttribute('href', '/app/systems/Snowflake');
     expect(within(trace).getAllByText(/impact_decisions/).length).toBeGreaterThan(0);
     expect((await within(trace).findByTestId('ask-total-ms', {}, WAIT)).textContent).toMatch(/\d/);
   });
@@ -82,7 +82,7 @@ describe('Sources page', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Source' }, WAIT);
     expect(await within(dialog).findByText(/quote highlighted/, {}, WAIT)).toBeInTheDocument();
     expect(dialog.querySelector('mark')?.textContent).toMatch(/Kafka/);
-    expect(within(dialog).getByRole('link', { name: /DEC-04/ })).toHaveAttribute('href', '/decisions/DEC-04');
+    expect(within(dialog).getByRole('link', { name: /DEC-04/ })).toHaveAttribute('href', '/app/decisions/DEC-04');
   });
 
   it('opens a company.db record from the URL', async () => {

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from '../router';
 import { AlertCircle, ArrowUp, User } from 'lucide-react';
 import { useDecisionDetail, useDecisions, useGraph } from '../api/hooks';
 import { AnswerBody } from '../components/ask/AnswerBody';
@@ -20,6 +20,7 @@ import { formatMs } from '../utils/format';
 import { answerIsSubstantive, primaryNode, type AskRunState } from '../utils/askRun';
 import { buildEvidencePath } from '../utils/evidence';
 import { decisionHref } from '../utils/links';
+import { withBase } from '../org/orgState';
 import {
   buildGraphIndex,
   healthToStatus,
@@ -266,7 +267,7 @@ export const AskPage: React.FC = () => {
 
   const copyLink = async () => {
     if (!lastQuestion) return;
-    const url = `${window.location.origin}/ask?q=${encodeURIComponent(lastQuestion)}`;
+    const url = `${window.location.origin}${withBase('/ask')}?q=${encodeURIComponent(lastQuestion)}`;
     try {
       await navigator.clipboard.writeText(url);
     } catch {

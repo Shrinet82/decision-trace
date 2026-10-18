@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import { btnOutline } from '../ui';
 
 export const ListSkeleton: React.FC<{ label: string }> = ({ label }) => (

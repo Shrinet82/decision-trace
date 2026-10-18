@@ -29,7 +29,7 @@ describe('DecisionsPage', () => {
     const group = await screen.findByRole('region', { name: 'Conflict, 2' });
     const links = within(group).getAllByRole('link');
     expect(links).toHaveLength(2);
-    for (const link of links) expect(link.getAttribute('href')).toMatch(/^\/decisions\/DEC-\d{2}$/);
+    for (const link of links) expect(link.getAttribute('href')).toMatch(/^\/app\/decisions\/DEC-\d{2}$/);
   });
 
   it('filters by the needs-review tab', async () => {

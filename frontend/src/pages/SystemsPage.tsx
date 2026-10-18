@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from '../router';
 import { useSystems } from '../api/hooks';
 import { Avatar } from '../components/Avatar';
 import { Badge, LeftBadge } from '../components/entity/Badge';

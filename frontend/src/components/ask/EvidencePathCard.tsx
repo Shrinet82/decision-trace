@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import { decisionHref, personHref, systemHref } from '../../utils/links';
 import type { EvidencePath, EvidenceRow } from '../../utils/evidence';
 import type { StatusKind } from '../../utils/model';

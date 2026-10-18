@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from '../router';
 import { useChanges, useSources } from '../api/hooks';
 import type { SourceItem, SourceKind } from '../api/types';
 import { Badge } from '../components/entity/Badge';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from '../router';
 import { ArrowUp, Bot, Download, PlayCircle } from 'lucide-react';
 import { useAttention, useChanges, useDecisions, useGraph, usePeople, useSources, useSystems } from '../api/hooks';
 import type { AttentionItem, ChangeEntry } from '../api/types';

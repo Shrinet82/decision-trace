@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from '../router';
 import { useDecisionDetail } from '../api/hooks';
 import type { DecisionDetail, DecisionRef, SourceRef } from '../api/types';
 import { Avatar } from '../components/Avatar';

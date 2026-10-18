@@ -32,7 +32,7 @@ test.describe('Home', () => {
   });
 
   test('shows real counts, the attention queue and recent changes', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/app');
     await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
 
     const stats = page.getByRole('region', { name: 'The brain' });
@@ -52,7 +52,7 @@ test.describe('Home', () => {
   });
 
   test('explains what this is, with counts from the API and three things to try', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/app');
     const intro = page.getByRole('region', { name: 'What is this?' });
     await expect(intro.getByText(/80 tickets, 12 meeting notes and 37 records/)).toBeVisible();
     await expect(intro.getByRole('link', { name: 'Why did we move sessions to Keycloak?' })).toBeVisible();
@@ -63,22 +63,22 @@ test.describe('Home', () => {
   });
 
   test('attention rows open the decision or system page', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/app');
     await page.getByRole('link', { name: /DEC-04 and DEC-07 conflict/ }).click();
     await expect(page).toHaveURL(/\/decisions\/DEC-04$/);
-    await page.goto('/');
+    await page.goto('/app');
     await page.getByRole('link', { name: /Elasticsearch has no active owner/ }).click();
     await expect(page).toHaveURL(/\/systems\/Elasticsearch$/);
   });
 
   test('asking from Home opens /ask with the streamed answer', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/app');
     await page.getByRole('button', { name: 'Why did we move sessions to Keycloak?' }).click();
     // /ask clears ?q= once the question is running
     await expect(page).toHaveURL(/\/ask$/);
     await expect(page.getByRole('region', { name: 'Evidence path' })).toBeVisible();
 
-    await page.goto('/');
+    await page.goto('/app');
     await page.getByLabel('Ask a question').fill('Who decided to adopt Prometheus?');
     await page.getByRole('button', { name: 'Ask', exact: true }).click();
     await expect(page).toHaveURL(/\/ask$/);
@@ -96,7 +96,7 @@ test.describe('Connect an agent', () => {
   test('endpoint, copy button, client snippets and tools', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
+    await page.goto('/app');
     await page.getByRole('link', { name: 'Agents' }).click();
     await expect(page).toHaveURL(/\/agents$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Connect an agent' })).toBeVisible();
@@ -139,7 +139,7 @@ for (const width of [1440, 390]) {
     });
 
     for (const [file, route, ready] of [
-      ['home', '/', 'Needs attention'],
+      ['home', '/app', 'Needs attention'],
       ['agents', '/agents', 'Tools'],
     ] as const) {
       test(file, async ({ page }) => {

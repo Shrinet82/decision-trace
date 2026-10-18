@@ -121,7 +121,7 @@ test.describe('journey', () => {
 
   test('orphaned system and its departed owner', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/');
+    await page.goto('/app');
     await page.getByRole('link', { name: /^Orphaned systems\s*1/ }).click();
     await expect(page).toHaveURL(/\/systems\?view=orphaned/);
     await page.getByRole('link', { name: /Elasticsearch/ }).click();

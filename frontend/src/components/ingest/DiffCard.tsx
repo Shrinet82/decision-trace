@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '../../router';
 import type { IngestDiff } from '../../api/types';
 import { HEALTH_LABEL } from '../../utils/changes';
 import { decisionHref, personHref, systemHref } from '../../utils/links';

@@ -15,7 +15,7 @@ test.describe('pages that do not exist say so and offer a way out', () => {
     test(`unknown address, decision, system and person at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
 
-      await page.goto('/no-such-page');
+      await page.goto('/app/no-such-page');
       await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
       await expect(page).toHaveTitle(/Page not found · Decision Trace/);
       await expectNoSeriousViolations(page);
@@ -43,7 +43,7 @@ test.describe('pages that do not exist say so and offer a way out', () => {
 test('every page sets its own browser tab title', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const titles: [string, RegExp][] = [
-    ['/', /^Decision Trace · Why did we decide that\?$/],
+    ['/app', /^Decision Trace · Why did we decide that\?$/],
     ['/ask', /^Ask · Decision Trace$/],
     ['/decisions', /^Decisions · Decision Trace$/],
     ['/decisions/DEC-11', /^DEC-11 · Decision Trace$/],
@@ -60,7 +60,7 @@ test('every page sets its own browser tab title', async ({ page }) => {
 });
 
 test('first impression: favicon and social preview tags', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', '/favicon.svg');
   const og = (p: string) => page.locator(`meta[property="${p}"]`).getAttribute('content');
   expect(await og('og:title')).toContain('Decision Trace');
@@ -73,7 +73,7 @@ test('first impression: favicon and social preview tags', async ({ page }) => {
 
 test('search with no matches says so and offers to ask instead', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
+  await page.goto('/app');
   await expect(page.getByRole('heading', { level: 1, name: 'Home' })).toBeVisible();
   await page.getByRole('button', { name: /^Search/ }).click();
   await page.getByRole('combobox').fill('zzzqqq');

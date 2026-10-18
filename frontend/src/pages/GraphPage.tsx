@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from '../router';
 import { useDecisions, useGraph } from '../api/hooks';
 import type { GraphNode } from '../api/types';
 import { Avatar } from '../components/Avatar';
