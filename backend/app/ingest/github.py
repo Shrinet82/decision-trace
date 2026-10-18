@@ -13,7 +13,6 @@ Events: `progress` (phase, label, detail), then `diff` or `error`.
 """
 
 import asyncio
-import json
 import logging
 import os
 import re
@@ -192,7 +191,7 @@ def parse_adr(path: str, text: str) -> Adr:
         number = int(m.group(1))
 
     # title: front matter, else the first level-1 heading, else the file name
-    h1 = next((l for l in body.splitlines() if re.match(r"^#\s+\S", l)), "")
+    h1 = next((line for line in body.splitlines() if re.match(r"^#\s+\S", line)), "")
     title = (meta.get("title") or re.sub(r"^#\s*", "", h1)).strip()
     hm = re.match(r"(?i)^(?:adr[-_ ]?)?0*(\d{1,4})\s*[.:)\-–—]\s*(.+)$", title)
     if hm:
@@ -276,7 +275,7 @@ def supersession_pairs(adrs: list[Adr]) -> list[tuple[Adr, Adr, str]]:
 
 
 def is_decision_item(title: str, labels: list[str], body: str) -> bool:
-    return bool(KEYWORDS.search(title) or any(KEYWORDS.search(l) for l in labels) or KEYWORDS.search((body or "")[:600]))
+    return bool(KEYWORDS.search(title) or any(KEYWORDS.search(label) for label in labels) or KEYWORDS.search((body or "")[:600]))
 
 
 # --------------------------------------------------------------------------------------------
@@ -439,7 +438,7 @@ async def run_github_import(req: GithubRequest, dataset: str, client: Optional[G
             issues = await gh.api(f"/repos/{owner}/{repo}/issues", state="closed", per_page=MAX_ITEMS, sort="updated", direction="desc")
             for kind, rows in (("PR", prs), ("ISSUE", [i for i in issues if "pull_request" not in i])):
                 for r in rows:
-                    labels = [l["name"] for l in r.get("labels", [])]
+                    labels = [lab["name"] for lab in r.get("labels", [])]
                     if is_decision_item(r.get("title", ""), labels, r.get("body") or ""):
                         items.append({
                             "kind": kind, "number": r["number"], "title": r.get("title", "")[:200], "body": (r.get("body") or "")[:MAX_BODY],
@@ -501,7 +500,6 @@ async def run_github_import(req: GithubRequest, dataset: str, client: Optional[G
                 judged.append({**item, "decision": out})
 
         await _gather_limited([judge(i) for i in items], LLM_CONCURRENCY)
-        skipped = len(adrs) + len(items) - len(adrs) - len(judged)
         yield _progress(
             "extracting", "done", "Extracting systems and decisions",
             f"{len(adrs)} ADR decisions, {len(judged)} of {len(items)} PRs/issues recorded a decision · ~{meter.used:,} model tokens",
@@ -574,7 +572,6 @@ async def run_github_import(req: GithubRequest, dataset: str, client: Optional[G
                 add_edge("about_system", d_id, system(s))
 
         links: list[dict[str, Any]] = []
-        by_path = {a.path: a for a in adrs}
         order = {a.path: i for i, a in enumerate(adrs)}
         for newer, older, why in pairs:
             add_edge("supersedes", decision_ids[newer.path], decision_ids[older.path], {"reason": why, "judged_by": "adr-text"})

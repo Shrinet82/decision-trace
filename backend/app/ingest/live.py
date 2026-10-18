@@ -27,9 +27,7 @@ from app.api.rate_limiter import (
     record_llm_call,
     record_tokens,
 )
-from app.brain import cache
-from app.brain import orgctx
-from app.brain.orgctx import ScopedLock
+from app.brain import cache, orgctx
 from app.brain.codes import get_decision_codes
 from app.brain.health import evaluate_graph_health, evaluate_system_orphans
 from app.brain.memory import (
@@ -40,6 +38,7 @@ from app.brain.memory import (
     resolve_active_graph_name,
 )
 from app.brain.names import split_names
+from app.brain.orgctx import ScopedLock
 from app.ingest.decisions_extractor import (
     Pass1Candidates,
     Pass2Verification,

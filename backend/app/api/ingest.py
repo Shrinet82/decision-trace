@@ -5,13 +5,12 @@ from typing import Any, AsyncIterator, Optional
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 
-from app.brain.memory import query_graph
 from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_ingest_rate_limit
 from app.brain import orgctx
+from app.brain.memory import query_graph
 from app.config import get_settings
-from app.orgs import registry
-from app.ingest.github import GithubRequest, run_github_import
 from app.ingest.batch import BatchRequest, run_batch
+from app.ingest.github import GithubRequest, run_github_import
 from app.ingest.live import (
     INGEST_LOCK,
     IngestRequest,
@@ -21,6 +20,7 @@ from app.ingest.live import (
     run_ingest,
     sse,
 )
+from app.orgs import registry
 
 router = APIRouter(tags=["Live ingest"])
 _settings = get_settings()
