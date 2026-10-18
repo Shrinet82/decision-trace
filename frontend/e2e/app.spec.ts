@@ -93,6 +93,10 @@ test.describe('journey', () => {
     // Graph: canvas, node-type filter with real counts, expand, copy Cypher, inspector
     await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Explore' }).click();
     await settleGraph(page);
+    // The default view is the whole company map; Focus narrows it to one node's neighbourhood
+    await expect(page.getByRole('heading', { name: 'Company map' })).toBeVisible();
+    await page.getByRole('button', { name: 'Focus', exact: true }).click();
+    await settleGraph(page);
     const decisionFilter = page.getByRole('checkbox', { name: /^Decision/ });
     await expect(decisionFilter).toBeChecked();
     await expect(page.getByLabel(/^Ticket/)).toBeVisible();

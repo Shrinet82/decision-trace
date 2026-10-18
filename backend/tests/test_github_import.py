@@ -217,3 +217,10 @@ def test_the_endpoint_is_closed_to_the_sample_organization():
 
     res = TestClient(app).post("/ingest/github", json={"repo_url": "https://github.com/o/r"})
     assert res.status_code == 403 and "organizations you create" in res.json()["detail"]
+
+
+def test_titles_come_from_front_matter_then_h1_then_the_file_name():
+    fm = parse_adr("docs/adr/adr013-use-node-fetch.md", "---\ntitle: 'ADR013: Use node-fetch for backend requests'\n---\n## Context\nx\n## Decision\nWe use node-fetch for all requests.\n")
+    assert fm.title == "Use node-fetch for backend requests" and fm.number == 13
+    nameless = parse_adr("docs/adr/adr014-use-cache-layer.md", "## Context\nSome words here.\n\n## Decision\nWe will use a cache layer for lookups.\n")
+    assert nameless.title == "Use cache layer" and nameless.number == 14

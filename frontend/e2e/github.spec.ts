@@ -44,7 +44,7 @@ test.describe('GitHub import', () => {
     await expect(dialog.getByRole('button', { name: 'Import' })).toBeDisabled();
     await url.fill('https://github.com/owner/repo');
     await dialog.getByRole('button', { name: 'Import' }).click();
-    const result = dialog.getByRole('region', { name: 'Result' });
+    const result = dialog.getByRole('region', { name: 'Result', exact: true });
     await expect(result).toBeVisible();
     await expect(dialog.getByTestId('import-stats')).toContainText('12 ADRs');
     await expect(dialog.getByRole('list', { name: 'Import steps' }).locator('[data-step-status="done"]')).toHaveCount(5);

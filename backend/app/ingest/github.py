@@ -191,13 +191,16 @@ def parse_adr(path: str, text: str) -> Adr:
     if m:
         number = int(m.group(1))
 
-    heading = next((l for l in body.splitlines() if l.strip().startswith("#")), "")
-    title = re.sub(r"^#+\s*", "", heading).strip()
+    # title: front matter, else the first level-1 heading, else the file name
+    h1 = next((l for l in body.splitlines() if re.match(r"^#\s+\S", l)), "")
+    title = (meta.get("title") or re.sub(r"^#\s*", "", h1)).strip()
     hm = re.match(r"(?i)^(?:adr[-_ ]?)?0*(\d{1,4})\s*[.:)\-–—]\s*(.+)$", title)
     if hm:
         number = number if number is not None else int(hm.group(1))
         title = hm.group(2).strip()
-    title = title or re.sub(r"^[\d\-_.]+|\.(md|markdown)$", "", base).replace("-", " ").strip().capitalize()
+    if not title:
+        stem = re.sub(r"\.(md|markdown)$", "", base, flags=re.IGNORECASE)
+        title = re.sub(r"^(?:adr[-_ ]?)?\d+[-_.]?", "", stem, flags=re.IGNORECASE).replace("-", " ").replace("_", " ").strip().capitalize() or stem
 
     # status
     status_text = meta.get("status", "")

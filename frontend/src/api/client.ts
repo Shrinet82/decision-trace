@@ -26,6 +26,7 @@ import type {
   SystemSummary,
 } from './types';
 import { apiOrgPrefix, getCurrentOrg } from '../org/orgState';
+import { loadOrgs } from '../org/orgStore';
 // Fixtures are loaded on demand so they stay out of the production bundle.
 const loadMocks = () => import('./mocks');
 
@@ -496,6 +497,12 @@ export async function getAttention(): Promise<Attention> {
 /* Organizations                                                                               */
 /* ------------------------------------------------------------------------------------------ */
 
+/** The name this browser remembered for an organization (mock mode has no server to ask). */
+function mockOrgName(id: string): string {
+  const remembered = loadOrgs().find((o) => o.id === id);
+  return remembered?.name ?? id.replace(/-[0-9a-f]{6}$/, '').replace(/-/g, ' ');
+}
+
 const SAMPLE_ORG: OrgInfo = { id: 'sample', name: 'Acme Corp (sample)', sample: true, created_at: null };
 
 /** POST /orgs: a new, empty organization with its own graph. */
@@ -520,7 +527,7 @@ export async function createOrg(name: string): Promise<OrgInfo> {
 /** GET /orgs/{id}: the organization, or a 404 ApiError if it was deleted or expired. */
 export async function getOrg(id: string): Promise<OrgInfo> {
   if (id === 'sample') return SAMPLE_ORG;
-  if (USE_MOCKS) return { id, name: id.replace(/-[0-9a-f]{6}$/, '').replace(/-/g, ' '), sample: false, created_at: null, nodes: 0, edges: 0, idle_hours_before_deletion: 72 };
+  if (USE_MOCKS) return { id, name: mockOrgName(id), sample: false, created_at: null, nodes: 0, edges: 0, idle_hours_before_deletion: 72 };
   const response = await apiFetch(`${API_BASE_URL}/orgs/${encodeURIComponent(id)}`, {
     headers: { Accept: 'application/json' },
   });
