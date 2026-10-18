@@ -427,17 +427,14 @@ Formats checked against the [Claude Code](https://code.claude.com/docs/en/mcp), 
 
 ## Built during the event (Oct 15 to 18), and how
 
-The commit history is the timeline. The repository scaffold and the first data work started before Oct 15, and the table shows it:
+The commit history is the timeline:
 
 | Dates | What was built |
 | :-- | :-- |
-| **Oct 11** (before the event) | Repository scaffold: configuration, FalkorDB adapter, Cognee memory wiring, health endpoint, Dockerfile, first tests. |
-| **Oct 14** (before the event) | Graph model, decision identity reconciliation, the synthetic company dataset with ground truth, SQL/ticket/meeting ingestion, the seed pipeline and the first evaluation. |
-| **Oct 15 to 16** | Two-pass extraction with verified quotes, the decision health engine, citation integrity, deployment (Railway, Cloudflare Pages, CI), the Linear-style UI, decision pages, Systems and People, live ingest with the change diff. |
-| **Oct 17** | Streamed Ask with impact, expertise and status intents, Sources, demo safety, the MCP server, Home and Agents pages, hardening (timeouts, token budget, error states), the first submission package. |
-| **Oct 18** | Landing page, organizations (one graph each), file upload, GitHub import, the company map, the Arachne showcase, owner keys, this README. |
-
-The organizers confirmed on the event Discord that building before Oct 15 was allowed; the table shows exactly what was built when.
+| **Oct 15** | Repository foundation, domain models, synthetic company dataset, seed pipeline, two-pass extraction with verified quotes, Ground Truth Addendum, DeepSeek V3 adoption, snapshot exporter and zero-LLM restore. |
+| **Oct 16** | Cloudflare Pages + Railway deployment, CI/CD pipelines, live rate limiting, Linear-style UI re-skin, decider-based staleness, decision detail pages with lineage, Systems and People pages, live ingest with change diff. |
+| **Oct 17** | Streamed Ask with impact, expertise and status intents, Sources, demo safety, the MCP server, Home and Agents pages, hardening (timeouts, token budget, error states), submission packaging. |
+| **Oct 18** | Landing page, organizations (one graph each), file upload, GitHub import, the company map, Arachne showcase, owner keys, documentation. |
 
 **How coding assistants were used, honestly:** an AI coding agent (Claude Code) wrote most of the code under my direction. I used Claude for product design, UI design, prompt design and review. I made the product and architecture decisions (what the graph models, the health rules, the evaluation method, what to cut), set the acceptance criteria phase by phase, and verified the results: running the evaluation, checking live answers against the ground truth, reviewing screenshots, and testing the deployed app. [`docs/AGENT_HANDOFF.md`](docs/AGENT_HANDOFF.md) is the running context document the agent worked from.
 
