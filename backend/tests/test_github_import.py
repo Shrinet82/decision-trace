@@ -6,7 +6,13 @@ import pytest
 
 from app.ingest import github
 from app.ingest.github import (
-    GithubError, GithubRequest, is_decision_item, parse_adr, parse_repo_url, select_adr_paths, supersession_pairs,
+    GithubError,
+    GithubRequest,
+    is_decision_item,
+    parse_adr,
+    parse_repo_url,
+    select_adr_paths,
+    supersession_pairs,
 )
 
 NYGARD_5 = """# 5. Use Kafka for events

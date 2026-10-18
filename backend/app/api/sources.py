@@ -9,11 +9,11 @@ from pydantic import BaseModel, Field
 
 from app.api.schemas import CypherTraceOut, HealthStatus
 from app.askflow.assemble import norm_date
+from app.brain import orgctx
 from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map, is_departed
 from app.brain.trace import CypherTrace
-from app.brain import orgctx
 from app.config import get_settings
 from app.ingest.source_text import quote_in
 

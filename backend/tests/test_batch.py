@@ -8,7 +8,16 @@ from fastapi.testclient import TestClient
 
 from app.api import rate_limiter
 from app.ingest import batch
-from app.ingest.batch import FileRejected, UploadFile, detect_date, detect_participants, detect_title, detect_type, extract_text, merge_diffs
+from app.ingest.batch import (
+    FileRejected,
+    UploadFile,
+    detect_date,
+    detect_participants,
+    detect_title,
+    detect_type,
+    extract_text,
+    merge_diffs,
+)
 from app.ingest.live import chunk_text
 from app.server import app
 
