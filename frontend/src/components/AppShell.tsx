@@ -205,7 +205,7 @@ export const AppShell: React.FC = () => {
           aria-label="Sidebar"
           className="box-border flex w-full shrink-0 flex-col gap-3 border-b border-border bg-sidebar px-2.5 py-3 min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:w-[232px] min-[900px]:gap-[18px] min-[900px]:overflow-y-auto min-[900px]:border-b-0 min-[900px]:border-r"
         >
-          <PlainLink to="/" className="flex items-center gap-2 px-1.5 py-1 text-text no-underline" aria-label="Decision Trace home page">
+          <PlainLink to="/" className="flex items-center gap-2 px-1.5 py-1 text-text no-underline">
             <span
               aria-hidden="true"
               className="flex h-5 w-5 items-center justify-center rounded-[5px] bg-accent text-[11px] font-semibold text-white"
