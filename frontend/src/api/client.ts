@@ -26,7 +26,7 @@ import type {
   SystemSummary,
 } from './types';
 import { apiOrgPrefix, getCurrentOrg } from '../org/orgState';
-import { loadOrgs } from '../org/orgStore';
+import { getOwnerKey, loadOrgs } from '../org/orgStore';
 // Fixtures are loaded on demand so they stay out of the production bundle.
 const loadMocks = () => import('./mocks');
 
@@ -46,9 +46,15 @@ export const USE_MOCKS =
         window.location.hostname === 'localhost' ||
         window.location.hostname === '127.0.0.1');
 
+/** The owner-key header for writes into an organization this browser created. */
+function ownerHeaders(id: string | null = getCurrentOrg()): Record<string, string> {
+  const key = getOwnerKey(id);
+  return key ? { 'X-Org-Key': key } : {};
+}
+
 /** In mock mode every organization but the sample is a new, empty one. */
 function mockEmptyOrg(): boolean {
-  return USE_MOCKS && getCurrentOrg() !== null;
+  return USE_MOCKS && getCurrentOrg() !== null && getCurrentOrg() !== 'arachne';
 }
 
 export class ApiError extends Error {
@@ -317,7 +323,7 @@ export async function streamIngest(
 
   const response = await apiFetch(`${apiBase()}/ingest`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...ownerHeaders() },
     body: JSON.stringify(request),
     signal,
   });
@@ -510,7 +516,7 @@ export async function createOrg(name: string): Promise<OrgInfo> {
   if (USE_MOCKS) {
     await wait(120);
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'org';
-    return { id: `${slug}-3f9a1c`, name, sample: false, created_at: new Date().toISOString() };
+    return { id: `${slug}-3f9a1c`, name, sample: false, created_at: new Date().toISOString(), owner_key: 'ok_mock_key' };
   }
   const response = await apiFetch(`${API_BASE_URL}/orgs`, {
     method: 'POST',
@@ -527,6 +533,7 @@ export async function createOrg(name: string): Promise<OrgInfo> {
 /** GET /orgs/{id}: the organization, or a 404 ApiError if it was deleted or expired. */
 export async function getOrg(id: string): Promise<OrgInfo> {
   if (id === 'sample') return SAMPLE_ORG;
+  if (id === 'arachne' && USE_MOCKS) return { id, name: 'Arachne (real GitHub ADRs)', sample: true, created_at: null };
   if (USE_MOCKS) return { id, name: mockOrgName(id), sample: false, created_at: null, nodes: 0, edges: 0, idle_hours_before_deletion: 72 };
   const response = await apiFetch(`${API_BASE_URL}/orgs/${encodeURIComponent(id)}`, {
     headers: { Accept: 'application/json' },
@@ -546,7 +553,7 @@ export async function deleteOrg(id: string): Promise<void> {
   }
   const response = await apiFetch(`${API_BASE_URL}/orgs/${encodeURIComponent(id)}`, {
     method: 'DELETE',
-    headers: { Accept: 'application/json' },
+    headers: { Accept: 'application/json', ...ownerHeaders(id) },
   });
   if (!response.ok && response.status !== 404) {
     const body = await response.json().catch(() => null);
@@ -607,7 +614,7 @@ export async function streamBatch(
 
   const response = await apiFetch(`${apiBase()}/ingest/batch`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...ownerHeaders() },
     body: JSON.stringify({ files }),
     signal,
   });
@@ -679,7 +686,7 @@ export async function streamGithub(
 
   const response = await apiFetch(`${apiBase()}/ingest/github`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...ownerHeaders() },
     body: JSON.stringify({ repo_url: repoUrl, include_prs: includePrs }),
     signal,
   });
@@ -696,4 +703,12 @@ export async function streamGithub(
     onEvent(event);
   });
   if (!finished) throw new ApiError('The import stream ended before a result arrived. Try again.', 0);
+}
+
+/** GET /orgs: the showcase organizations everyone can open (real data, read-only). */
+export async function listShowcaseOrgs(): Promise<OrgInfo[]> {
+  if (USE_MOCKS) return [{ id: 'arachne', name: 'Arachne (real GitHub ADRs)', sample: true, created_at: null }];
+  const response = await apiFetch(`${API_BASE_URL}/orgs`, { headers: { Accept: 'application/json' } });
+  if (!response.ok) return [];
+  return response.json();
 }

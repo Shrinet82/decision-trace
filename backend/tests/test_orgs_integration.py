@@ -60,12 +60,16 @@ def test_create_upload_ask_delete():
     sample_before = len(client.get("/decisions").json())
     org = client.post("/orgs", json={"name": "Integration Co"}).json()
     org_id = org["id"]
+    headers = {"X-Org-Key": org["owner_key"]}
     graph = registry._orgs[org_id]["graph_name"]
     try:
         assert client.get(f"/orgs/{org_id}/decisions").json() == []
 
+        # Without the owner key nothing can be added
+        assert client.post(f"/orgs/{org_id}/ingest/batch", json={"files": [{"name": "a.md", "text": "We decided X."}]}).status_code == 403
         res = client.post(
             f"/orgs/{org_id}/ingest/batch",
+            headers=headers,
             json={"files": [
                 {"name": "adr-0001-postgres.md", "type": "auto", "text": ADR_ONE},
                 {"name": "platform-sync.md", "type": "auto", "text": NOTES},
@@ -94,6 +98,6 @@ def test_create_upload_ask_delete():
         # Nothing resets automatically inside a user organization
         assert client.get(f"/orgs/{org_id}/ingest/status").json()["has_demo_data"] is False
     finally:
-        assert client.delete(f"/orgs/{org_id}").status_code == 200
+        assert client.delete(f"/orgs/{org_id}", headers=headers).status_code == 200
     graphs = pytest.importorskip("asyncio").run(list_falkordb_graphs())
     assert graph not in graphs and f"{graph}__changes" not in graphs

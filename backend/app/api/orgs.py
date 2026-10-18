@@ -6,12 +6,13 @@ Everything else an organization has (decisions, ask, ingest, ...) is the ordinar
 
 import time
 from collections import defaultdict
-from typing import Any
+from typing import Any, Optional
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Header, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from app.api.rate_limiter import get_client_ip
+from app.brain import orgctx
 from app.brain.memory import run_on_graph
 from app.orgs import registry
 
@@ -37,6 +38,25 @@ def _check_create_limit(request: Request) -> None:
     _creates[ip].append(now)
 
 
+OWNER_KEY_HEADER = "X-Org-Key"
+READ_ONLY_MESSAGE = (
+    "This organization is read-only here: only the browser that created it holds its owner key. "
+    "Create your own organization to add sources."
+)
+
+
+async def require_owner(x_org_key: Optional[str] = Header(default=None, alias=OWNER_KEY_HEADER)) -> None:
+    """Dependency for every write: inside an organization somebody created, the request must carry
+    that organization's owner key (header X-Org-Key). Viewing never needs it. The sample and
+    showcase organizations have no owner; their writes are the tagged demo ingests that reset."""
+    slug = orgctx.current_slug()
+    if not orgctx.is_user_org() or slug is None:
+        return
+    org = await registry.get(slug)
+    if org is None or not registry.key_matches(org, x_org_key):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=READ_ONLY_MESSAGE)
+
+
 def public(org: dict[str, Any]) -> dict[str, Any]:
     """What clients see of an organization (never the graph name)."""
     return {
@@ -55,12 +75,20 @@ async def create_org(body: CreateOrg, request: Request) -> dict[str, Any]:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     _check_create_limit(request)
     try:
-        org = await registry.create(body.name)
+        org, key = await registry.create(body.name)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
-    return public(org)
+    # The owner key is shown once and stored only as a hash: whoever holds it can change the organization
+    return {**public(org), "owner_key": key}
+
+
+@router.get("/orgs")
+async def list_showcase() -> list[dict[str, Any]]:
+    """The showcase organizations everyone can open (read-only, real data), for the organization menu."""
+    await registry.refresh_if_stale()
+    return [public(o) for o in sorted(registry.sample_orgs(), key=lambda o: o["name"])]
 
 
 @router.get("/orgs/{org_id}")
@@ -80,10 +108,13 @@ async def get_org(org_id: str) -> dict[str, Any]:
 
 
 @router.delete("/orgs/{org_id}")
-async def delete_org(org_id: str) -> dict[str, Any]:
-    """Delete an organization and everything in it. The sample organization cannot be deleted."""
-    if org_id == registry.SAMPLE_ID:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The sample organization cannot be deleted.")
+async def delete_org(org_id: str, x_org_key: Optional[str] = Header(default=None, alias=OWNER_KEY_HEADER)) -> dict[str, Any]:
+    """Delete an organization and everything in it (needs its owner key). Sample organizations cannot be deleted."""
+    org = await registry.get(org_id)
+    if org_id == registry.SAMPLE_ID or (org is not None and org["sample"]):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The sample organizations cannot be deleted.")
+    if org is not None and not registry.key_matches(org, x_org_key):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Deleting an organization needs its owner key.")
     if not await registry.delete(org_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="That organization does not exist.")
     return {"deleted": org_id}

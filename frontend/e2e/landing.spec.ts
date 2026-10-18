@@ -62,3 +62,9 @@ test.describe('Landing and routing', () => {
     });
   }
 });
+
+test('the landing page points at the real-repo showcase organization', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'See it on a real open-source repo' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Open the Arachne organization/ })).toHaveAttribute('href', '/app/o/arachne');
+});

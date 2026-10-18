@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useOrgSlug } from '../org/OrgContext';
+import { useOrgAccess } from '../org/useOrgAccess';
 import { EmptyOrgHome } from '../components/org/EmptyOrgHome';
 import { useOrgInfo } from '../api/hooks';
 import { Link, Navigate, useNavigate, useSearchParams } from '../router';
@@ -83,6 +84,7 @@ export const HomePage: React.FC = () => {
   const graph = useGraph();
 
   const orgSlug = useOrgSlug();
+  const { isSample } = useOrgAccess();
   const orgInfo = useOrgInfo(orgSlug);
   const counts = sources.data?.counts;
   const records = counts ? (counts.person ?? 0) + (counts.team ?? 0) + (counts.project ?? 0) + (counts.system ?? 0) : 0;
@@ -94,6 +96,7 @@ export const HomePage: React.FC = () => {
   // A new organization has nothing to show yet: say so and offer the ways to add sources
   const emptyOrg =
     orgSlug !== null &&
+    !isSample &&
     decisions.data?.length === 0 &&
     sources.data?.items.length === 0 &&
     (graph.data?.total_nodes ?? 0) === 0;

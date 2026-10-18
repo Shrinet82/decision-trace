@@ -4,7 +4,7 @@ import { GitBranch } from 'lucide-react';
 import { streamGithub } from '../../api/client';
 import { invalidateGraphQueries } from '../../api/hooks';
 import type { GithubEvent, GithubImportStats, GithubPhase, GithubProgress, IngestDiff } from '../../api/types';
-import { useOrgSlug } from '../../org/OrgContext';
+import { useOrgAccess } from '../../org/useOrgAccess';
 import { StatusIcon } from '../StatusIcon';
 import { btnOutline, btnPrimary } from '../ui';
 import { DiffCard } from './DiffCard';
@@ -28,7 +28,7 @@ type PhaseState = Record<GithubPhase, GithubProgress | undefined>;
 /** Import ADRs, and decision-like PRs and issues, from a public GitHub repository. */
 export const GithubPanel: React.FC = () => {
   const ingest = useIngest();
-  const orgSlug = useOrgSlug();
+  const { isSample } = useOrgAccess();
   const queryClient = useQueryClient();
   const [url, setUrl] = useState('');
   const [includePrs, setIncludePrs] = useState(true);
@@ -41,7 +41,7 @@ export const GithubPanel: React.FC = () => {
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
-  const disabled = orgSlug === null;
+  const disabled = isSample;
   const valid = REPO_URL.test(url.trim());
 
   const start = async (e: React.FormEvent) => {

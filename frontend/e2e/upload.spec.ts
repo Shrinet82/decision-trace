@@ -17,7 +17,19 @@ async function expectNoSeriousViolations(page: Page) {
 
 const ORG = '/app/o/acme-labs-3f9a1c';
 
+
+/** Pretend this browser created the organization (it holds its owner key). */
+async function ownOrg(page: Page, id: string, name = 'Acme Labs') {
+  await page.addInitScript(
+    ([orgId, orgName]) => {
+      window.localStorage.setItem('dt.orgs.v1', JSON.stringify([{ id: orgId, name: orgName, created_at: null, owner_key: 'ok_test' }]));
+    },
+    [id, name]
+  );
+}
+
 async function openUpload(page: Page) {
+  await ownOrg(page, 'acme-labs-3f9a1c');
   await page.goto(ORG);
   await page.getByRole('button', { name: /Upload files/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Add source' });

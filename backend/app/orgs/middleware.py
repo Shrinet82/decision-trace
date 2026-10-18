@@ -44,8 +44,10 @@ class OrgScopeMiddleware:
         if scope.get("raw_path"):
             raw = scope["raw_path"].decode("latin-1")
             scope["raw_path"] = ("/" + "/".join(raw.split("/")[3:])).encode("latin-1")
-        graph = None if org["sample"] else org["graph_name"]
-        with orgctx.org_scope(None if org["sample"] else slug, graph):
-            if graph:
+        # "sample" is Acme (the configured graph); showcase organizations have a graph of their own
+        # but are marked sample, so they behave like Acme (read-only apart from resetting demo data)
+        graph = None if slug == registry.SAMPLE_ID else org["graph_name"]
+        with orgctx.org_scope(None if graph is None else slug, graph, sample=bool(org["sample"])):
+            if graph and not org["sample"]:
                 await registry.touch(slug)
             await self.app(scope, receive, send)

@@ -6,6 +6,7 @@ import {
   getDecision,
   getAttention,
   getOrg,
+  listShowcaseOrgs,
   getDemoStatus,
   getSource,
   listSources,
@@ -192,5 +193,15 @@ export function useOrgInfo(slug: string | null) {
     queryFn: () => getOrg(slug ?? 'sample'),
     staleTime: FIVE_MINUTES,
     retry: (count, error) => error.status !== 404 && count < 1,
+  });
+}
+
+/** The showcase organizations for the organization menu (cached; an empty list if the API is down). */
+export function useShowcaseOrgs() {
+  return useQuery<OrgInfo[], ApiError>({
+    queryKey: ['showcase-orgs'],
+    queryFn: listShowcaseOrgs,
+    staleTime: FIVE_MINUTES,
+    retry: false,
   });
 }

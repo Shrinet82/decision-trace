@@ -3,6 +3,7 @@ import { FileUp, GitBranch, PenLine } from 'lucide-react';
 import { PageFrame } from '../PageFrame';
 import { useIngest } from '../ingest/ingestContext';
 import { FEATURES } from '../../config/features';
+import { useOrgAccess } from '../../org/useOrgAccess';
 
 const big =
   'flex flex-1 flex-col items-start gap-2 rounded-panel border border-border bg-surface p-4 text-left transition-colors hover:bg-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent';
@@ -10,6 +11,7 @@ const big =
 /** Home for an organization whose graph has nothing in it yet. */
 export const EmptyOrgHome: React.FC<{ orgName: string }> = ({ orgName }) => {
   const ingest = useIngest();
+  const { canWrite } = useOrgAccess();
   return (
     <PageFrame header={<h1 className="m-0 text-sm font-medium text-text">{orgName}</h1>}>
       <div className="mx-auto flex max-w-[720px] flex-col gap-6 px-5 py-12 min-[900px]:px-10">
@@ -20,7 +22,13 @@ export const EmptyOrgHome: React.FC<{ orgName: string }> = ({ orgName }) => {
             and on what evidence, and keeps them in a graph you can ask questions of.
           </p>
         </div>
-        <div className="flex flex-col gap-3 min-[600px]:flex-row">
+        {!canWrite && (
+          <p role="note" className="m-0 rounded-control border border-border bg-subtle px-3 py-2 text-text-2">
+            This organization is empty, and only the browser that created it can add sources. You can look around,
+            or create your own organization from the menu at the top of the sidebar.
+          </p>
+        )}
+        <div className="flex flex-col gap-3 min-[600px]:flex-row" hidden={!canWrite}>
           {FEATURES.upload && (
             <button type="button" className={big} onClick={() => ingest?.openDrawer('files')}>
               <FileUp size={18} aria-hidden="true" className="text-accent" />

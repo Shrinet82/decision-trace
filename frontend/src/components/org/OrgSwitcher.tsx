@@ -1,7 +1,9 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Link as PlainLink } from 'react-router-dom';
 import { Check, ChevronsUpDown, Plus, Settings2 } from 'lucide-react';
+import { useShowcaseOrgs } from '../../api/hooks';
 import { appBase } from '../../org/orgState';
+import { useOrgAccess } from '../../org/useOrgAccess';
 import { useOrgSlug } from '../../org/OrgContext';
 import { useStoredOrgs } from '../../org/useOrgs';
 import { SAMPLE_ORG_NAME } from '../../org/names';
@@ -24,6 +26,8 @@ const Initial: React.FC<{ name: string }> = ({ name }) => (
 export const OrgSwitcher: React.FC<{ currentName: string }> = ({ currentName }) => {
   const slug = useOrgSlug();
   const stored = useStoredOrgs();
+  const showcase = useShowcaseOrgs().data ?? [];
+  const { isSample } = useOrgAccess();
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [managing, setManaging] = useState(false);
@@ -81,7 +85,21 @@ export const OrgSwitcher: React.FC<{ currentName: string }> = ({ currentName }) 
             <span className="flex-1 truncate">{SAMPLE_ORG_NAME}</span>
             {!slug && <Check size={14} aria-hidden="true" className="text-accent" />}
           </PlainLink>
-          {slug && (
+          {showcase.map((o) =>
+            o.id === slug ? (
+              <PlainLink key={o.id} to={appBase(o.id)} onClick={() => setOpen(false)} className={itemClass} aria-current="true">
+                <Initial name={o.name} />
+                <span className="flex-1 truncate">{o.name}</span>
+                <Check size={14} aria-hidden="true" className="text-accent" />
+              </PlainLink>
+            ) : (
+              <PlainLink key={o.id} to={appBase(o.id)} onClick={() => setOpen(false)} className={itemClass}>
+                <Initial name={o.name} />
+                <span className="flex-1 truncate">{o.name}</span>
+              </PlainLink>
+            )
+          )}
+          {slug && !isSample && (
             <PlainLink to={appBase(slug)} onClick={() => setOpen(false)} className={itemClass} aria-current="true">
               <Initial name={currentName} />
               <span className="flex-1 truncate">{currentName}</span>
@@ -106,7 +124,7 @@ export const OrgSwitcher: React.FC<{ currentName: string }> = ({ currentName }) 
             <Plus size={14} aria-hidden="true" />
             New organization
           </button>
-          {slug && (
+          {slug && !isSample && (
             <button
               type="button"
               className={itemClass}
@@ -123,7 +141,7 @@ export const OrgSwitcher: React.FC<{ currentName: string }> = ({ currentName }) 
       )}
 
       <NewOrgDrawer open={creating} onClose={() => setCreating(false)} />
-      {slug && <OrgSettingsDrawer open={managing} onClose={() => setManaging(false)} name={currentName} />}
+      {slug && !isSample && <OrgSettingsDrawer open={managing} onClose={() => setManaging(false)} name={currentName} />}
     </div>
   );
 };

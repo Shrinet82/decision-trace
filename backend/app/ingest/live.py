@@ -759,7 +759,7 @@ async def demo_status(dataset: str, now: Optional[datetime] = None) -> dict[str,
     from app.brain.memory import query_graph_threaded
 
     now = now or datetime.now(timezone.utc)
-    if orgctx.current_graph():
+    if orgctx.is_user_org():
         # User organizations keep their data: nothing is reset automatically
         return {
             "has_demo_data": False, "tagged_nodes": 0, "tagged_edges": 0, "last_ingest_at": None,
@@ -805,15 +805,26 @@ async def demo_status(dataset: str, now: Optional[datetime] = None) -> dict[str,
 
 
 async def auto_reset_loop(dataset: str, interval_seconds: float = 60.0) -> None:
-    """Background task: reset demo data once it has sat untouched for AUTO_RESET_MINUTES."""
+    """Background task: reset demo data once it has sat untouched for AUTO_RESET_MINUTES, in Acme
+    and in every showcase (sample) organization."""
+    from app.orgs import registry
+
     while True:
         await asyncio.sleep(interval_seconds)
         try:
-            state = await demo_status(dataset)
-            if state["has_demo_data"] and state["seconds_left"] == 0 and not INGEST_LOCK.locked():
-                async with INGEST_LOCK:
-                    result = await reset_demo(dataset, title="Automatic reset")
-                logger.info("Automatic demo reset: %s", result)
+            targets: list[tuple[Optional[str], Optional[str]]] = [(None, None)]
+            try:
+                await registry.load()
+                targets += [(o["id"], o["graph_name"]) for o in registry.sample_orgs()]
+            except Exception as exc:  # noqa: BLE001 - Acme still resets
+                logger.warning("Could not list showcase organizations: %s", exc)
+            for slug, graph in targets:
+                with orgctx.org_scope(slug, graph, sample=True):
+                    state = await demo_status(dataset)
+                    if state["has_demo_data"] and state["seconds_left"] == 0 and not INGEST_LOCK.locked():
+                        async with INGEST_LOCK:
+                            result = await reset_demo(dataset, title="Automatic reset")
+                        logger.info("Automatic demo reset (%s): %s", slug or "acme", result)
         except Exception as exc:  # noqa: BLE001 - never let the loop die
             logger.warning("Automatic demo reset check failed: %s", exc)
 

@@ -6,6 +6,8 @@ is also held in memory (the app runs as one process) and written through on ever
 """
 
 import asyncio
+import hashlib
+import hmac
 import logging
 import re
 import secrets
@@ -33,6 +35,9 @@ _orgs: dict[str, dict[str, Any]] = {}
 _loaded = False
 _load_lock = asyncio.Lock()
 _touched: dict[str, float] = {}
+_loaded_at = 0.0
+# A showcase organization created from outside the running app (a script) becomes visible within this long
+_RELOAD_AFTER_SECONDS = 30.0
 
 
 def _now() -> str:
@@ -77,14 +82,15 @@ def clean_name(name: str) -> str:
 
 async def load(force: bool = False) -> None:
     """Read the registry graph into memory (once; a missing graph means no organizations yet)."""
-    global _loaded
+    global _loaded, _loaded_at
     async with _load_lock:
         if _loaded and not force:
             return
         try:
             rows = await run_on_graph(
                 REGISTRY_GRAPH,
-                "MATCH (o:Org) RETURN o.id, o.name, o.graph_name, o.created_at, o.last_active, o.source_count",
+                "MATCH (o:Org) RETURN o.id, o.name, o.graph_name, o.created_at, o.last_active, o.source_count, "
+                "o.sample, o.owner_hash",
             )
         except Exception as exc:  # noqa: BLE001 - the graph does not exist until the first organization
             logger.info("Registry graph not readable yet: %s", exc)
@@ -93,9 +99,11 @@ async def load(force: bool = False) -> None:
         for r in rows:
             _orgs[r[0]] = {
                 "id": r[0], "name": r[1], "graph_name": r[2], "created_at": r[3],
-                "last_active": r[4] or r[3], "source_count": int(r[5] or 0), "sample": False,
+                "last_active": r[4] or r[3], "source_count": int(r[5] or 0), "sample": bool(r[6]),
+                "owner_hash": r[7] or "",
             }
         _loaded = True
+        _loaded_at = time.monotonic()
 
 
 async def get(slug: str) -> Optional[dict[str, Any]]:
@@ -103,36 +111,65 @@ async def get(slug: str) -> Optional[dict[str, Any]]:
     if slug == SAMPLE_ID:
         return sample_org()
     await load()
+    if slug not in _orgs and time.monotonic() - _loaded_at > _RELOAD_AFTER_SECONDS:
+        await load(force=True)
     return _orgs.get(slug)
 
 
 def user_orgs() -> list[dict[str, Any]]:
-    return list(_orgs.values())
+    """Organizations people created (not the showcase organizations)."""
+    return [o for o in _orgs.values() if not o["sample"]]
 
 
-async def create(name: str) -> dict[str, Any]:
-    """Create an empty organization and its graph. Raises ValueError (bad name) or LookupError (full)."""
+def sample_orgs() -> list[dict[str, Any]]:
+    """Showcase organizations: shared, read-only, never deleted automatically."""
+    return [o for o in _orgs.values() if o["sample"]]
+
+
+async def refresh_if_stale() -> None:
+    await load()
+    if time.monotonic() - _loaded_at > _RELOAD_AFTER_SECONDS:
+        await load(force=True)
+
+
+def new_owner_key() -> str:
+    return "ok_" + secrets.token_urlsafe(24)
+
+
+def hash_key(key: str) -> str:
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
+def key_matches(org: dict[str, Any], key: Optional[str]) -> bool:
+    """True if `key` is the organization's owner key. Organizations without a stored key (created
+    before keys existed) can be viewed but never changed."""
+    stored = org.get("owner_hash") or ""
+    return bool(key and stored) and hmac.compare_digest(stored, hash_key(key))
+
+
+async def create(name: str, *, sample: bool = False, slug: Optional[str] = None) -> tuple[dict[str, Any], Optional[str]]:
+    """Create an empty organization and its graph. Returns (organization, owner key); showcase
+    (sample) organizations have no owner key. Raises ValueError (bad name) or LookupError (full)."""
     name = clean_name(name)
     await load()
-    if len(_orgs) >= MAX_USER_ORGS:
+    if not sample and len(user_orgs()) >= MAX_USER_ORGS:
         raise LookupError(f"The demo is full: at most {MAX_USER_ORGS} organizations exist at once. Try again later.")
-    slug = f"{slugify(name)}-{secrets.token_hex(3)}"
+    slug = slug or f"{slugify(name)}-{secrets.token_hex(3)}"
+    if slug in _orgs or slug == SAMPLE_ID:
+        raise ValueError(f"An organization with the id {slug} already exists.")
     graph_name = f"org_{slug.replace('-', '_')}_{secrets.token_hex(3)}"
     # A graph only exists once something is written; write and remove a marker to bring it into being
     await run_on_graph(graph_name, "CREATE (:_init {id: 'init'})")
     await run_on_graph(graph_name, "MATCH (n:_init) DELETE n")
+    key = None if sample else new_owner_key()
     org = {
         "id": slug, "name": name, "graph_name": graph_name, "created_at": _now(),
-        "last_active": _now(), "source_count": 0, "sample": False,
+        "last_active": _now(), "source_count": 0, "sample": sample, "owner_hash": hash_key(key) if key else "",
     }
-    await run_on_graph(
-        REGISTRY_GRAPH,
-        "CREATE (o:Org) SET o += $props",
-        {"props": {k: v for k, v in org.items() if k != "sample"}},
-    )
+    await run_on_graph(REGISTRY_GRAPH, "CREATE (o:Org) SET o += $props", {"props": org})
     _orgs[slug] = org
-    logger.info("Created organization %s (graph %s)", slug, graph_name)
-    return org
+    logger.info("Created %sorganization %s (graph %s)", "showcase " if sample else "", slug, graph_name)
+    return org, key
 
 
 async def delete(slug: str) -> bool:
@@ -186,7 +223,7 @@ async def delete_idle(now: Optional[datetime] = None) -> list[str]:
     await load()
     now = now or datetime.now(timezone.utc)
     removed = []
-    for org in list(_orgs.values()):
+    for org in user_orgs():
         last = _parse(org.get("last_active")) or _parse(org.get("created_at"))
         if last and now - last > timedelta(hours=IDLE_HOURS):
             if await delete(org["id"]):
@@ -209,7 +246,7 @@ async def idle_loop(interval_seconds: float = 3600.0) -> None:
 async def sizes() -> list[dict[str, Any]]:
     """Node, edge and memory figures for every organization graph (for the report and ops)."""
     out = []
-    for org in [sample_org(), *user_orgs()]:
+    for org in [sample_org(), *sample_orgs(), *user_orgs()]:
         g = org["graph_name"]
         try:
             n = await run_on_graph(g, "MATCH (n) RETURN count(n)")
