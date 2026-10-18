@@ -13,16 +13,17 @@ Built for the [FalkorDB Hackathon](https://www.falkordb.com/) (WeMakeDevs), Trac
 | **Connect an agent (MCP)** | https://decision-trace.pages.dev/app/agents · endpoint `https://decision-trace-api-production.up.railway.app/mcp` |
 | **API health** | https://decision-trace-api-production.up.railway.app/health |
 
-<table>
-  <tr>
-    <td width="50%"><img src="frontend/screenshots/landing-1440.png" alt="The landing page"><br><sub><b>Landing</b>: pitch, how it works, and the real-repo showcase</sub></td>
-    <td width="50%"><img src="frontend/screenshots/ask-stream-1440.png" alt="Ask: streamed answer, evidence path, and the How I found this panel"><br><sub><b>Ask</b>: answer, evidence path, and "How I found this" with every Cypher query</sub></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="frontend/screenshots/decision-DEC-11-1440.png" alt="Decision page with supersedes lineage"><br><sub><b>Decision page</b>: lineage, sources with quotes, health</sub></td>
-    <td width="50%"><img src="frontend/screenshots/map-1440.png" alt="The company map: the whole graph coloured by type, sized by connections, with health on decisions"><br><sub><b>Company map</b>: colour is type, size is connections, borders show health</sub></td>
-  </tr>
-</table>
+![The landing page: pitch, how it works, and the real-repo showcase](frontend/screenshots/landing-1440.png)
+*Landing: the pitch, how it works, and the real-repo showcase.*
+
+![Ask: streamed answer, evidence path, and the How I found this panel](frontend/screenshots/ask-stream-1440.png)
+*Ask: the answer, its evidence path, and "How I found this" with every Cypher query.*
+
+![Decision page with supersedes lineage](frontend/screenshots/decision-DEC-11-1440.png)
+*Decision page: lineage, sources with quotes, health.*
+
+![The company map: the whole graph coloured by type, sized by connections, with health on decisions](frontend/screenshots/map-1440.png)
+*Company map: colour is type, size is connections, borders show health.*
 
 ## The problem, and the idea
 
