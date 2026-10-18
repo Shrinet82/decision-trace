@@ -60,12 +60,12 @@ export const OrgSwitcher: React.FC<{ currentName: string }> = ({ currentName }) 
         aria-haspopup="true"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
-        aria-label={`Organization: ${currentName}. Switch organization`}
         onClick={() => setOpen((o) => !o)}
         className="flex h-9 w-full items-center gap-2 rounded-control border border-border bg-surface px-2 text-left text-sm hover:bg-subtle"
       >
         <Initial name={currentName} />
         <span className="min-w-0 flex-1 truncate font-medium">{currentName}</span>
+        <span className="sr-only">, switch organization</span>
         <ChevronsUpDown size={14} aria-hidden="true" className="shrink-0 text-muted" />
       </button>
 

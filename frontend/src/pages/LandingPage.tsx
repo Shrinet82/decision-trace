@@ -171,7 +171,7 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-6 text-sm text-muted min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between min-[900px]:px-6">
           <p className="m-0">
             Built for the FalkorDB Graph Hacks, Track 03: Company Brain. Every query runs on{' '}
-            <a href="https://www.falkordb.com/" className="text-accent hover:underline">FalkorDB</a>.
+            <a href="https://www.falkordb.com/" className="text-accent underline">FalkorDB</a>.
           </p>
           <div className="flex gap-4">
             <a href={REPO_URL} className="text-text-2 hover:text-text">GitHub</a>

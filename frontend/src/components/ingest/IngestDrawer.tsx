@@ -10,9 +10,12 @@ import { formatLongDate } from '../../utils/format';
 import { applyIngestEvent, initialRun, miniGraphElements, type RunState } from '../../utils/ingestRun';
 import { CytoscapeGraph } from '../CytoscapeGraph';
 import { Drawer } from '../Drawer';
+import { FEATURES } from '../../config/features';
+import { useOrgSlug } from '../../org/OrgContext';
+import { UploadPanel } from './UploadPanel';
 import { btnOutline, btnPrimary } from '../ui';
 import { DiffCard } from './DiffCard';
-import { useIngest } from './ingestContext';
+import { useIngest, type IngestTab } from './ingestContext';
 import { StepList } from './StepList';
 
 const fieldClass =
@@ -120,6 +123,7 @@ const ResetControl: React.FC<{ disabled: boolean; onReset: () => void }> = ({ di
 
 export const IngestDrawer: React.FC = () => {
   const ingest = useIngest();
+  const orgSlug = useOrgSlug();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<IngestForm>(emptyForm);
   const [phase, setPhase] = useState<Phase>('form');
@@ -214,6 +218,11 @@ export const IngestDrawer: React.FC = () => {
 
   if (!ingest) return null;
 
+  const tabs: { key: IngestTab; label: string }[] = [
+    { key: 'paste', label: 'Paste text' },
+    ...(FEATURES.upload ? [{ key: 'files' as const, label: 'Upload files' }] : []),
+  ];
+
   return (
     <Drawer
       open={ingest.drawerOpen}
@@ -221,9 +230,36 @@ export const IngestDrawer: React.FC = () => {
       title="Add source"
       titleId="ingest-drawer-title"
       keepMounted
-      footer={<ResetControl disabled={phase === 'running'} onReset={newSource} />}
+      footer={orgSlug ? undefined : <ResetControl disabled={phase === 'running'} onReset={newSource} />}
     >
       <div className="flex flex-col gap-4 p-4">
+        {tabs.length > 1 && (
+          <div role="tablist" aria-label="How to add a source" className="flex gap-1 border-b border-divider">
+            {tabs.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                id={`ingest-tab-${t.key}`}
+                aria-selected={ingest.tab === t.key}
+                aria-controls={`ingest-panel-${t.key}`}
+                onClick={() => ingest.setTab(t.key)}
+                className={`-mb-px h-8 border-b-2 px-3 text-sm ${
+                  ingest.tab === t.key ? 'border-accent font-medium text-text' : 'border-transparent text-text-2 hover:text-text'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div
+          role={tabs.length > 1 ? 'tabpanel' : undefined}
+          id="ingest-panel-paste"
+          aria-labelledby={tabs.length > 1 ? 'ingest-tab-paste' : undefined}
+          hidden={tabs.length > 1 && ingest.tab !== 'paste'}
+          className="flex flex-col gap-4"
+        >
         {phase === 'form' ? (
           <form onSubmit={submit} className="flex flex-col gap-3" aria-label="Source">
             <p className="m-0 text-text-2">
@@ -447,6 +483,12 @@ export const IngestDrawer: React.FC = () => {
               </section>
             )}
           </>
+        )}
+        </div>
+        {FEATURES.upload && (
+          <div role="tabpanel" id="ingest-panel-files" aria-labelledby="ingest-tab-files" hidden={ingest.tab !== 'files'}>
+            <UploadPanel />
+          </div>
         )}
       </div>
     </Drawer>

@@ -341,3 +341,39 @@ export interface OrgInfo {
   edges?: number;
   idle_hours_before_deletion?: number | null;
 }
+
+/* File upload (POST /ingest/batch) */
+
+export type UploadDocType = 'auto' | 'meeting' | 'ticket' | 'doc' | 'adr';
+
+export interface BatchFilePayload {
+  name: string;
+  type: UploadDocType;
+  text?: string;
+  pdf_base64?: string;
+}
+
+export interface BatchPlanFile {
+  index: number;
+  name: string;
+  type: string | null;
+  title: string | null;
+  chars: number;
+  rejected: string | null;
+}
+
+export interface BatchFileEvent {
+  index: number;
+  name: string;
+  status: 'running' | 'done' | 'skipped' | 'failed';
+  summary?: string;
+  message?: string;
+}
+
+export type BatchEvent =
+  | { event: 'files'; data: { files: BatchPlanFile[] } }
+  | { event: 'file'; data: BatchFileEvent }
+  | { event: 'step'; data: IngestStepEvent & { file?: number } }
+  | { event: 'graph'; data: IngestGraphEvent }
+  | { event: 'diff'; data: IngestDiff }
+  | { event: 'error'; data: IngestErrorEvent };

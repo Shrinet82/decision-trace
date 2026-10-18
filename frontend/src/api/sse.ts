@@ -1,4 +1,4 @@
-import type { AskStreamEvent, IngestEvent } from './types';
+import type { AskStreamEvent, BatchEvent, IngestEvent } from './types';
 
 /** One dispatched server-sent event, before its data is decoded. */
 export interface SseMessage {
@@ -79,6 +79,20 @@ export function toAskEvent(message: SseMessage): AskStreamEvent | null {
     const data = JSON.parse(message.data) as unknown;
     if (!data || typeof data !== 'object') return null;
     return { event: message.event, data } as AskStreamEvent;
+  } catch {
+    return null;
+  }
+}
+
+const BATCH_EVENT_NAMES = new Set(['files', 'file', 'step', 'graph', 'diff', 'error']);
+
+/** Decodes the JSON payload of a /ingest/batch event. Unknown event names and bad JSON are skipped. */
+export function toBatchEvent(message: SseMessage): BatchEvent | null {
+  if (!BATCH_EVENT_NAMES.has(message.event)) return null;
+  try {
+    const data = JSON.parse(message.data) as unknown;
+    if (!data || typeof data !== 'object') return null;
+    return { event: message.event, data } as BatchEvent;
   } catch {
     return null;
   }

@@ -60,7 +60,7 @@ test.describe('live ingest', () => {
     await expect(result.getByText('1 new decision · 2 status changes · conflict resolved')).toBeVisible();
     await expect(
       result.getByRole('region', { name: 'New decisions' }).getByRole('link', { name: 'DEC-18' })
-    ).toHaveAttribute('href', '/decisions/DEC-18');
+    ).toHaveAttribute('href', '/app/decisions/DEC-18');
     await expect(drawer.locator('[data-step-status="done"]')).toHaveCount(7);
     await page.waitForTimeout(900);
     await page.screenshot({ path: path.join(screenshotsDir, 'ingest-diff-1440.png') });

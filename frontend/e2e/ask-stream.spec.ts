@@ -64,7 +64,7 @@ test.describe('streamed Ask', () => {
     }
     // Matched entities are chips linking to their pages
     const entities = t.getByRole('list', { name: 'Matched entities' });
-    await expect(entities.getByRole('link', { name: /Keycloak/ }).first()).toHaveAttribute('href', '/systems/Keycloak');
+    await expect(entities.getByRole('link', { name: /Keycloak/ }).first()).toHaveAttribute('href', '/app/systems/Keycloak');
     // Each Cypher query is collapsible and shows its row count
     const query = t.getByRole('list', { name: 'Cypher queries' }).last().locator('details').first();
     await expect(query.locator('summary')).toContainText(/\d+ rows?/);
@@ -83,7 +83,7 @@ test.describe('streamed Ask', () => {
     await expect(impact).toBeVisible();
     const decisions = impact.getByRole('region', { name: /^Decisions, / });
     for (const code of ['DEC-03', 'DEC-13', 'DEC-17']) {
-      await expect(decisions.getByRole('link', { name: new RegExp(code) })).toHaveAttribute('href', `/decisions/${code}`);
+      await expect(decisions.getByRole('link', { name: new RegExp(code) })).toHaveAttribute('href', `/app/decisions/${code}`);
     }
     await expect(impact.getByRole('region', { name: /^People, / }).getByRole('link', { name: 'Fiona Gallagher' })).toBeVisible();
     await expect(impact.getByRole('region', { name: /^Teams & projects, / })).toContainText('Data Platform');

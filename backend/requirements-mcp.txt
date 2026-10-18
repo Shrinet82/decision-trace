@@ -1,3 +1,4 @@
-# MCP server dependencies, installed in their own image layer so that changing them does not
+# MCP server and file-upload (PDF) dependencies, installed in their own image layer so that changing them does not
 # invalidate the large (cognee / ML) dependency layer built from pyproject.toml.
 mcp>=1.28.1,<2
+pypdf>=4,<7
