@@ -30,6 +30,7 @@ from app.api.rate_limiter import (
 )
 from app.askflow import assemble, queries
 from app.askflow.intent import classify_with_fallback
+from app.brain import orgctx
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map
 from app.brain.memory import query_graph_threaded
@@ -102,7 +103,7 @@ _ANSWER_CACHE_SIZE = 200
 
 
 def _cache_key(question: str, dataset: str) -> str:
-    return f"{dataset}|{' '.join(question.lower().split())}"
+    return f"{orgctx.scope()}|{dataset}|{' '.join(question.lower().split())}"
 
 
 def _today() -> str:

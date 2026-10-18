@@ -23,6 +23,8 @@ function renderAt(url: string, latestDiff: IngestDiff | null) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const value = {
     drawerOpen: false,
+    tab: 'paste' as const,
+    setTab: () => {},
     openDrawer: () => {},
     closeDrawer: () => {},
     latestDiff,

@@ -18,6 +18,9 @@
  *    - GET  /ingest/status
  *    - GET  /changes
  *    - GET  /attention
+ *    - POST /ingest/batch, POST /ingest/github   (streams)
+ *    - POST /orgs, GET|DELETE /orgs/:id
+ *    - everything above under /orgs/:id/... for a user organization
  * 3. Blocks all administrative (/admin), documentation (/docs, /redoc, /openapi.json),
  *    and unwhitelisted routes.
  */
@@ -61,6 +64,21 @@ export async function onRequest(context: {
   const segments = decodedPath.split('/').filter(Boolean);
   const normalizedPath = '/' + segments.join('/');
 
+  // Organizations: POST /orgs creates one, GET|DELETE /orgs/:id reads or deletes it, and
+  // /orgs/:id/<path> is any whitelisted route on that organization.
+  const ORG_ID = '[a-z0-9][a-z0-9-]{0,63}';
+  let orgPath = normalizedPath;
+  const orgMatch = new RegExp(`^/orgs/(${ORG_ID})(/.*)?$`).exec(normalizedPath);
+  if (method === 'POST' && normalizedPath === '/orgs') {
+    orgPath = '/orgs';
+  } else if (orgMatch && !orgMatch[2]) {
+    orgPath = method === 'GET' || method === 'DELETE' ? '/orgs/:id' : '/blocked';
+  } else if (orgMatch) {
+    orgPath = orgMatch[2];
+  } else if (normalizedPath === '/orgs' || normalizedPath.startsWith('/orgs/')) {
+    orgPath = '/blocked';
+  }
+
   // Entity names: letters, digits, spaces and a few punctuation marks only
   const NAME = "[A-Za-z0-9 _.&'-]{1,80}";
   const entityDetail = new RegExp(`^/(systems|people)/${NAME}$`);
@@ -71,21 +89,25 @@ export async function onRequest(context: {
 
   // Strict whitelist check
   const isWhitelisted =
-    (method === 'GET' && normalizedPath === '/health') ||
-    (method === 'GET' && normalizedPath === '/decisions') ||
-    (method === 'GET' && /^\/decisions\/[a-zA-Z0-9_-]+$/.test(normalizedPath)) ||
-    (method === 'GET' && normalizedPath === '/graph') ||
-    (method === 'GET' && (normalizedPath === '/systems' || normalizedPath === '/people')) ||
-    (method === 'GET' && entityDetail.test(normalizedPath)) ||
-    (method === 'POST' && normalizedPath === '/ask') ||
-    (method === 'POST' && normalizedPath === '/ask/stream') ||
-    (method === 'GET' && normalizedPath === '/sources') ||
-    (method === 'GET' && sourceDetail.test(normalizedPath)) ||
-    (method === 'GET' && normalizedPath === '/ingest/status') ||
-    (method === 'POST' && normalizedPath === '/ingest') ||
-    (method === 'POST' && normalizedPath === '/ingest/reset') ||
-    (method === 'GET' && normalizedPath === '/changes') ||
-    (method === 'GET' && normalizedPath === '/attention');
+    (method === 'GET' && orgPath === '/health') ||
+    (method === 'GET' && orgPath === '/decisions') ||
+    (method === 'GET' && /^\/decisions\/[a-zA-Z0-9_-]+$/.test(orgPath)) ||
+    (method === 'GET' && orgPath === '/graph') ||
+    (method === 'GET' && (orgPath === '/systems' || orgPath === '/people')) ||
+    (method === 'GET' && entityDetail.test(orgPath)) ||
+    (method === 'POST' && orgPath === '/ask') ||
+    (method === 'POST' && orgPath === '/ask/stream') ||
+    (method === 'GET' && orgPath === '/sources') ||
+    (method === 'GET' && sourceDetail.test(orgPath)) ||
+    (method === 'GET' && orgPath === '/ingest/status') ||
+    (method === 'POST' && orgPath === '/ingest') ||
+    (method === 'POST' && orgPath === '/ingest/reset') ||
+    (method === 'GET' && orgPath === '/changes') ||
+    (method === 'GET' && orgPath === '/attention') ||
+    (method === 'POST' && orgPath === '/ingest/batch') ||
+    (method === 'POST' && orgPath === '/ingest/github') ||
+    (method === 'POST' && orgPath === '/orgs') ||
+    ((method === 'GET' || method === 'DELETE') && orgPath === '/orgs/:id');
 
   if (!isWhitelisted) {
     return new Response(JSON.stringify({ error: 'Endpoint not found or method not allowed' }), {
@@ -116,7 +138,8 @@ export async function onRequest(context: {
 
   // Never wait forever on the API: plain requests get 30 s; the two streams get long enough for
   // their own per-step limits (Ask 45 s per model call, ingest several calls).
-  const isStream = normalizedPath === '/ask/stream' || normalizedPath === '/ingest';
+  const isStream =
+    orgPath === '/ask/stream' || orgPath === '/ingest' || orgPath === '/ingest/batch' || orgPath === '/ingest/github';
   let upstream: Response;
   try {
     upstream = await fetch(modifiedRequest, {

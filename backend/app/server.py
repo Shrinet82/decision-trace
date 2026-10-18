@@ -25,12 +25,14 @@ from app.api.attention import router as attention_router
 from app.api.decisions import router as decisions_router
 from app.api.graph import router as graph_router
 from app.api.ingest import router as ingest_router
+from app.api.orgs import router as orgs_router
 from app.api.people import router as people_router
 from app.api.sources import router as sources_router
 from app.api.systems import router as systems_router
 from app.brain.memory import ping_falkordb
 from app.config import get_settings
 from app.mcp_server import mcp
+from app.orgs.middleware import OrgScopeMiddleware
 
 # Configure logging
 settings = get_settings()
@@ -79,6 +81,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # The MCP session manager runs for the lifetime of the app, in a task of its own: it must be
     # entered and exited by the same task, and the boot wrapper starts and stops the lifespan from
     # different ones.
+    from app.orgs import registry
+
+    idle_sweep = asyncio.create_task(registry.idle_loop())
     mcp_ready, mcp_stop = asyncio.Event(), asyncio.Event()
 
     async def run_mcp() -> None:
@@ -93,6 +98,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     await mcp_task
     warmer.cancel()
     auto_reset.cancel()
+    idle_sweep.cancel()
     logger.info("Shutting down Decision-Trace backend...")
 
 
@@ -102,6 +108,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Organizations: /orgs/<id>/<path> serves <path> on that organization's graph (added before CORS so
+# CORS wraps it)
+app.add_middleware(OrgScopeMiddleware)
 
 # CORS Middleware
 origins = [settings.FRONTEND_ORIGIN, "https://decision-trace.pages.dev"]
@@ -126,6 +136,7 @@ app.include_router(people_router)
 app.include_router(sources_router)
 app.include_router(ingest_router)
 app.include_router(admin_router)
+app.include_router(orgs_router)
 
 
 # Agents connect to /mcp with an MCP client (Streamable HTTP); the route is served by the app itself

@@ -28,6 +28,8 @@ from app.api.rate_limiter import (
     record_tokens,
 )
 from app.brain import cache
+from app.brain import orgctx
+from app.brain.orgctx import ScopedLock
 from app.brain.codes import get_decision_codes
 from app.brain.health import evaluate_graph_health, evaluate_system_orphans
 from app.brain.memory import (
@@ -62,7 +64,7 @@ STEPS = [
 _LABEL_FOR_TYPE = {"meeting": "Meeting", "ticket": "Ticket", "announcement": "Document"}
 
 # One ingest or reset at a time: both rewrite shared demo state
-INGEST_LOCK = asyncio.Lock()
+INGEST_LOCK = ScopedLock()
 
 
 class IngestRequest(BaseModel):
@@ -723,6 +725,12 @@ async def demo_status(dataset: str, now: Optional[datetime] = None) -> dict[str,
     from app.brain.memory import query_graph_threaded
 
     now = now or datetime.now(timezone.utc)
+    if orgctx.current_graph():
+        # User organizations keep their data: nothing is reset automatically
+        return {
+            "has_demo_data": False, "tagged_nodes": 0, "tagged_edges": 0, "last_ingest_at": None,
+            "resets_at": None, "seconds_left": None, "auto_reset_minutes": None,
+        }
     graph = await _changes_graph(dataset)
 
     async def last_ingest() -> list[Any]:
