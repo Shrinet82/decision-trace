@@ -10,6 +10,7 @@ from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_inge
 from app.brain import orgctx
 from app.config import get_settings
 from app.orgs import registry
+from app.ingest.batch import BatchRequest, run_batch
 from app.ingest.live import (
     INGEST_LOCK,
     IngestRequest,
@@ -59,6 +60,35 @@ async def ingest(body: IngestRequest, request: Request) -> StreamingResponse:
             return
         async with INGEST_LOCK:
             async for event in run_ingest(body, dataset):
+                yield sse(event)
+                if event["event"] == "diff":
+                    await _count_sources()
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/ingest/batch")
+async def ingest_batch(body: BatchRequest, request: Request) -> StreamingResponse:
+    """Ingest up to 10 uploaded files (.md, .txt, .pdf) and stream progress per file, ending with
+    one combined `diff`. In the sample organization everything is tagged demo data and resets
+    automatically; in your own organization it is kept."""
+    check_ingest_rate_limit(request)
+    if budget_exceeded():
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=DEMO_LIMIT_MESSAGE)
+    if INGEST_LOCK.locked():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_BUSY)
+    dataset = _settings.DATASET_NAME
+
+    async def stream() -> AsyncIterator[str]:
+        if INGEST_LOCK.locked():
+            yield sse({"event": "error", "data": {"message": _BUSY}})
+            return
+        async with INGEST_LOCK:
+            async for event in run_batch(body.files, dataset):
                 yield sse(event)
                 if event["event"] == "diff":
                     await _count_sources()

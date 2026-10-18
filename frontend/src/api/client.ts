@@ -1,9 +1,11 @@
-import { parseSse, toAskEvent, toIngestEvent, type SseMessage } from './sse';
+import { parseSse, toAskEvent, toBatchEvent, toIngestEvent, type SseMessage } from './sse';
 import type {
   Attention,
   AskRequest,
   AskResponse,
   AskStreamEvent,
+  BatchEvent,
+  BatchFilePayload,
   DemoStatus,
   SourceDocument,
   SourceKind,
@@ -12,6 +14,7 @@ import type {
   DecisionDetail,
   DecisionSummary,
   GraphResponse,
+  IngestDiff,
   IngestEvent,
   IngestRequest,
   OrgInfo,
@@ -541,4 +544,76 @@ export async function deleteOrg(id: string): Promise<void> {
     const body = await response.json().catch(() => null);
     throw new ApiError(httpErrorMessage(response.status, body, 'The organization'), response.status, body);
   }
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* File upload                                                                                 */
+/* ------------------------------------------------------------------------------------------ */
+
+/**
+ * POST /ingest/batch: ingest uploaded files and stream per-file progress, ending with one combined
+ * `diff` (or an `error` when no file could be ingested). Resolves when the stream ends.
+ */
+export async function streamBatch(
+  files: BatchFilePayload[],
+  onEvent: (event: BatchEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  if (USE_MOCKS) {
+    const { getMockIngestEvents, recordMockIngest } = await loadMocks();
+    onEvent({
+      event: 'files',
+      data: {
+        files: files.map((f, index) => ({
+          index,
+          name: f.name,
+          type: f.type === 'auto' ? 'adr' : f.type,
+          title: f.name.replace(/\.[A-Za-z0-9]+$/, ''),
+          chars: f.text?.length ?? 0,
+          rejected: f.name.toLowerCase().includes('scan') ? 'The PDF has no extractable text (it looks like a scan).' : null,
+        })),
+      },
+    });
+    let last: IngestDiff | null = null;
+    for (const [index, f] of files.entries()) {
+      if (f.name.toLowerCase().includes('scan')) {
+        onEvent({ event: 'file', data: { index, name: f.name, status: 'skipped', message: 'The PDF has no extractable text (it looks like a scan).' } });
+        continue;
+      }
+      onEvent({ event: 'file', data: { index, name: f.name, status: 'running' } });
+      for (const event of getMockIngestEvents(f.text ?? 'kafka')) {
+        await wait(MOCK_EVENT_INTERVAL_MS / 2, signal);
+        if (event.event === 'step' || event.event === 'graph') onEvent({ event: event.event, data: { ...event.data, file: index } } as BatchEvent);
+        if (event.event === 'diff') last = event.data;
+      }
+      if (last) onEvent({ event: 'file', data: { index, name: f.name, status: 'done', summary: last.summary } });
+    }
+    if (last) {
+      recordMockIngest({ type: 'announcement', title: `${files.length} files`, date: '2026-10-18', text: '' }, last);
+      onEvent({ event: 'diff', data: last });
+    } else {
+      onEvent({ event: 'error', data: { message: 'No file could be ingested. See the messages for each file.' } });
+    }
+    return;
+  }
+
+  const response = await apiFetch(`${apiBase()}/ingest/batch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    body: JSON.stringify({ files }),
+    signal,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(ingestErrorMessage(response.status, body), response.status, body);
+  }
+  if (!response.body) throw new ApiError('The server returned an empty ingest stream.', response.status);
+  let finished = false;
+  await readSse(response.body, (message) => {
+    const event = toBatchEvent(message);
+    if (!event) return;
+    if (event.event === 'diff' || event.event === 'error') finished = true;
+    onEvent(event);
+  });
+  if (!finished) throw new ApiError('The ingest stream ended before a result arrived. Try again.', 0);
 }

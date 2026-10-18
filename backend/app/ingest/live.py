@@ -61,14 +61,39 @@ STEPS = [
     ("writing", "Writing to FalkorDB"),
     ("health", "Recomputing health"),
 ]
-_LABEL_FOR_TYPE = {"meeting": "Meeting", "ticket": "Ticket", "announcement": "Document"}
+_LABEL_FOR_TYPE = {"meeting": "Meeting", "ticket": "Ticket", "announcement": "Document", "doc": "Document", "adr": "Document"}
+CHUNK_CHARS = 4500
+
+
+def chunk_text(text: str, size: int = CHUNK_CHARS) -> list[str]:
+    """Split long text on paragraph breaks into pieces of at most `size` characters (a single
+    longer paragraph is cut hard). Short text is one chunk."""
+    if len(text) <= size:
+        return [text]
+    chunks: list[str] = []
+    current = ""
+    for para in re.split(r"\n\s*\n", text):
+        while len(para) > size:
+            if current:
+                chunks.append(current)
+                current = ""
+            chunks.append(para[:size])
+            para = para[size:]
+        if current and len(current) + len(para) + 2 > size:
+            chunks.append(current)
+            current = ""
+        current = f"{current}\n\n{para}" if current else para
+    if current:
+        chunks.append(current)
+    return chunks
+
 
 # One ingest or reset at a time: both rewrite shared demo state
 INGEST_LOCK = ScopedLock()
 
 
 class IngestRequest(BaseModel):
-    type: Literal["meeting", "ticket", "announcement"]
+    type: Literal["meeting", "ticket", "announcement", "doc", "adr"]
     title: str = Field(..., min_length=1, max_length=200)
     date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$")
     text: str = Field(..., min_length=1, max_length=MAX_TEXT)
@@ -241,33 +266,41 @@ async def run_ingest(req: IngestRequest, dataset: str) -> AsyncIterator[dict[str
 
         # 2. Decisions via the existing two-pass extractor prompts
         yield _step("extracting_decisions", "running")
-        pass1 = await _llm(build_pass1_prompt(roster=roster), text, Pass1Candidates, 1500)
-        candidates = getattr(pass1, "candidates", []) or []
         decisions: list[dict[str, Any]] = []
-        for cand in candidates:
-            if not quote_in(cand.verbatim_quote, text):
-                continue  # the quote must be verbatim from this source
-            verdict = await _llm(
-                build_pass2_prompt(roster=roster),
-                f"Candidate Title: {cand.title}\nCandidate Decider: {cand.decided_by or 'Unknown'}\n"
-                f"Candidate System: {cand.system or 'None'}\nCandidate Rationale: {cand.rationale}\n"
-                f"Evidence Quote: {cand.verbatim_quote}\nSource Context:\n{text}",
-                Pass2Verification,
-                800,
-            )
-            if not verdict.keep:
-                continue
-            decisions.append(
-                {
-                    "title": (verdict.refined_title or cand.title).strip(),
-                    "quote": cand.verbatim_quote.strip(),
-                    "rationale": cand.rationale.strip(),
-                    "status": derive_status_from_evidence(cand.verbatim_quote, cand.status or "accepted"),
-                    "deciders": split_names(verdict.decided_by_verified or cand.decided_by),
-                    "systems": split_names(verdict.system_verified or cand.system),
-                    "confidence": cand.confidence,
-                }
-            )
+        candidates: list[Any] = []
+        seen_titles: set[str] = set()
+        for chunk in chunk_text(text):
+            pass1 = await _llm(build_pass1_prompt(roster=roster), chunk, Pass1Candidates, 1500)
+            chunk_candidates = getattr(pass1, "candidates", []) or []
+            candidates.extend(chunk_candidates)
+            for cand in chunk_candidates:
+                if not quote_in(cand.verbatim_quote, chunk):
+                    continue  # the quote must be verbatim from this source
+                verdict = await _llm(
+                    build_pass2_prompt(roster=roster),
+                    f"Candidate Title: {cand.title}\nCandidate Decider: {cand.decided_by or 'Unknown'}\n"
+                    f"Candidate System: {cand.system or 'None'}\nCandidate Rationale: {cand.rationale}\n"
+                    f"Evidence Quote: {cand.verbatim_quote}\nSource Context:\n{chunk}",
+                    Pass2Verification,
+                    800,
+                )
+                if not verdict.keep:
+                    continue
+                title = (verdict.refined_title or cand.title).strip()
+                if title.lower() in seen_titles:
+                    continue
+                seen_titles.add(title.lower())
+                decisions.append(
+                    {
+                        "title": title,
+                        "quote": cand.verbatim_quote.strip(),
+                        "rationale": cand.rationale.strip(),
+                        "status": derive_status_from_evidence(cand.verbatim_quote, cand.status or "accepted"),
+                        "deciders": split_names(verdict.decided_by_verified or cand.decided_by),
+                        "systems": split_names(verdict.system_verified or cand.system),
+                        "confidence": cand.confidence,
+                    }
+                )
         yield _step(
             "extracting_decisions",
             "done",
@@ -278,8 +311,10 @@ async def run_ingest(req: IngestRequest, dataset: str) -> AsyncIterator[dict[str
         # 3. People and status changes
         yield _step("extracting_people", "running")
         try:
-            people_out = await _llm(PEOPLE_PROMPT, text, PeopleChanges, 600)
-            person_changes = [c for c in people_out.changes if quote_in(c.quote, text)]
+            person_changes = []
+            for chunk in chunk_text(text):
+                people_out = await _llm(PEOPLE_PROMPT, chunk, PeopleChanges, 600)
+                person_changes.extend(c for c in people_out.changes if quote_in(c.quote, chunk))
         except Exception as exc:  # noqa: BLE001 - fall back to a deterministic pattern
             logger.warning("People extraction failed, using pattern fallback: %s", exc)
             person_changes = [
@@ -345,7 +380,7 @@ async def run_ingest(req: IngestRequest, dataset: str) -> AsyncIterator[dict[str
                 h = before["health"].get(str(x_id))
                 prompt_input = (
                     f"NEW decision (dated {req.date}): {d['title']}\nQuote: {d['quote']}\n"
-                    f"Source text: {text}\n\nEXISTING decision ({x_date}, decided by "
+                    f"Source text: {text[:3000]}\n\nEXISTING decision ({x_date}, decided by "
                     f"{', '.join(x_deciders or []) or 'unknown'}, health {h.status if h else 'active'}): "
                     f"{x_title}\nQuote: {x_quote or ''}"
                 )

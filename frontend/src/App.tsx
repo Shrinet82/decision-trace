@@ -21,7 +21,7 @@ const GraphRedirect: React.FC = () => {
   return <Navigate to={`/app/explore${search}`} replace />;
 };
 
-const LEGACY_SECTIONS = new Set(['ask', 'agents', 'decisions', 'systems', 'people', 'explore', 'sources']);
+const LEGACY_SECTIONS = new Set(['ask', 'graph', 'agents', 'decisions', 'systems', 'people', 'explore', 'sources']);
 
 /** Before /app existed the app lived at the root: send /decisions/DEC-11 and friends to /app/…. */
 const LegacyRedirect: React.FC = () => {
