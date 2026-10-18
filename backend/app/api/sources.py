@@ -13,6 +13,7 @@ from app.brain.cache import cached_endpoint
 from app.brain.codes import get_decision_codes_cached
 from app.brain.health import get_health_map, is_departed
 from app.brain.trace import CypherTrace
+from app.brain import orgctx
 from app.config import get_settings
 from app.ingest.source_text import quote_in
 
@@ -120,13 +121,15 @@ def _today() -> str:
 async def list_sources(dataset_name: Optional[str] = Query(None)) -> SourceList:
     """All source documents and company.db records, with how many decisions each one backs."""
     trace = CypherTrace(dataset_name or _settings.DATASET_NAME)
-    docs, records = await trace.gather(("documents", _DOCS_QUERY, {}), ("records", _RECORDS_QUERY, {}))
+    # In your own organization everything ingested is permanent, so records are not "demo" data
+    records_query = _RECORDS_QUERY.replace(" AND n.demo_ingest_id IS NULL", "") if orgctx.current_graph() else _RECORDS_QUERY
+    docs, records = await trace.gather(("documents", _DOCS_QUERY, {}), ("records", records_query, {}))
     items: list[SourceItem] = []
     for label, key, title, date, state, demo, linked in docs:
         if not key:
             continue
         items.append(SourceItem(kind=str(label).lower(), key=str(key), title=str(title or key), detail=state or None,
-                                date=norm_date(date), linked_decisions=int(linked or 0), demo=bool(demo)))
+                                date=norm_date(date), linked_decisions=int(linked or 0), demo=bool(demo) and not orgctx.current_graph()))
     for label, name, detail, linked in records:
         if name:
             items.append(SourceItem(kind=str(label).lower(), key=str(name), title=str(name), detail=detail or None,
@@ -173,7 +176,7 @@ async def get_source(kind: SourceKind, key: str, dataset_name: Optional[str] = Q
         kind=kind, key=key, title=str(props.get("title") or props.get("name") or key),
         date=norm_date(props.get("date") or props.get("meeting_date") or props.get("opened")),
         status=props.get("status") or None, text=text, decisions=decisions,
-        demo=bool(props.get("demo_ingest_id")), cypher=trace.as_dict(),
+        demo=bool(props.get("demo_ingest_id")) and not orgctx.current_graph(), cypher=trace.as_dict(),
     )
     if is_doc:
         people: dict[str, SourcePerson] = {}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link as PlainLink } from 'react-router-dom';
 import { Link, NavLink, Outlet, useLocation, useSearchParams } from '../router';
 import { Bot, CheckCircle2, FileText, Home, Layers, MessageCircle, Network, Search, Users } from 'lucide-react';
 import { useDecisions, useGraph, useOrgInfo, usePeople, useSources, useSystems } from '../api/hooks';
@@ -204,7 +205,7 @@ export const AppShell: React.FC = () => {
           aria-label="Sidebar"
           className="box-border flex w-full shrink-0 flex-col gap-3 border-b border-border bg-sidebar px-2.5 py-3 min-[900px]:sticky min-[900px]:top-0 min-[900px]:h-screen min-[900px]:w-[232px] min-[900px]:gap-[18px] min-[900px]:overflow-y-auto min-[900px]:border-b-0 min-[900px]:border-r"
         >
-          <div className="flex items-center gap-2 px-1.5 py-1">
+          <PlainLink to="/" className="flex items-center gap-2 px-1.5 py-1 text-text no-underline" aria-label="Decision Trace home page">
             <span
               aria-hidden="true"
               className="flex h-5 w-5 items-center justify-center rounded-[5px] bg-accent text-[11px] font-semibold text-white"
@@ -212,7 +213,7 @@ export const AppShell: React.FC = () => {
               DT
             </span>
             <span className="text-sm font-semibold">Decision Trace</span>
-          </div>
+          </PlainLink>
 
           <OrgSwitcher currentName={orgName} />
 
