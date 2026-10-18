@@ -377,3 +377,29 @@ export type BatchEvent =
   | { event: 'graph'; data: IngestGraphEvent }
   | { event: 'diff'; data: IngestDiff }
   | { event: 'error'; data: IngestErrorEvent };
+
+/* GitHub import (POST /ingest/github) */
+
+export type GithubPhase = 'fetching' | 'extracting' | 'linking' | 'writing' | 'health';
+
+export interface GithubProgress {
+  phase: GithubPhase;
+  status: 'running' | 'done';
+  label: string;
+  detail?: string;
+}
+
+export interface GithubImportStats {
+  repo: string;
+  adrs: number;
+  items_considered: number;
+  items_decisions: number;
+  supersedes: number;
+  tokens_estimated: number;
+  seconds: number;
+}
+
+export type GithubEvent =
+  | { event: 'progress'; data: GithubProgress }
+  | { event: 'diff'; data: IngestDiff & { import?: GithubImportStats } }
+  | { event: 'error'; data: IngestErrorEvent };

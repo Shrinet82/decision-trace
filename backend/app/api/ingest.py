@@ -10,6 +10,7 @@ from app.api.rate_limiter import DEMO_LIMIT_MESSAGE, budget_exceeded, check_inge
 from app.brain import orgctx
 from app.config import get_settings
 from app.orgs import registry
+from app.ingest.github import GithubRequest, run_github_import
 from app.ingest.batch import BatchRequest, run_batch
 from app.ingest.live import (
     INGEST_LOCK,
@@ -89,6 +90,40 @@ async def ingest_batch(body: BatchRequest, request: Request) -> StreamingRespons
             return
         async with INGEST_LOCK:
             async for event in run_batch(body.files, dataset):
+                yield sse(event)
+                if event["event"] == "diff":
+                    await _count_sources()
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.post("/ingest/github")
+async def ingest_github(body: GithubRequest, request: Request) -> StreamingResponse:
+    """Import ADRs (and optionally decision-like PRs and issues) from a public GitHub repository,
+    streaming progress, ending with a `diff`. Only available in organizations you create: the sample
+    organization is read-only apart from its tagged demo data."""
+    if not orgctx.current_graph():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="GitHub import is available in organizations you create, not in the sample organization.",
+        )
+    check_ingest_rate_limit(request)
+    if budget_exceeded():
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=DEMO_LIMIT_MESSAGE)
+    if INGEST_LOCK.locked():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=_BUSY)
+    dataset = _settings.DATASET_NAME
+
+    async def stream() -> AsyncIterator[str]:
+        if INGEST_LOCK.locked():
+            yield sse({"event": "error", "data": {"message": _BUSY}})
+            return
+        async with INGEST_LOCK:
+            async for event in run_github_import(body, dataset):
                 yield sse(event)
                 if event["event"] == "diff":
                     await _count_sources()

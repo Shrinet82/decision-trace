@@ -1,4 +1,4 @@
-import { parseSse, toAskEvent, toBatchEvent, toIngestEvent, type SseMessage } from './sse';
+import { parseSse, toAskEvent, toBatchEvent, toGithubEvent, toIngestEvent, type SseMessage } from './sse';
 import type {
   Attention,
   AskRequest,
@@ -6,6 +6,7 @@ import type {
   AskStreamEvent,
   BatchEvent,
   BatchFilePayload,
+  GithubEvent,
   DemoStatus,
   SourceDocument,
   SourceKind,
@@ -616,4 +617,75 @@ export async function streamBatch(
     onEvent(event);
   });
   if (!finished) throw new ApiError('The ingest stream ended before a result arrived. Try again.', 0);
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* GitHub import                                                                               */
+/* ------------------------------------------------------------------------------------------ */
+
+/** Messages for a failed GitHub import request (the stream itself reports its own errors). */
+export function githubErrorMessage(status: number, body: unknown): string {
+  const detail = detailText(body);
+  if (status === 403) return detail ?? 'GitHub import is only available in organizations you create.';
+  if (status === 422) return 'That does not look like a repository URL. Use https://github.com/owner/repo.';
+  return ingestErrorMessage(status, body);
+}
+
+/**
+ * POST /ingest/github: import ADRs (and optionally decision-like PRs and issues) from a public
+ * repository. Streams `progress` events and ends with a `diff` or `error`.
+ */
+export async function streamGithub(
+  repoUrl: string,
+  includePrs: boolean,
+  onEvent: (event: GithubEvent) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  if (USE_MOCKS) {
+    const { getMockIngestEvents } = await loadMocks();
+    const phases: [GithubEvent & { event: 'progress' }][] = [
+      [{ event: 'progress', data: { phase: 'fetching', status: 'running', label: 'Fetching repository', detail: 'owner/repo' } }],
+      [{ event: 'progress', data: { phase: 'fetching', status: 'done', label: 'Fetching repository', detail: 'found 12 ADRs and 3 decision-like PRs/issues' } }],
+      [{ event: 'progress', data: { phase: 'extracting', status: 'done', label: 'Extracting systems and decisions', detail: '12 ADR decisions, 2 of 3 PRs/issues recorded a decision' } }],
+      [{ event: 'progress', data: { phase: 'linking', status: 'done', label: 'Linking decisions', detail: '2 supersedes links' } }],
+      [{ event: 'progress', data: { phase: 'writing', status: 'done', label: 'Writing to FalkorDB', detail: '61 nodes, 89 edges' } }],
+    ];
+    if (/nope|missing/i.test(repoUrl)) {
+      await wait(MOCK_EVENT_INTERVAL_MS, signal);
+      onEvent({ event: 'error', data: { message: 'That repository was not found. It must be public, and the URL spelled correctly.' } });
+      return;
+    }
+    for (const [event] of phases) {
+      await wait(MOCK_EVENT_INTERVAL_MS, signal);
+      onEvent(event);
+    }
+    const diff = getMockIngestEvents('kafka').find((e) => e.event === 'diff');
+    if (diff && diff.event === 'diff') {
+      onEvent({
+        event: 'diff',
+        data: { ...diff.data, import: { repo: 'owner/repo', adrs: 12, items_considered: 3, items_decisions: includePrs ? 2 : 0, supersedes: 2, tokens_estimated: 12566, seconds: 36.9 } },
+      });
+    }
+    return;
+  }
+
+  const response = await apiFetch(`${apiBase()}/ingest/github`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
+    body: JSON.stringify({ repo_url: repoUrl, include_prs: includePrs }),
+    signal,
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new ApiError(githubErrorMessage(response.status, body), response.status, body);
+  }
+  if (!response.body) throw new ApiError('The server returned an empty import stream.', response.status);
+  let finished = false;
+  await readSse(response.body, (message) => {
+    const event = toGithubEvent(message);
+    if (!event) return;
+    if (event.event === 'diff' || event.event === 'error') finished = true;
+    onEvent(event);
+  });
+  if (!finished) throw new ApiError('The import stream ended before a result arrived. Try again.', 0);
 }

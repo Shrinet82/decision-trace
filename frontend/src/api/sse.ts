@@ -1,4 +1,4 @@
-import type { AskStreamEvent, BatchEvent, IngestEvent } from './types';
+import type { AskStreamEvent, BatchEvent, GithubEvent, IngestEvent } from './types';
 
 /** One dispatched server-sent event, before its data is decoded. */
 export interface SseMessage {
@@ -93,6 +93,20 @@ export function toBatchEvent(message: SseMessage): BatchEvent | null {
     const data = JSON.parse(message.data) as unknown;
     if (!data || typeof data !== 'object') return null;
     return { event: message.event, data } as BatchEvent;
+  } catch {
+    return null;
+  }
+}
+
+const GITHUB_EVENT_NAMES = new Set(['progress', 'diff', 'error']);
+
+/** Decodes the JSON payload of a /ingest/github event. Unknown event names and bad JSON are skipped. */
+export function toGithubEvent(message: SseMessage): GithubEvent | null {
+  if (!GITHUB_EVENT_NAMES.has(message.event)) return null;
+  try {
+    const data = JSON.parse(message.data) as unknown;
+    if (!data || typeof data !== 'object') return null;
+    return { event: message.event, data } as GithubEvent;
   } catch {
     return null;
   }
