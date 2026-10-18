@@ -136,6 +136,8 @@ async def test_auto_reset_loop_resets_only_when_due():
                 raise nxt
 
         with patch("app.ingest.live.demo_status", new=AsyncMock(return_value=state)), \
+             patch("app.orgs.registry.load", new=AsyncMock()), \
+             patch("app.orgs.registry.sample_orgs", return_value=[]), \
              patch("app.ingest.live.reset_demo", new=reset), \
              patch("app.ingest.live.asyncio.sleep", side_effect=fake_sleep):
             with pytest.raises(StopAsyncIteration):
@@ -215,3 +217,32 @@ def test_source_not_found_and_bad_kind():
     with stub_trace({"source": []}):
         assert client.get("/sources/ticket/TICK-999").status_code == 404
     assert client.get("/sources/admin/x").status_code == 422
+
+
+async def test_auto_reset_loop_also_resets_showcase_organizations():
+    due = {"has_demo_data": True, "seconds_left": 0}
+    reset = AsyncMock(return_value={})
+    sleeps = iter([None, StopAsyncIteration()])
+    seen: list[str] = []
+
+    async def fake_sleep(_s):
+        nxt = next(sleeps)
+        if isinstance(nxt, BaseException):
+            raise nxt
+
+    async def fake_reset(dataset, title="x"):
+        from app.brain import orgctx
+
+        seen.append(orgctx.current_slug() or "acme")
+        return {}
+
+    showcase = [{"id": "arachne", "graph_name": "org_arachne_x"}]
+    with patch("app.ingest.live.demo_status", new=AsyncMock(return_value=due)), \
+         patch("app.orgs.registry.load", new=AsyncMock()), \
+         patch("app.orgs.registry.sample_orgs", return_value=showcase), \
+         patch("app.ingest.live.reset_demo", new=fake_reset), \
+         patch("app.ingest.live.asyncio.sleep", side_effect=fake_sleep):
+        with pytest.raises(StopAsyncIteration):
+            await live.auto_reset_loop("ds", interval_seconds=0)
+    assert seen == ["acme", "arachne"]
+    assert reset.await_count == 0
