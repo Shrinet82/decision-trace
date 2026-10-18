@@ -12,6 +12,7 @@ _WHY_RETURN = (
     "{system_match}"
     "OPTIONAL MATCH (d)-[r_tic:based_on]->(t:Ticket) "
     "OPTIONAL MATCH (d)-[r_mtg:based_on]->(m:Meeting) "
+    "OPTIONAL MATCH (d)-[r_doc:based_on]->(dc:Document) "
     "OPTIONAL MATCH (d)-[r_sup:supersedes]->(d_sup:Decision) "
     "OPTIONAL MATCH (d_sup_by:Decision)-[r_supby:supersedes]->(d) "
     "OPTIONAL MATCH (d)-[r_con:contradicts]-(d_con:Decision) "
@@ -19,7 +20,7 @@ _WHY_RETURN = (
     "RETURN d.id, d.title, coalesce(d.summary, ''), coalesce(d.rationale, ''), "
     "coalesce(d.status, 'accepted'), p.name, s.name, t.ticket_id, t.title, m.title, m.date, "
     "d_sup.id, d_sup.title, d_sup_by.id, d_sup_by.title, d_con.id, d_con.title, "
-    "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, '')"
+    "owner.name, coalesce(owner.is_active, true), coalesce(owner.leave_date, ''), dc.title, dc.date"
 )
 WHY_BY_IDS = "MATCH (d:Decision) WHERE d.id IN $decision_ids " + _WHY_RETURN.format(
     system_match="OPTIONAL MATCH (d)-[r_sys:about_system]->(s:System) "

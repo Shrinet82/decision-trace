@@ -130,7 +130,7 @@ def build_why(d_rows: list[list[Any]], owner_rows: list[list[Any]], codes: dict[
             continue
         (d_id, d_title, d_summary, d_rationale, d_status, decider, system, t_id, t_title, m_title,
          m_date, sup_id, sup_title, supby_id, supby_title, con_id, con_title, owner_name, owner_active,
-         owner_leave) = (list(row) + [None] * 20)[:20]
+         owner_leave, doc_title, doc_date) = (list(row) + [None] * 22)[:22]
         d_id, d_title, d_status = str(d_id), str(d_title), str(d_status or "accepted")
         statuses[d_id] = (d_title, d_status)
         health_status, health_reason = _health(health, d_id)
@@ -172,6 +172,9 @@ def build_why(d_rows: list[list[Any]], owner_rows: list[list[Any]], codes: dict[
         if m_title:
             g.source(d_id, "Meeting", str(m_title), None, _s(m_date))
             add(f"  Source Meeting: {m_title} (Date: {m_date})")
+        if doc_title:
+            g.source(d_id, "Document", str(doc_title), None, _s(doc_date))
+            add(f"  Source Document: {doc_title} (Date: {doc_date})")
         if sup_id and sup_title:
             g.node(str(sup_id), "Decision", _decision_props(str(sup_id), str(sup_title), codes, health), 5.0)
             g.edge(d_id, str(sup_id), "supersedes")
@@ -615,9 +618,19 @@ def build_status(focus: str, decision_rows: list[list[Any]], system_rows: list[l
 def verified_citations(graph: EvidenceGraph, answer: str, limit: int = 5) -> list[dict[str, str]]:
     based_on = {e["target"] for e in graph.edges if e["type"] == "based_on"}
     text = answer.lower()
+    # A source also counts as referenced when the answer names a decision (DEC-nn) that is based on it:
+    # documents such as ADRs have no short id the model would quote
+    by_decision: set[str] = set()
+    for e in graph.edges:
+        if e["type"] != "based_on":
+            continue
+        code = (graph.nodes.get(e["source"], {}).get("properties") or {}).get("decision_code")
+        if code and re.search(rf"\b{re.escape(str(code).lower())}\b", text):
+            by_decision.add(e["target"])
     cited = [
         c for c in graph.citations.values()
-        if c["id"] in based_on and (c["id"].lower() in text or (len(c["title"]) > 5 and c["title"].lower() in text))
+        if c["id"] in based_on
+        and (c["id"] in by_decision or c["id"].lower() in text or (len(c["title"]) > 5 and c["title"].lower() in text))
     ]
     cited.sort(key=lambda c: graph.weights.get(c["id"], 0.0), reverse=True)
     return cited[:limit]

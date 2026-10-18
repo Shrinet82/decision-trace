@@ -12,6 +12,7 @@ import { CytoscapeGraph } from '../CytoscapeGraph';
 import { Drawer } from '../Drawer';
 import { FEATURES } from '../../config/features';
 import { useOrgSlug } from '../../org/OrgContext';
+import { GithubPanel } from './GithubPanel';
 import { UploadPanel } from './UploadPanel';
 import { btnOutline, btnPrimary } from '../ui';
 import { DiffCard } from './DiffCard';
@@ -221,6 +222,7 @@ export const IngestDrawer: React.FC = () => {
   const tabs: { key: IngestTab; label: string }[] = [
     { key: 'paste', label: 'Paste text' },
     ...(FEATURES.upload ? [{ key: 'files' as const, label: 'Upload files' }] : []),
+    ...(FEATURES.github ? [{ key: 'github' as const, label: 'GitHub' }] : []),
   ];
 
   return (
@@ -488,6 +490,11 @@ export const IngestDrawer: React.FC = () => {
         {FEATURES.upload && (
           <div role="tabpanel" id="ingest-panel-files" aria-labelledby="ingest-tab-files" hidden={ingest.tab !== 'files'}>
             <UploadPanel />
+          </div>
+        )}
+        {FEATURES.github && (
+          <div role="tabpanel" id="ingest-panel-github" aria-labelledby="ingest-tab-github" hidden={ingest.tab !== 'github'}>
+            <GithubPanel />
           </div>
         )}
       </div>
