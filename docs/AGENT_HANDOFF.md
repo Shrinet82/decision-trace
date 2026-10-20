@@ -285,8 +285,7 @@ Suggested questions on the Ask page (also recorded in `ask-stream.json`): *Why d
     ├── restore_snapshot.py           # export (safe) / restore (DELETES ALL GRAPHS; guarded)
     ├── seed.py                       # Full pipeline (DELETES ALL GRAPHS first; guarded)
     ├── destructive_guard.py          # Flag + production refusal + typed confirmation for the two above
-    ├── generate_synthetic_dataset.py # Regenerates data/
-    └── keepalive.py                  # Standalone keepalive script pinging FalkorDB
+    └── generate_synthetic_dataset.py # Regenerates data/
 ```
 
 ---
@@ -376,8 +375,7 @@ Scoring is per decision (rows are grouped by decision id/title). The holdout scr
 ## 10. Open Items
 
 1. **Orphaned Elasticsearch has no decision in the corpus** (see 3C). If a stale-by-departed-decider demo is wanted, add a source document in which a departed person decides something; do not edit extraction to invent one.
-2. The FalkorDB keepalive workflow fails: the repo's Actions secrets lack the FalkorDB credentials it reads.
-3. The intent classifier is rule-based. Phrasings outside its patterns fall back to the why retrieval, which still answers but without impact or expertise sections.
+2. The intent classifier is rule-based. Phrasings outside its patterns fall back to the why retrieval, which still answers but without impact or expertise sections.
 
 ## 11. Submission package (Phase 6)
 
